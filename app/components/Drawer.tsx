@@ -68,6 +68,7 @@ export default function Drawer() {
                                     : 'text-gray-700 hover:bg-gray-50 hover:text-emerald-600',
                                   'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
                                 )}
+                                onClick={() => setDrawerOpen(false)}
                               >
                                 {item.name}
                               </Link>

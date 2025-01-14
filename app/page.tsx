@@ -8,9 +8,11 @@ import TypingEffect from "./components/TypingEffect";
 import chatEventStream from "./utils/chatEventStream";
 import Widget from "./components/widgets/Widget";
 import usePortfolio from "./hooks/usePortfolio";
+import useSession from "./hooks/useSession";
 
 export default function Home() {
   const { messages, addChunk } = useMessagesContext();
+  useSession()
 
   const handleFetchChat = async (): Promise<void> => {
     addChunk("", "start");
