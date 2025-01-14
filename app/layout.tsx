@@ -7,6 +7,7 @@ import Providers from "./providers";
 import ConnectWallet from "./components/ConnectWalletMenu";
 import DrawerButton from "./components/DrawerButton";
 import Drawer from "./components/Drawer";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Hiro",
@@ -30,7 +31,7 @@ export default function RootLayout({
                   <div className="flex h-16 justify-between">
                     <div className="flex items-center">
                       <DrawerButton />
-                      <div className="pl-5 text-2xl">HIRO</div>
+                      <div className="pl-5 text-2xl"><Link href="/">HIRO</Link></div>
                     </div>
                     
                     <div className="ml-6 flex items-center">

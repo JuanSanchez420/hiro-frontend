@@ -4,6 +4,7 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, TransitionChild } fro
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useMessagesContext } from '../context/Context';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
@@ -59,7 +60,7 @@ export default function Drawer() {
                         <ul role="list" className="-mx-2 space-y-1">
                           {navigation.map((item) => (
                             <li key={item.name}>
-                              <a
+                              <Link
                                 href={item.href}
                                 className={classNames(
                                   item.current
@@ -68,9 +69,8 @@ export default function Drawer() {
                                   'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
                                 )}
                               >
-
                                 {item.name}
-                              </a>
+                              </Link>
                             </li>
                           ))}
                         </ul>
