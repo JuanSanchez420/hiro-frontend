@@ -1,52 +1,23 @@
 'use client'
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import MessageBox from "./components/MessageBox";
 import { Message, useMessagesContext } from "./context/Context";
-import { fetchChatStream } from "./utils/fetchChatStream";
 import TypingEffect from "./components/TypingEffect";
-import chatEventStream from "./utils/chatEventStream";
 import Widget from "./components/widgets/Widget";
-import usePortfolio from "./hooks/usePortfolio";
 import useSession from "./hooks/useSession";
+import useChatEventStream from "./hooks/useChatEventStream";
+import Image from 'next/image'
 
 export default function Home() {
-  const { messages, addChunk } = useMessagesContext();
+  const { messages } = useMessagesContext();
   useSession()
-
-  const handleFetchChat = async (): Promise<void> => {
-    addChunk("", "start");
-    await fetchChatStream(`/api/stream?content=${messages[messages.length - 1]?.message}`, (chunk) => {
-      addChunk(chunk, "middle");
-    });
-    addChunk("", "end");
-  };
-
-  const handleChatEvent = async (): Promise<void> => {
-    addChunk("", "start");
-
-    const eventSource = chatEventStream(
-      `/api/stream?content=${messages[messages.length - 1]?.message}`,
-      (chunk) => {
-        addChunk(chunk, "middle");
-      },
-    );
-
-    // TODO: no way this works
-    addChunk("", "end");
-  }
-
-
-    useEffect(() => {
-      if (messages.length > 0 && messages[messages.length - 1].completed && messages[messages.length - 1].type === "user") // handleFetchChat();
-        handleChatEvent()
-    }, [messages])
-
+  useChatEventStream()
 
     const Intro = useCallback(() => {
       return (<div className="flex flex-col">
         <div className="flex">
-          <img src="/images/hiro.png" alt="Hiro" className="size-8" />
+          <Image src="/images/hiro.png" alt="Hiro" width={32} height={32} />
           <h1 className="bold text-2xl ml-4">Hi, I&apos;m Hiro!</h1>
         </div>
         <div className="py-5">
