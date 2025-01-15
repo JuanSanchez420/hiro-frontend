@@ -13,7 +13,7 @@ const useSession = () => {
                 credentials: 'include',
               })
             const data = await response.json()
-            console.log(data)
+
             setSession(data.sessionId)
         }
         if(!session && !didFetch.current) f()

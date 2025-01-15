@@ -7,7 +7,11 @@ export async function GET(req: NextRequest) {
 
     try {
         const response = await fetch(targetUrl, {
-            headers: { "Accept": "text/event-stream" },
+            headers: { 
+                ...req.headers,
+                cookie: req.headers.get('cookie') || '',
+                "Accept": "text/event-stream" },
+            credentials: "include",
         });
 
         if (!response.body) {
