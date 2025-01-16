@@ -4,13 +4,13 @@ import { WidgetOption, widgetOptions } from "../components/widgets/widgetOptions
 
 export interface Message {
     message: string
-    type: "user" | "system"
+    type: "user" | "assistant" | "function"
     completed: boolean
 }
 
 interface MessagesContextType {
     messages: Message[]
-    addMessage: (message: string, type: "system" | "user", completed: boolean) => void
+    addMessage: (message: string, type: "assistant" | "user" | "function", completed: boolean) => void
     addChunk: (chunk: string, status: "start" | "middle" | "end") => void
     drawerOpen: boolean
     setDrawerOpen: (open: boolean) => void
@@ -28,19 +28,27 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
     const [widget, setWidget] = useState<WidgetOption>(widgetOptions[4]);
     const [session, setSession] = useState("");
 
-    const addMessage = (message: string, type: "system" | "user", completed: boolean) => {
-        setMessages([...messages, { message, type, completed }]);
+    const addMessage = (message: string, type: "assistant" | "user" | "function", completed: boolean) => {
+        setMessages(prev=> [...prev, { message, type, completed }]);
     }
 
     const addChunk = (chunk: string, status: "start" | "middle" | "end") => {
         if (status === "start") {
-            setMessages([...messages, { message: chunk, type: "system", completed: false }]);
+            setMessages(prev=> [...prev, { message: chunk, type: "assistant", completed: false }]);
         }
         if (status === "middle") {
-            setMessages((prev) => [...prev.slice(0, prev.length - 1), { message: prev[prev.length - 1].message + chunk, type: "system", completed: false }]);
+            setMessages((prev) => {
+                const incomplete = prev.filter((m) => !m.completed)
+
+                return [...prev.filter(m => m.completed), { message: incomplete[0].message + chunk, type: "assistant", completed: false }]
+            })
         }
         if (status === "end") {
-            setMessages((prev) => [...prev.slice(0, prev.length - 1), { message: prev[prev.length - 1].message + chunk, type: "system", completed: true }]);
+            setMessages((prev) => {
+                const incomplete = prev.filter((m) => !m.completed)
+
+                return [...prev.filter(m => m.completed), { message: incomplete[0].message + chunk, type: "assistant", completed: true }]
+            })
         }
     }
 

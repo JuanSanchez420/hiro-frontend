@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 interface Balance {
     symbol: string,
-    value: string,
+    balance: string,
 }
 
 const usePortfolio = () => {

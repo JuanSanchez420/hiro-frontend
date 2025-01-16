@@ -1,40 +1,41 @@
+import WandSpinner from "./WandSpinner";
 
 interface MessageProps {
     message: string
-    type: "user" | "system"
+    type: "user" | "assistant" | "function"
 }
 
 const parseMessage = (message: string) => {
     const segments = [];
     const regex = /(\*\*.*?\*\*|```[\s\S]*?```|\n)/g; // Updated regex to include newline characters
     let lastIndex = 0;
-  
+
     message.replace(regex, (match, _, offset) => {
-      // Add normal text before the match
-      if (offset > lastIndex) {
-        segments.push({ type: "text", content: message.slice(lastIndex, offset) });
-      }
-  
-      // Handle special cases
-      if (match.startsWith("**")) {
-        segments.push({ type: "bold", content: match.slice(2, -2) });
-      } else if (match.startsWith("```")) {
-        segments.push({ type: "quote", content: match.slice(3, -3).trim() }); // Trim extra spaces
-      } else if (match === "\n") {
-        segments.push({ type: "newline" }); // Add a newline segment
-      }
-  
-      lastIndex = offset + match.length;
-      return match;
+        // Add normal text before the match
+        if (offset > lastIndex) {
+            segments.push({ type: "text", content: message.slice(lastIndex, offset) });
+        }
+
+        // Handle special cases
+        if (match.startsWith("**")) {
+            segments.push({ type: "bold", content: match.slice(2, -2) });
+        } else if (match.startsWith("```")) {
+            segments.push({ type: "quote", content: match.slice(3, -3).trim() }); // Trim extra spaces
+        } else if (match === "\n") {
+            segments.push({ type: "newline" }); // Add a newline segment
+        }
+
+        lastIndex = offset + match.length;
+        return match;
     });
-  
+
     // Add remaining normal text
     if (lastIndex < message.length) {
-      segments.push({ type: "text", content: message.slice(lastIndex) });
+        segments.push({ type: "text", content: message.slice(lastIndex) });
     }
-  
+
     return segments;
-  };
+};
 
 const UserMessage = ({ message }: { message: string }) => {
     return (
@@ -45,7 +46,17 @@ const UserMessage = ({ message }: { message: string }) => {
     );
 }
 
-const SystemMessage = ({ message }: { message: string }) => {
+const FunctionCall = ({ message }: { message: string }) => {
+    // const obj = JSON.parse(message)
+    return (
+        <div className="flex p-3">
+            <WandSpinner />
+            <div className="flex flex-1 align-center items-center italic">Casting {message}</div>
+        </div>
+    )
+}
+
+const AssistantMessage = ({ message }: { message: string }) => {
     const segments = parseMessage(message)
     return (
 
@@ -75,7 +86,9 @@ const SystemMessage = ({ message }: { message: string }) => {
 }
 
 const Message = ({ message, type }: MessageProps) => {
-    return type === "user" ? <UserMessage message={message} /> : <SystemMessage message={message} />;
+    return type === "user" ? <UserMessage message={message} /> :
+        type === "assistant" ? <AssistantMessage message={message} /> :
+            <FunctionCall message={message} />;
 }
 
 export default Message;

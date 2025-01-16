@@ -15,7 +15,6 @@ export async function GET(req: NextRequest) {
       });
   
       const data = await response.json();
-      console.log('Received portfolio data from localhost server:', data);
       return NextResponse.json(data, { status: response.status });
     } catch (error) {
       console.error('Error connecting to localhost server:', error);
