@@ -14,14 +14,8 @@ const useChatEventStream = () => {
     }
 
     eventSource.addEventListener('functionCall', (event: MessageEvent) => {
-      // event.data will be an object
-      const entries = Object.entries(JSON.parse(event.data));
-      let functionCall = ""
-      for(const [key, value] of entries) {
-        functionCall += `${key}: ${value}\n`
-      }
-      addMessage(functionCall, "function", true)
-      console.log("Function call:", JSON.parse(event.data))
+      // event.data will be an object { name, arguments: {...}}
+      addMessage(event.data, "function", true)
     })
 
     eventSource.addEventListener('functionCallResult', (event: MessageEvent) => {

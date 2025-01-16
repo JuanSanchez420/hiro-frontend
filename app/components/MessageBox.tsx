@@ -1,8 +1,18 @@
+import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import WandSpinner from "./WandSpinner";
+import Image from "next/image"
 
 interface MessageProps {
     message: string
     type: "user" | "assistant" | "function"
+}
+
+const friendlyNames = {
+    "getETHBalance": "Get ETH Balance",
+    "swap": "Swap",
+    "wrapETH": "Wrap ETH",
+    "unwrapETH": "Unwrap ETH",
 }
 
 const parseMessage = (message: string) => {
@@ -39,29 +49,56 @@ const parseMessage = (message: string) => {
 
 const UserMessage = ({ message }: { message: string }) => {
     return (
-        <div className="flex w-full justify-end">
-            <div className="rounded bg-gray-100 p-3">{message}</div>
+        <div className="flex w-full justify-end my-2">
+            <div className="rounded-full bg-gray-100 p-3">{message}</div>
         </div>
 
     );
 }
 
+interface FunctionCallMessage {
+    name: keyof typeof friendlyNames;
+    arguments: string
+}
+
 const FunctionCall = ({ message }: { message: string }) => {
-    // const obj = JSON.parse(message)
+    const obj: FunctionCallMessage = JSON.parse(message);
+    obj.arguments = JSON.parse(obj.arguments) || {};
     return (
-        <div className="flex p-3">
-            <WandSpinner />
-            <div className="flex flex-1 align-center items-center italic">Casting {message}</div>
-        </div>
-    )
+        <Disclosure as="div" className="w-full">
+            <DisclosureButton className="group w-full text-left">
+                <div className="flex flex-1 items-center mb-3 w-full">
+                    <WandSpinner />
+                    <div className="flex flex-1 items-center italic">{friendlyNames[obj.name]}</div>
+                    <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
+                </div>
+            </DisclosureButton>
+            <div className="overflow-hidden py-2">
+                <DisclosurePanel
+                    transition
+                    className="origin-top transition duration-200 ease-out data-[closed]:-translate-y-6 data-[closed]:opacity-0"
+                >
+                    {obj?.arguments && Object.entries(obj.arguments).map(([key, value]) => (
+                        <div key={key} className="grid grid-cols-2 grid-cols-max gap-2">
+                            <div className="text-right">{key}</div>
+                            <div className="text-right">{value}</div>
+                        </div>
+                    ))}
+                </DisclosurePanel>
+            </div>
+        </Disclosure>
+    );
 }
 
 const AssistantMessage = ({ message }: { message: string }) => {
     const segments = parseMessage(message)
     return (
 
-        <div className="w-full py-5">
-            {segments.map((segment, index) => {
+        <div className="flex w-full py-5 my-2">
+            <div className="shrink-0 mr-2">
+                <Image src="/images/hiro.png" height={32} width={32} alt="hiro" />
+            </div>
+            <div>{segments.map((segment, index) => {
                 switch (segment.type) {
                     case "bold":
                         return (
@@ -71,7 +108,7 @@ const AssistantMessage = ({ message }: { message: string }) => {
                         );
                     case "quote":
                         return (
-                            <span key={index} className="inline-block bg-gray-200 p-1 rounded">
+                            <span key={index} className="inline-block bg-gray-200 p-1 rounded italic">
                                 {segment.content}
                             </span>
                         );
@@ -80,7 +117,7 @@ const AssistantMessage = ({ message }: { message: string }) => {
                     default:
                         return segment.content;
                 }
-            })}
+            })}</div>
         </div>
     );
 }

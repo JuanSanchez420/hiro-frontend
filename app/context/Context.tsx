@@ -18,6 +18,8 @@ interface MessagesContextType {
     setWidget: (widgetOption: WidgetOption) => void
     session: string
     setSession: (session: string) => void
+    thinking: boolean
+    setThinking: (thinking: boolean) => void
 }
 
 export const MessagesContext = createContext<MessagesContextType | undefined>(undefined);
@@ -27,8 +29,10 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [widget, setWidget] = useState<WidgetOption>(widgetOptions[4]);
     const [session, setSession] = useState("");
+    const [thinking, setThinking] = useState(false);
 
     const addMessage = (message: string, type: "assistant" | "user" | "function", completed: boolean) => {
+        setThinking(true);
         setMessages(prev=> [...prev, { message, type, completed }]);
     }
 
@@ -49,11 +53,19 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
 
                 return [...prev.filter(m => m.completed), { message: incomplete[0].message + chunk, type: "assistant", completed: true }]
             })
+            setThinking(false)
         }
     }
 
     return (
-        <MessagesContext.Provider value={{ messages, addMessage, addChunk, drawerOpen, setDrawerOpen, widget, setWidget, session, setSession }}>
+        <MessagesContext.Provider value={{ 
+            messages, addMessage, 
+            addChunk, 
+            drawerOpen, setDrawerOpen, 
+            widget, setWidget, 
+            session, setSession,
+            thinking, setThinking
+             }}>
             {children}
         </MessagesContext.Provider>
     );

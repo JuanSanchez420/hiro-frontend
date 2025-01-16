@@ -13,5 +13,5 @@ export interface Token {
   decimals: number;
   isWETH: boolean;
   isNative: boolean;
-
+  logoURI: string;
 }

@@ -24,9 +24,9 @@ const Portfolio = () => {
         return (
           <div key={item.token.symbol}>
             <a className="grid grid-cols-4 gap-2 p-2 text-gray-700 hover:bg-gray-50 hover:text-emerald-600 group rounded-md text-sm/6 font-semibold hover:cursor-pointer">
+              <div><img src={item.token.logoURI} height={30} width={30} alt={item.token.symbol} className="rounded-full"/></div>
               <div>{item.token.symbol}</div>
               <div>{formatNumber(item.balance)}</div>
-              <div>&nbsp;</div>
               <div>&nbsp;</div>
             </a>
           </div>
