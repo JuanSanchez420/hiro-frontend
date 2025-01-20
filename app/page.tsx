@@ -23,7 +23,7 @@ export default function Home() {
   const Intro = useCallback(() => {
     return (<div className="flex flex-col">
       <div className="flex">
-        <Image src="/images/hiro.png" alt="Hiro" width={32} height={32} />
+        <Image src="/images/hiro-large.png" alt="Hiro" width={32} height={32} />
         <h1 className="bold text-2xl ml-4">Hi, I&apos;m Hiro!</h1>
       </div>
       <div className="py-5">

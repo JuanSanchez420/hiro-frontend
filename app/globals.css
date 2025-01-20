@@ -22,63 +22,6 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Sword spinner start */
-.sword-spinner {
-  position: relative;
-  width: 50px;
-  height: 50px;
-}
-
-/* Sword blade */
-.sword {
-  position: absolute;
-  width: 6px;
-  height: 30px;
-  background: linear-gradient(to bottom, silver, gray);
-  border-radius: 3px;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: spin 1.5s linear infinite;
-}
-
-/* Sword hilt */
-.sword::before {
-  content: '';
-  position: absolute;
-  top: 30px;
-  left: -6px;
-  width: 18px;
-  height: 4px;
-  background: #8b4513;
-  /* Brown handle */
-  border-radius: 2px;
-}
-
-.sword::after {
-  content: '';
-  position: absolute;
-  top: 34px;
-  left: -2px;
-  width: 10px;
-  height: 6px;
-  background: gold;
-  border-radius: 2px;
-}
-
-/* Animation for spinning */
-@keyframes spin {
-  0% {
-    transform: translateX(-50%) rotate(0deg);
-  }
-
-  100% {
-    transform: translateX(-50%) rotate(360deg);
-  }
-}
-
-/* sword spinner end */
-
 /* Magic wand start */
 .wand-spinner {
   position: relative;
@@ -237,3 +180,5 @@ body {
 }
 
 /* confetti end */
+
+

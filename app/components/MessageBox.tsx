@@ -90,6 +90,35 @@ const FunctionCall = ({ message }: { message: string }) => {
     );
 }
 
+const FunctionCallResult = ({ message }: { message: string }) => {
+    const obj: FunctionCallMessage = JSON.parse(message);
+    obj.arguments = JSON.parse(obj.arguments) || {};
+    return (
+        <Disclosure as="div" className="w-full">
+            <DisclosureButton className="group w-full text-left">
+                <div className="flex flex-1 items-center mb-3 w-full">
+                    <WandSpinner />
+                    <div className="flex flex-1 items-center italic">{friendlyNames[obj.name]}</div>
+                    <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
+                </div>
+            </DisclosureButton>
+            <div className="overflow-hidden py-2">
+                <DisclosurePanel
+                    transition
+                    className="origin-top transition duration-200 ease-out data-[closed]:-translate-y-6 data-[closed]:opacity-0"
+                >
+                    {obj?.arguments && Object.entries(obj.arguments).map(([key, value]) => (
+                        <div key={key} className="grid grid-cols-2 grid-cols-max gap-2">
+                            <div className="text-right">{key}</div>
+                            <div className="text-right">{value}</div>
+                        </div>
+                    ))}
+                </DisclosurePanel>
+            </div>
+        </Disclosure>
+    );
+}
+
 const AssistantMessage = ({ message }: { message: string }) => {
     const segments = parseMessage(message)
     return (
