@@ -12,7 +12,9 @@ const friendlyNames = {
     "getETHBalance": "Get ETH Balance",
     "swap": "Swap",
     "wrapETH": "Wrap ETH",
-    "unwrapETH": "Unwrap ETH",
+    "unwrapWETH": "Unwrap WETH",
+    "addLiquidity": "Add Liquidity",
+    "setAutonomousInstructions": "Set Autonomous Instructions",
 }
 
 const parseMessage = (message: string) => {
@@ -65,7 +67,7 @@ const FunctionCall = ({ message }: { message: string }) => {
     const obj: FunctionCallMessage = JSON.parse(message);
     obj.arguments = JSON.parse(obj.arguments) || {};
     return (
-        <Disclosure as="div" className="w-full">
+        <Disclosure as="div" className="w-full py-5">
             <DisclosureButton className="group w-full text-left">
                 <div className="flex flex-1 items-center mb-3 w-full">
                     <WandSpinner />
@@ -121,7 +123,7 @@ const FunctionCallResult = ({ message }: { message: string }) => {
 
 const AssistantMessage = ({ message }: { message: string }) => {
     const segments = parseMessage(message)
-    return (
+    return (segments.length === 0) ? null : (
 
         <div className="flex w-full py-5 my-2">
             <div className="shrink-0 mr-2">

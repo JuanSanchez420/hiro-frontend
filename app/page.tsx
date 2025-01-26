@@ -4,10 +4,10 @@ import { useCallback, useEffect, useRef } from "react";
 import MessageBox from "./components/MessageBox";
 import { Message, useMessagesContext } from "./context/Context";
 import TypingEffect from "./components/TypingEffect";
-import Widget from "./components/widgets/Widget";
 import useSession from "./hooks/useSession";
 import useChatEventStream from "./hooks/useChatEventStream";
 import Image from 'next/image'
+import { styles } from "./utils/styles";
 
 export default function Home() {
   const { messages, widget } = useMessagesContext();
@@ -28,8 +28,11 @@ export default function Home() {
       </div>
       <div className="py-5">
         <TypingEffect
-          text="I&apos;m an AI assistant here to help you with crypto. If you connect your wallet, I&apos;ll be able to provide personalized advice and even carry out transactions."
+          text="I&apos;m an AI agent here to help you with crypto. I can swap, stake, and even run transactions while you sleep! I'm in demo mode right now, so click around try anthing you want."
           speed={10} />
+      </div>
+      <div className="flex justify-evenly">
+        <button className={styles.button}>What can you do?</button>
       </div>
     </div>)
   }, [])
@@ -44,7 +47,6 @@ export default function Home() {
 
   return (<div className="flex flex-col h-full">
     {messages.length === 0 ? <Intro /> : <Content />}
-    <Widget />
     <div ref={bottomRef} />
   </div>
 

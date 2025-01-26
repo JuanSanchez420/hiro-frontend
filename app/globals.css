@@ -25,15 +25,15 @@ body {
 /* Magic wand start */
 .wand-spinner {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: 30px;
+  height: 30px;
 }
 
 /* Wand handle */
 .wand {
   position: absolute;
-  bottom: 10px;
-  left: 30%;
+  /* bottom: 10px; */
+  /* left: 30%; */
   width: 6px;
   height: 30px;
   background: linear-gradient(to bottom, #8b4513, #5c3b20);

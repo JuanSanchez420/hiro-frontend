@@ -1,4 +1,7 @@
+'use client'
+
 import { CheckIcon, ClockIcon, CogIcon } from '@heroicons/react/20/solid'
+import Breadcrumbs from '../components/Breadcrumbs'
 
 const timeline = [
     {
@@ -38,16 +41,16 @@ const timeline = [
         href: '#',
         date: 'Jan 15',
         datetime: '2020-01-15',
-        icon: CogIcon,
-        iconBackground: 'bg-yellow-500',
+        icon: CheckIcon,
+        iconBackground: 'bg-green-500',
     },
     {
         id: 5,
         content: 'UX smoothing and ',
         target: 'testing',
         href: '#',
-        date: 'Jan 16',
-        datetime: '2020-01-16',
+        date: 'Jan 25',
+        datetime: '2020-01-25',
         icon: CogIcon,
         iconBackground: 'bg-yellow-500',
     },
@@ -56,8 +59,8 @@ const timeline = [
         content: 'Prepare ',
         target: 'for launch',
         href: '#',
-        date: 'Jan 17',
-        datetime: '2020-01-17',
+        date: 'Jan 26',
+        datetime: '2020-01-26',
         icon: CogIcon,
         iconBackground: 'bg-yellow-500',
     },
@@ -68,8 +71,8 @@ const timeline = [
         href: '#',
         date: 'Feb 1',
         datetime: '2025-02-01',
-        icon: ClockIcon,
-        iconBackground: 'bg-gray-500',
+        icon: CogIcon,
+        iconBackground: 'bg-yellow-500',
     },{
         id: 8,
         content: 'Portfolio, market data, and charts ',
@@ -107,6 +110,7 @@ function classNames(...classes: string[]) {
 export default function RoadMap() {
     return (
         <div className="flow-root">
+            <Breadcrumbs pages={[{ name: 'Roadmap', href: "/roadmap", current: true }]} />
             <h1 className='font-2xl uppercase font-bold mb-5'>Roadmap</h1>
             <ul role="list" className="-mb-8">
                 {timeline.map((event, eventIdx) => (

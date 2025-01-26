@@ -1,3 +1,6 @@
+'use client'
+
+import Breadcrumbs from "../components/Breadcrumbs";
 
 interface FAQ {
     question: string;
@@ -27,17 +30,21 @@ export default function FAQ() {
     }, {
         question: "Are you moving to other chains?",
         answer: "Eventually."
+    }, {
+        question:"How does autonomous action work?",
+        answer: "Give Hiro instructions either in the chat box or using the Autonomous Instructions tool. Hiro will run these instructions every hour. Be specific about tokens and amounts. Hiro will clarify if anything is unclear."
     }
 ]
 
 
     return (
         <div>
+            <Breadcrumbs pages={[{ name: 'FAQ', href: "/faq", current: true }]} />
             <h1 className="font-bold mb-5">FAQ (Frequently Asked Questions)</h1>
             <div>
                 {faqs.map((faq, index) => (
                     <div key={index} className="py-5">
-                        <h2 className="italic mb-3">{faq.question}</h2>
+                        <h2 className="italic font-bold mb-3">{faq.question}</h2>
                         <p>{faq.answer}</p>
                     </div>
                 ))}

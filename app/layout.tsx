@@ -8,7 +8,7 @@ import ConnectWallet from "./components/ConnectWalletMenu";
 import DrawerButton from "./components/DrawerButton";
 import Drawer from "./components/Drawer";
 import Link from "next/link";
-
+import NewChat from "./components/NewChat";
 export const metadata: Metadata = {
   title: "Hiro",
   description: "You need a Hiro! An AI agent for simplifying crypto.",
@@ -32,8 +32,8 @@ export default function RootLayout({
                     <div className="flex items-center">
                       <DrawerButton />
                       <div className="pl-5 text-2xl"><Link href="/">HIRO</Link></div>
+                      <NewChat />
                     </div>
-                    
                     <div className="ml-6 flex items-center">
                       <ConnectWallet />
                     </div>

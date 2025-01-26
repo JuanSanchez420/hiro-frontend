@@ -1,3 +1,5 @@
+import Breadcrumbs from "../components/Breadcrumbs";
+
 type RowProps = {
     label: string;
     value: string;
@@ -18,6 +20,7 @@ export default function Token() {
 
     return (
         <div>
+          <Breadcrumbs pages={[{ name: 'Hiro Token', href: "/hiro-token", current: true }]} />
             <div className="px-4 sm:px-0">
                 <h3 className="text-base/7 font-semibold text-gray-900">HIRO Token</h3>
                 <p className="mt-1 max-w-2xl text-sm/6 text-gray-500">Tokenomics and other details.</p>

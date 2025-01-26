@@ -16,7 +16,7 @@ export default function Drawer() {
 
   const navigation = [
     { name: 'Chat', href: '/', current: path === '/' },
-    { name: 'Token', href: '/token', current: path.startsWith('/token') },
+    { name: 'Token', href: '/hiro-token', current: path.startsWith('/hiro-token') },
     { name: 'Roadmap', href: '/roadmap', current: path.startsWith('/roadmap') },
     { name: 'FAQ', href: '/faq', current: path.startsWith('/faq') },
   ]

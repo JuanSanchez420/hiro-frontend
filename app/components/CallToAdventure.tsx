@@ -6,7 +6,7 @@ const CallToAventure = () => {
         <div>
             <div className="flex flex-col">
                 <div className='mx-auto h-20 pb-5'>
-                    <span className='font-bold text-3xl uppercase w-80 block'><TypingEffect text="Let's play money making game." speed={100} /></span>
+                    <span className='font-bold text-3xl uppercase w-80 block'><TypingEffect text="It's dangerous to go alone. Take this." speed={100} /></span>
                 </div>
                 <div className="flex justify-evenly">
                     <div className="text-5xl"><Image src="/images/fire.gif" height={50} width={50} alt="fire"/></div>
@@ -14,8 +14,10 @@ const CallToAventure = () => {
                     <div className="text-5xl"><Image src="/images/fire.gif" height={50} width={50} alt="fire"/></div>
                 </div>
             </div>
-            <div className="flex">
- 
+            <div className="flex mt-10">
+                <div className="mx-auto hover:cursor-pointer animate-pulse">
+                    <Image src="/images/wooden-sword.gif" width={14} height={32} alt="magical sword"/>
+                </div>
             </div>
 
         </div>

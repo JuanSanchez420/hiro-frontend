@@ -12,10 +12,10 @@ export const localChain: Chain = {
     decimals: 18,
   },
   rpcUrls: {
-    default: { http: ['http://127.0.0.1:8545'] }, // Local RPC URL
+    default: { http: [process.env.NEXT_PUBLIC_RPC_URL || 'http://localhost:8545'] }, // Local RPC URL
   },
   blockExplorers: {
-    default: { name: 'Etherscan', url: 'http://localhost:8545' }, // Optional
+    default: { name: 'Basescan', url: 'https://basescan.org' }, // Optional
   },
   testnet: true,
 }
