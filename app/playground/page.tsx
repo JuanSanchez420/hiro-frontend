@@ -1,6 +1,8 @@
 'use client'
 
 import CallToAventure from "../components/CallToAdventure";
+import CandlestickChart from "../components/CandlestickChart";
+import CombinedChart from "../components/CombinedChart";
 import Message from "../components/MessageBox";
 
 const functionCall = {
@@ -25,14 +27,17 @@ const Playground = () => {
             <Row><Message type="assistant" message={assistantMessage} /></Row>
             <Row><Message type="function" message={JSON.stringify(functionCall)} /></Row>
             <Row>
-            <div className="fairy">
-    <div className="fairy-body"></div>
-    <div className="fairy-wing left"></div>
-    <div className="fairy-wing right"></div>
-    <div className="sparkle"></div>
-    <div className="sparkle"></div>
-    <div className="sparkle"></div>
-  </div>
+                <div className="fairy">
+                    <div className="fairy-body"></div>
+                    <div className="fairy-wing left"></div>
+                    <div className="fairy-wing right"></div>
+                    <div className="sparkle"></div>
+                    <div className="sparkle"></div>
+                    <div className="sparkle"></div>
+                </div>
+            </Row>
+            <Row>
+                <CandlestickChart token="0x4200000000000000000000000000000000000006" hours={168} />
             </Row>
         </div>
     );
