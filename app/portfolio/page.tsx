@@ -8,7 +8,7 @@ import formatNumber from "../utils/formatNumber";
 import TypingEffect from "../components/TypingEffect";
 import { styles } from "../utils/styles";
 import Link from "next/link";
-import Breadcrumbs from "../components/Breadcrumbs";
+import { ETH } from "../utils/constants";
 
 const Portfolio = () => {
     const { balances } = usePortfolio();
@@ -17,6 +17,13 @@ const Portfolio = () => {
     const balancesWithTokens = useMemo(() => {
         if (!balances) return [];
         return balances.map((balance) => {
+            if(balance.symbol === 'ETH') {
+                return {
+                    token: ETH,
+                    balance: balance.balance,
+                    usdPrice: balance.usdPrice,
+                }
+            }
             return {
                 token: tokens[balance.symbol],
                 balance: balance.balance,
@@ -27,7 +34,6 @@ const Portfolio = () => {
 
     return (
         <div className="flex flex-col h-full">
-            <Breadcrumbs pages={[{ name: 'Portfolio', href: "/portfolio", current: true }]} />
             <div className="flex-1">
                 <div className="mb-5">
                     <TypingEffect text="Here are your current holdings. Click one to see a chart and options for each token." speed={10} />

@@ -1,16 +1,17 @@
 'use client'
 import { createContext, useContext, useState } from "react";
-import { WidgetOption, widgetOptions } from "../components/widgets/widgetOptions";
+import { WidgetOption } from "../types";
 
 export interface Message {
     message: string
     type: "user" | "assistant" | "function"
     completed: boolean
+    functionCall?: Record<string, unknown>
 }
 
 interface MessagesContextType {
     messages: Message[]
-    addMessage: (message: string, type: "assistant" | "user" | "function", completed: boolean) => void
+    addMessage: (message: string, type: "assistant" | "user" | "function", completed: boolean, functionCall?: Record<string, unknown>) => void
     addChunk: (chunk: string, status: "start" | "middle" | "end") => void
     resetMessages: () => void
     drawerOpen: boolean
@@ -28,13 +29,13 @@ export const MessagesContext = createContext<MessagesContextType | undefined>(un
 export const MessagesProvider = ({ children }: { children: React.ReactNode }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [widget, setWidget] = useState<WidgetOption>(widgetOptions[widgetOptions.length-1]);
+    const [widget, setWidget] = useState<WidgetOption>(null);
     const [session, setSession] = useState("");
     const [thinking, setThinking] = useState(false);
 
-    const addMessage = (message: string, type: "assistant" | "user" | "function", completed: boolean) => {
+    const addMessage = (message: string, type: "assistant" | "user" | "function", completed: boolean, functionCall?: Record<string, unknown>) => {
         setThinking(true);
-        setMessages(prev=> [...prev, { message, type, completed }]);
+        setMessages(prev=> [...prev, { message, type, completed, functionCall }]);
     }
 
     const addChunk = (chunk: string, status: "start" | "middle" | "end") => {

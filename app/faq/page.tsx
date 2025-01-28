@@ -1,7 +1,5 @@
 'use client'
 
-import Breadcrumbs from "../components/Breadcrumbs";
-
 interface FAQ {
     question: string;
     answer: string;
@@ -39,7 +37,6 @@ export default function FAQ() {
 
     return (
         <div>
-            <Breadcrumbs pages={[{ name: 'FAQ', href: "/faq", current: true }]} />
             <h1 className="font-bold mb-5">FAQ (Frequently Asked Questions)</h1>
             <div>
                 {faqs.map((faq, index) => (

@@ -1,7 +1,6 @@
 'use client'
 
 import { CheckIcon, ClockIcon, CogIcon } from '@heroicons/react/20/solid'
-import Breadcrumbs from '../components/Breadcrumbs'
 
 const timeline = [
     {
@@ -110,7 +109,6 @@ function classNames(...classes: string[]) {
 export default function RoadMap() {
     return (
         <div className="flow-root">
-            <Breadcrumbs pages={[{ name: 'Roadmap', href: "/roadmap", current: true }]} />
             <h1 className='font-2xl uppercase font-bold mb-5'>Roadmap</h1>
             <ul role="list" className="-mb-8">
                 {timeline.map((event, eventIdx) => (

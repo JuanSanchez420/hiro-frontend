@@ -40,7 +40,7 @@ export default function Home() {
   const Content = () => {
     return (<section className="message-list">
       {messages.map((m: Message, index: number) => (
-        <MessageBox key={index} message={m.message} type={m.type} />
+        <MessageBox key={index} message={m} />
       ))}
     </section>)
   }

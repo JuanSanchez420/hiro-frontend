@@ -3,7 +3,6 @@ import formatNumber from "@/app/utils/formatNumber";
 import { styles } from "@/app/utils/styles";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import React, { useMemo, useState } from "react";
-import { widgetOptions } from "./widgetOptions";
 import { useMessagesContext } from "@/app/context/Context";
 
 const AddLiquidityWidget = () => {
@@ -19,7 +18,7 @@ const AddLiquidityWidget = () => {
   const handleAddLiquidity = () => {
     if (confirm(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} with a ${width} range?`)) {
       addMessage(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} ${width} range`, "user", true)
-      setWidget(widgetOptions[widgetOptions.length - 1])
+      setWidget(null)
     }
   };
 
@@ -154,7 +153,7 @@ const AddLiquidityWidget = () => {
       <button
         type="button"
         onClick={handleAddLiquidity}
-        className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+        className="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
       >
         Add Liquidity
       </button>

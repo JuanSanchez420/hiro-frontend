@@ -21,20 +21,11 @@ export interface PricesResponse {
 }
 
 export interface OHLC {
-  date: number; // UNIX timestamp in seconds
+  periodStartUnix: number; // UNIX timestamp in seconds
   open: string;
   high: string;
   low: string;
   close: string;
 }
 
-export interface RSIData {
-  time: number;
-  value: number;
-}
-
-export interface ATRData {
-  time: number;
-  value: number;
-}
-
+export type WidgetOption = "Swap" | "Earn" | "Lend" | "Autonomous" | null

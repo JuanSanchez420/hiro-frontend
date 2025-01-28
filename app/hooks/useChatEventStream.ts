@@ -14,19 +14,21 @@ const useChatEventStream = () => {
     }
 
     eventSource.addEventListener('functionCall', (event: MessageEvent) => {
-      // event.data will be an object { name, arguments: {...}}
-      addMessage(event.data, "function", true)
+      // event.data will be an object { role: "assistant", content: null, function_call: functionCall }
+      const obj = JSON.parse(event.data)
+      obj.arguments = obj.arguments ? JSON.parse(obj.arguments) : {}
+      addMessage("", "assistant", true, obj)
     })
 
     eventSource.addEventListener('functionCallResult', (event: MessageEvent) => {
-      // event.data will be an object
-      const entries = Object.entries(JSON.parse(event.data));
-      let functionCallResult = ""
-      for(const [key, value] of entries) {
-        functionCallResult += `${key}: ${value}\n`
-      }
-      addMessage(functionCallResult, "assistant", true)
-      console.log("Function call result:", JSON.parse(event.data))
+      // event.data will be an object { role: "function", name: `${currentFunctionCall}`, content: result }
+      // addMessage(event.data, "function", true)
+      const obj = JSON.parse(event.data)
+
+      /*
+        swap obj: {"amount0":-1,"amount1":0.9350678712419804,"transactionHash":"0x89bc843fade18dfa522c185f8f63916aefc21d93ffddea7398b5586ed72c9311"}
+      */
+      addMessage("", "function", true, obj)
     })
 
     eventSource.addEventListener('open', () => addChunk("", "start"))

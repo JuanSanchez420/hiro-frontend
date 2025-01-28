@@ -1,6 +1,6 @@
 // src/components/CandlestickChart.tsx
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   createChart,
   CandlestickData,
@@ -8,41 +8,40 @@ import {
   ISeriesApi,
   Time,
 } from 'lightweight-charts';
-import { OHLC, PricesResponse, RSIData, ATRData } from '../types';
-import { calculateEMA, calculateRSI, calculateATR } from '../utils/indicators';
-import RSIChart from './RSIChart';
-import ATRChart from './ATRChart';
+import { OHLC } from '../types';
 
 interface CandlestickChartProps {
-  token: string;
-  hours: number;
+  ohlcData: OHLC[];
+  emaData: { periodStartUnix: number; value: number }[];
+  visibleRange: { from: number; to: number } | null;
+  onTimeScaleChange: (range: { from: number; to: number }) => void;
+  label: string;
 }
 
-const CandlestickChart: React.FC<CandlestickChartProps> = ({ token, hours }) => {
+const CandlestickChart: React.FC<CandlestickChartProps> = ({
+  ohlcData,
+  emaData,
+  visibleRange,
+  onTimeScaleChange,
+  label,
+}) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const emaSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
-  const [rsiData, setRsiData] = useState<RSIData[]>([]);
-  const [atrData, setAtrData] = useState<ATRData[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (chartContainerRef.current) {
       // Initialize the chart
       chartRef.current = createChart(chartContainerRef.current, {
         width: chartContainerRef.current.clientWidth,
-        height: 400, // Adjust height as needed
+        height: 200,
         layout: {
           textColor: '#000',
         },
         grid: {
-          vertLines: {
-            color: '#eee',
-          },
-          horzLines: {
-            color: '#eee',
-          },
+          vertLines: { color: '#eee' },
+          horzLines: { color: '#eee' },
         },
         timeScale: {
           borderColor: '#ccc',
@@ -51,30 +50,28 @@ const CandlestickChart: React.FC<CandlestickChartProps> = ({ token, hours }) => 
         },
       });
 
-      // Add candlestick series
       candlestickSeriesRef.current = chartRef.current.addCandlestickSeries({
-        upColor: '#4CAF50',
-        downColor: '#F44336',
-        borderDownColor: '#F44336',
-        borderUpColor: '#4CAF50',
-        wickDownColor: '#F44336',
-        wickUpColor: '#4CAF50',
-      });
+        upColor: '#AAAAAA', // Light gray for bullish candles
+        downColor: '#555555', // Dark gray for bearish candles
+        borderUpColor: '#AAAAAA',
+        borderDownColor: '#555555',
+        wickUpColor: '#AAAAAA',
+        wickDownColor: '#555555',
+    });
 
       // Add EMA line series
       emaSeriesRef.current = chartRef.current.addLineSeries({
-        color: '#2962FF',
+        color: '#555555',
         lineWidth: 2,
       });
 
-      // Handle window resize
       const handleResize = () => {
         if (chartContainerRef.current && chartRef.current) {
           chartRef.current.applyOptions({
             width: chartContainerRef.current.clientWidth,
           });
         }
-      };
+      }
 
       window.addEventListener('resize', handleResize);
 
@@ -84,106 +81,60 @@ const CandlestickChart: React.FC<CandlestickChartProps> = ({ token, hours }) => 
         chartRef.current?.remove();
       };
     }
-  }, []);
+  }, [onTimeScaleChange]);
 
   useEffect(() => {
-    const fetchOHLC = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          `/api/prices?tokens=${encodeURIComponent(token)}&hours=${hours}`
-        );
+    if (candlestickSeriesRef.current && ohlcData.length > 0) {
+      // Transform OHLCData to CandlestickData
+      const transformedData: CandlestickData[] = ohlcData.map((item) => ({
+        time: item.periodStartUnix as Time,
+        open: Number(item.open),
+        high: Number(item.high),
+        low: Number(item.low),
+        close: Number(item.close),
+      }));
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+      // Log the transformed data for debugging
+      console.log('Setting Candlestick Data:', transformedData);
 
-        const responseData: PricesResponse = await response.json();
+      candlestickSeriesRef.current.setData(transformedData);
+    }
+  }, [ohlcData]);
 
-        // Extract OHLC data for the specific token
-        const OHLC: OHLC[] = responseData[token.toLowerCase()];
+  useEffect(() => {
+    if (emaSeriesRef.current && emaData.length > 0) {
+      // Transform EMA data to LineData
+      const transformedEMAData = emaData.map((item) => ({
+        time: item.periodStartUnix as Time,
+        value: item.value,
+      }));
 
-        if (!OHLC) {
-          throw new Error('No data found for the specified token.');
-        }
+      // Log the transformed EMA data for debugging
+      console.log('Setting EMA Data:', transformedEMAData);
 
-        // Sort data in ascending order (oldest first)
-        OHLC.sort((a, b) => a.date - b.date);
+      emaSeriesRef.current.setData(transformedEMAData);
+    }
+  }, [emaData]);
 
-        // Transform data to CandlestickData format
-        const chartData: CandlestickData[] = OHLC.map((item) => ({
-          time: item.date as Time,
-          open: Number(item.open),
-          high: Number(item.high),
-          low: Number(item.low),
-          close: Number(item.close),
-        }));
-
-        // Set data to the candlestick series
-        candlestickSeriesRef.current?.setData(chartData);
-
-        // Calculate EMA (e.g., 10-period)
-        const emaData = calculateEMA(OHLC, 200);
-        const transformedEmaData = emaData.map((item) => ({
-          time: item.time as Time,
-          value: item.value,
-        }));
-        emaSeriesRef.current?.setData(transformedEmaData);
-
-        // Calculate RSI (14-period by default)
-        const calculatedRSI = calculateRSI(OHLC, 14);
-        setRsiData(calculatedRSI);
-
-        // Calculate ATR (14-period by default)
-        const calculatedATR = calculateATR(OHLC, 14);
-        setAtrData(calculatedATR);
-
-        // Adjust the time scale to fit the data
-        chartRef.current?.timeScale().fitContent();
-      } catch (error) {
-        console.error('Error fetching OHLC data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchOHLC();
-  }, [token, hours]);
+  useEffect(() => {
+    if (chartRef.current && visibleRange) {
+      console.log('Setting visible range:', visibleRange);
+      chartRef.current.timeScale().setVisibleLogicalRange(visibleRange);
+    }
+  }, [visibleRange]);
 
   return (
-    <div>
-      <div style={{ position: 'relative', width: '100%', height: '400px' }}>
-        {isLoading && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 1,
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
-              padding: '10px',
-              borderRadius: '4px',
-            }}
-          >
-            Loading Chart...
-          </div>
-        )}
-        <div
-          ref={chartContainerRef}
-          style={{ width: '100%', height: '400px' }}
-        />
+    <div 
+    className='relative w-full h-[200px]'>
+      <div
+        className='absolute top-0 left-0 z-10 bg-white bg-opacity-80 p-2 rounded font-bold text-black'
+      >
+        {label}
       </div>
-
-      {/* RSI Chart */}
-      {rsiData.length > 0 && (
-        <RSIChart rsiData={rsiData} />
-      )}
-
-      {/* ATR Chart */}
-      {atrData.length > 0 && (
-        <ATRChart atrData={atrData} />
-      )}
+      <div
+        ref={chartContainerRef}
+        style={{ width: '100%', height: '200px' }}
+      />
     </div>
   );
 };

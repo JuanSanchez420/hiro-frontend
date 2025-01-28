@@ -1,9 +1,10 @@
 'use client'
 
 import CallToAventure from "../components/CallToAdventure";
-import CandlestickChart from "../components/CandlestickChart";
 import CombinedChart from "../components/CombinedChart";
 import Message from "../components/MessageBox";
+import { TokensData } from "../types";
+import tokensData from "../utils/tokens.json";
 
 const functionCall = {
     name: "getETHBalance",
@@ -19,6 +20,7 @@ const Row = ({ children }: { children: React.ReactNode }) => {
 }
 
 const Playground = () => {
+    const tokens: TokensData = tokensData;
 
     return (
         <div className="flex flex-col">
@@ -37,7 +39,7 @@ const Playground = () => {
                 </div>
             </Row>
             <Row>
-                <CandlestickChart token="0x4200000000000000000000000000000000000006" hours={168} />
+                <CombinedChart token={tokens['WETH']} hours={168} />
             </Row>
         </div>
     );
