@@ -1,8 +1,8 @@
 
 
-  export interface TokensData {
-    [symbol: string]: Token;
-  }
+export interface TokensData {
+  [symbol: string]: Token;
+}
 
 
 export interface Token {
@@ -28,4 +28,15 @@ export interface OHLC {
   close: string;
 }
 
-export type WidgetOption = "Swap" | "Earn" | "Lend" | "Autonomous" | null
+export type WidgetOption = "Swap" | "Earn" | "Lend" | "Autonomous" | "Portfolio" | null
+
+export type MarketData = {
+  symbol: string;
+  price: string;
+  price24h: string;
+  change24h: string;
+  rsi: string;
+  atr: string;
+  trend: string;
+  donchian: string;
+}

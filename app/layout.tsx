@@ -6,9 +6,10 @@ import { MessagesProvider } from "./context/Context";
 import Providers from "./providers";
 import ConnectWallet from "./components/ConnectWalletMenu";
 import DrawerButton from "./components/DrawerButton";
-import Drawer from "./components/Drawer";
+import DrawerLeft from "./components/DrawerLeft";
 import Link from "next/link";
 import NewChat from "./components/NewChat";
+import DrawerRight from "./components/DrawerRight";
 export const metadata: Metadata = {
   title: "Hiro",
   description: "You need a Hiro! An AI agent for simplifying crypto.",
@@ -32,9 +33,9 @@ export default function RootLayout({
                     <div className="flex items-center">
                       <DrawerButton />
                       <div className="pl-5 text-2xl"><Link href="/">HIRO</Link></div>
-                      <NewChat />
                     </div>
                     <div className="ml-6 flex items-center">
+                      <NewChat />
                       <ConnectWallet />
                     </div>
                   </div>
@@ -45,7 +46,8 @@ export default function RootLayout({
                 <main className="flex flex-col flex-1 overflow-y-auto">
                   <div className="flex flex-col mx-auto w-full h-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
                     {children}
-                    <Drawer />
+                    <DrawerLeft />
+                    <DrawerRight />
                   </div>
                 </main>
                 <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8"><PromptInput /></div>

@@ -10,13 +10,14 @@ const SwapWidget = () => {
   const [fromToken, setFromToken] = useState("WETH");
   const [toToken, setToToken] = useState("USDC");
 
-  const { addMessage, setWidget } = useMessagesContext()
+  const { addMessage, setWidget, setDrawerRightOpen } = useMessagesContext()
   const { balances } = usePortfolio()
 
   const handleSwap = () => {
     if (confirm(`Swap ${fromAmount} of ${fromToken} to ${toToken}?`)) {
       addMessage(`Swap ${fromAmount} of ${fromToken} to ${toToken}`, "user", true)
       setWidget(null)
+      setDrawerRightOpen(false)
     }
   };
 

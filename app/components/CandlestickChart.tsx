@@ -13,29 +13,29 @@ import { OHLC } from '../types';
 interface CandlestickChartProps {
   ohlcData: OHLC[];
   emaData: { periodStartUnix: number; value: number }[];
-  visibleRange: { from: number; to: number } | null;
-  onTimeScaleChange: (range: { from: number; to: number }) => void;
+  dcData: { periodStartUnix: number; upper: number; lower: number }[];
   label: string;
 }
 
 const CandlestickChart: React.FC<CandlestickChartProps> = ({
   ohlcData,
   emaData,
-  visibleRange,
-  onTimeScaleChange,
+  dcData,
   label,
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const emaSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const dcUpperSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const dcLowerSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
 
   useEffect(() => {
     if (chartContainerRef.current) {
       // Initialize the chart
       chartRef.current = createChart(chartContainerRef.current, {
         width: chartContainerRef.current.clientWidth,
-        height: 200,
+        height: 400,
         layout: {
           textColor: '#000',
         },
@@ -49,22 +49,29 @@ const CandlestickChart: React.FC<CandlestickChartProps> = ({
           secondsVisible: false,
         },
       });
-
       candlestickSeriesRef.current = chartRef.current.addCandlestickSeries({
-        upColor: '#AAAAAA', // Light gray for bullish candles
-        downColor: '#555555', // Dark gray for bearish candles
-        borderUpColor: '#AAAAAA',
-        borderDownColor: '#555555',
-        wickUpColor: '#AAAAAA',
-        wickDownColor: '#555555',
-    });
-
-      // Add EMA line series
+        upColor: '#05df72',    // Tailwind green-500
+        downColor: '#ff6467',  // Tailwind red-500
+        borderUpColor: '#05df72',
+        borderDownColor: '#ff6467',
+        wickUpColor: '#05df72',
+        wickDownColor: '#ff6467',
+      });
+      
       emaSeriesRef.current = chartRef.current.addLineSeries({
-        color: '#555555',
+        color: '#3B82F6', // Tailwind blue-500
         lineWidth: 2,
       });
-
+      
+      dcUpperSeriesRef.current = chartRef.current.addLineSeries({
+        color: '#6b7280', // Tailwind purple-500
+        lineWidth: 2,
+      });
+      
+      dcLowerSeriesRef.current = chartRef.current.addLineSeries({
+        color: '#6b7280', // Tailwind purple-500
+        lineWidth: 2,
+      });
       const handleResize = () => {
         if (chartContainerRef.current && chartRef.current) {
           chartRef.current.applyOptions({
@@ -81,7 +88,7 @@ const CandlestickChart: React.FC<CandlestickChartProps> = ({
         chartRef.current?.remove();
       };
     }
-  }, [onTimeScaleChange]);
+  }, []);
 
   useEffect(() => {
     if (candlestickSeriesRef.current && ohlcData.length > 0) {
@@ -94,38 +101,43 @@ const CandlestickChart: React.FC<CandlestickChartProps> = ({
         close: Number(item.close),
       }));
 
-      // Log the transformed data for debugging
-      console.log('Setting Candlestick Data:', transformedData);
-
       candlestickSeriesRef.current.setData(transformedData);
     }
   }, [ohlcData]);
 
   useEffect(() => {
     if (emaSeriesRef.current && emaData.length > 0) {
-      // Transform EMA data to LineData
-      const transformedEMAData = emaData.map((item) => ({
+
+      const transformedEMA50Data = emaData.map((item) => ({
         time: item.periodStartUnix as Time,
         value: item.value,
       }));
 
-      // Log the transformed EMA data for debugging
-      console.log('Setting EMA Data:', transformedEMAData);
-
-      emaSeriesRef.current.setData(transformedEMAData);
+      emaSeriesRef.current.setData(transformedEMA50Data);
     }
   }, [emaData]);
 
   useEffect(() => {
-    if (chartRef.current && visibleRange) {
-      console.log('Setting visible range:', visibleRange);
-      chartRef.current.timeScale().setVisibleLogicalRange(visibleRange);
+    if (dcUpperSeriesRef.current && dcLowerSeriesRef.current && dcData.length > 0) {
+      const transformedDCData = dcData.map((item) => ({
+        time: item.periodStartUnix as Time,
+        value: item.upper,
+      }));
+
+      dcUpperSeriesRef.current.setData(transformedDCData);
+
+      const transformedDCDataLower = dcData.map((item) => ({
+        time: item.periodStartUnix as Time,
+        value: item.lower,
+      }));
+
+      dcLowerSeriesRef.current.setData(transformedDCDataLower);
     }
-  }, [visibleRange]);
+  }, [dcData]);
 
   return (
-    <div 
-    className='relative w-full h-[200px]'>
+    <div
+      className='relative w-full h-[400px]'>
       <div
         className='absolute top-0 left-0 z-10 bg-white bg-opacity-80 p-2 rounded font-bold text-black'
       >
@@ -133,7 +145,7 @@ const CandlestickChart: React.FC<CandlestickChartProps> = ({
       </div>
       <div
         ref={chartContainerRef}
-        style={{ width: '100%', height: '200px' }}
+        style={{ width: '100%', height: '400px' }}
       />
     </div>
   );

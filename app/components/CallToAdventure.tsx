@@ -6,7 +6,7 @@ const CallToAventure = () => {
         <div>
             <div className="flex flex-col">
                 <div className='mx-auto h-20 pb-5'>
-                    <span className='font-bold text-3xl uppercase w-80 block'><TypingEffect text="It's dangerous to go alone. Take this." speed={100} /></span>
+                    <span className='font-bold text-3xl uppercase w-80 block'><TypingEffect lines={["It's dangerous to go alone. Take this."]} speed={100} /></span>
                 </div>
                 <div className="flex justify-evenly">
                     <div className="text-5xl"><Image src="/images/fire.gif" height={50} width={50} alt="fire"/></div>

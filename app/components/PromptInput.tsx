@@ -26,7 +26,7 @@ const PromptInput = (
     <div className="min-w-0 flex-1">
       <Widget />
       <Tabs />
-      <form action="#" className="relative">
+      <form action="#" className="relative mb-1">
         <div className="rounded-lg bg-white outline outline-1 -outline-offset-1 outline-gray-300 focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-emerald-600">
           <label htmlFor="comment" className="sr-only">
             Message Hiro

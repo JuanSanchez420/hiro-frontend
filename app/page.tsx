@@ -28,11 +28,15 @@ export default function Home() {
       </div>
       <div className="py-5">
         <TypingEffect
-          text="I&apos;m an AI agent here to help you with crypto. I can swap, stake, and even run transactions while you sleep! I'm in demo mode right now, so click around try anthing you want."
+          lines={["I'm an AI agent here to help you with crypto. I can swap, stake, and even run transactions while you sleep! I'm in demo mode right now, so click around try anthing you want."]}
           speed={10} />
       </div>
-      <div className="flex justify-evenly">
-        <button className={styles.button}>What can you do?</button>
+      <div className="flex">
+        <ul>
+          <li><span className="font-bold italic">Safe: </span>the agent can only use whitelisted contracts</li>
+          <li><span className="font-bold italic">Smart: </span>AI decisions with market data</li>
+          <li><span className="font-bold italic">Simple: </span>no annoying contract approvals</li>
+        </ul>
       </div>
     </div>)
   }, [])

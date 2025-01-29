@@ -11,7 +11,7 @@ function classNames(...classes: string[]) {
 }
 
 export default function Drawer() {
-  const { drawerOpen, setDrawerOpen } = useMessagesContext();
+  const { drawerLeftOpen, setDrawerLeftOpen } = useMessagesContext();
   const path = usePathname();
 
   const navigation = [
@@ -22,7 +22,7 @@ export default function Drawer() {
   ]
 
   return (
-    <Dialog open={drawerOpen} onClose={setDrawerOpen} className="relative z-10">
+    <Dialog open={drawerLeftOpen} onClose={setDrawerLeftOpen} className="relative z-10">
       <DialogBackdrop
         transition
         className="fixed inset-0 bg-gray-500/75 transition-opacity duration-500 ease-in-out data-[closed]:opacity-0"
@@ -39,7 +39,7 @@ export default function Drawer() {
                 <div className="absolute right-0 top-0 -mr-8 flex pl-2 pt-4 duration-500 ease-in-out data-[closed]:opacity-0 sm:-mr-10 sm:pl-4">
                   <button
                     type="button"
-                    onClick={() => setDrawerOpen(false)}
+                    onClick={() => setDrawerLeftOpen(false)}
                     className="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
                   >
                     <span className="absolute -inset-2.5" />
@@ -68,7 +68,7 @@ export default function Drawer() {
                                     : 'text-gray-700 hover:bg-gray-50 hover:text-emerald-600',
                                   'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
                                 )}
-                                onClick={() => setDrawerOpen(false)}
+                                onClick={() => setDrawerLeftOpen(false)}
                               >
                                 {item.name}
                               </Link>

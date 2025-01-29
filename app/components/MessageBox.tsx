@@ -47,12 +47,33 @@ const parseMessage = (message: string) => {
 };
 
 const UserMessage = ({ message }: { message: Message }) => {
+    const segments = parseMessage(message.message);
     return (
         <div className="flex w-full justify-end my-3">
-            <div className="rounded-3xl bg-gray-100 px-4 py-2">{message.message}</div>
+            <div className="rounded-3xl bg-gray-100 px-4 py-2">
+                {segments.map((segment, index) => {
+                    switch (segment.type) {
+                        case "bold":
+                            return (
+                                <span key={index} className="inline-block font-bold">
+                                    {segment.content}
+                                </span>
+                            );
+                        case "quote":
+                            return (
+                                <span key={index} className="inline-block bg-gray-200 p-1 rounded italic">
+                                    {segment.content}
+                                </span>
+                            );
+                        case "newline":
+                            return <br key={index} />;
+                        default:
+                            return <span key={index}>{segment.content}</span>;
+                    }
+                })}
+            </div>
         </div>
-
-    );
+    )
 }
 
 interface FunctionCallMessage {
@@ -92,14 +113,14 @@ const FunctionCall = ({ message }: { message: Message }) => {
 const FunctionCallResult = ({ message }: { message: Message }) => {
     const obj = message.functionCall as unknown as FunctionCallMessage;
 
-    if(obj.transactionHash === undefined) return null
+    if (obj.transactionHash === undefined) return null
 
     return (
         <Disclosure as="div" className="w-full">
             <DisclosureButton className="group w-full text-left">
                 <div className="flex flex-1 items-center mb-3 w-full">
                     <div className="flex flex-1 items-center italic justify-end">
-                        <a href="https://basescan.org/tx/" target="_blank" className="flex items-center">View transaction on Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5"/></a>
+                        <a href="https://basescan.org/tx/" target="_blank" className="flex items-center">View transaction on Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
                     </div>
                     <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
                 </div>

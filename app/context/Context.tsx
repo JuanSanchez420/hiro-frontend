@@ -14,8 +14,10 @@ interface MessagesContextType {
     addMessage: (message: string, type: "assistant" | "user" | "function", completed: boolean, functionCall?: Record<string, unknown>) => void
     addChunk: (chunk: string, status: "start" | "middle" | "end") => void
     resetMessages: () => void
-    drawerOpen: boolean
-    setDrawerOpen: (open: boolean) => void
+    drawerLeftOpen: boolean
+    setDrawerLeftOpen: (open: boolean) => void
+    drawerRightOpen: boolean
+    setDrawerRightOpen: (open: boolean) => void
     widget: WidgetOption
     setWidget: (widgetOption: WidgetOption) => void
     session: string
@@ -28,7 +30,8 @@ export const MessagesContext = createContext<MessagesContextType | undefined>(un
 
 export const MessagesProvider = ({ children }: { children: React.ReactNode }) => {
     const [messages, setMessages] = useState<Message[]>([]);
-    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [drawerLeftOpen, setDrawerLeftOpen] = useState(false);
+    const [drawerRightOpen, setDrawerRightOpen] = useState(false);
     const [widget, setWidget] = useState<WidgetOption>(null);
     const [session, setSession] = useState("");
     const [thinking, setThinking] = useState(false);
@@ -67,7 +70,8 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
         <MessagesContext.Provider value={{ 
             messages, addMessage, resetMessages,
             addChunk, 
-            drawerOpen, setDrawerOpen, 
+            drawerLeftOpen, setDrawerLeftOpen,
+            drawerRightOpen, setDrawerRightOpen,
             widget, setWidget, 
             session, setSession,
             thinking, setThinking

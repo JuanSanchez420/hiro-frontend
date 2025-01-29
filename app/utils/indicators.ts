@@ -14,14 +14,14 @@ export const calculateEMA = (
 ): { periodStartUnix: number; value: number }[] => {
   // Validate input
   if (period <= 0) {
-      throw new Error("Period must be a positive integer.");
+    throw new Error("Period must be a positive integer.");
   }
 
   if (data.length < period) {
-      console.warn(
-          `Insufficient data to calculate EMA for period ${period}. Required: ${period}, Provided: ${data.length}.`
-      );
-      return [];
+    console.warn(
+      `Insufficient data to calculate EMA for period ${period}. Required: ${period}, Provided: ${data.length}.`
+    );
+    return [];
   }
 
   const ema: { periodStartUnix: number; value: number }[] = [];
@@ -33,27 +33,20 @@ export const calculateEMA = (
 
   // Calculate EMA for each subsequent data point
   for (let i = 1; i < data.length; i++) {
-      const close = Number(data[i].close);
-      const emaCurrent = close * k + emaPrev * (1 - k);
-      ema.push({ periodStartUnix: data[i].periodStartUnix, value: parseFloat(emaCurrent.toFixed(2)) });
-      emaPrev = emaCurrent;
+    const close = Number(data[i].close);
+    const emaCurrent = close * k + emaPrev * (1 - k);
+    ema.push({ periodStartUnix: data[i].periodStartUnix, value: parseFloat(emaCurrent.toFixed(2)) });
+    emaPrev = emaCurrent;
   }
 
   return ema;
 };
 
-export const interpretEMA = (slow: { periodStartUnix: number; value: number }, fast: { periodStartUnix: number; value: number }, price: number): string => {
-
-  if (price > fast.value && price > slow.value) {
-    return 'Strong uptrend';
-  } else if (price < fast.value && price < slow.value) {
-    return 'Strong downtrend';
-  } else if (price > slow.value && price < fast.value) {
-    return 'Uptrend';
-  } else if (price < slow.value && price > fast.value) {
-    return 'Downtrend';
+export const interpretEMA = (ema: { periodStartUnix: number; value: number }, price: number): string => {
+  if (price >= ema.value) {
+    return 'uptend';
   } else {
-    return 'No trend';
+    return 'downtrend';
   }
 }
 
@@ -95,29 +88,6 @@ export const calculateRSI = (data: OHLC[], period: number = 14): { periodStartUn
   return rsi;
 };
 
-export const interpretRSI = (data: { periodStartUnix: number; value: number }[]): string => {
-  const rsi = data[0].value;
-  const prev = data[1].value;
-
-  if (rsi > 30 && prev < 30) {
-    return 'Buy signal';
-  } else if (rsi < 70 && prev > 70) {
-    return 'Sell signal';
-  }
-
-  if (rsi > 70) {
-    return 'Overbought';
-  } else if (rsi > 50) {
-    return "Bullish";
-  } else if (rsi < 30) {
-    return 'Oversold';
-  } else if (rsi < 50) {
-    return "Bearish";
-  } else {
-    return 'Neutral';
-  }
-}
-
 /**
  * Calculates Average True Range (ATR)
  * @param data Array of OHLCData
@@ -128,12 +98,10 @@ export const calculateATR = (data: OHLC[], period: number = 14): { periodStartUn
   const tr: number[] = [];
   const atr: { periodStartUnix: number; value: number }[] = [];
 
-  const sortedData = data.sort((a, b) => a.periodStartUnix - b.periodStartUnix);
-
-  for (let i = 1; i < sortedData.length; i++) {
-    const highLow = Number(sortedData[i].high) - Number(sortedData[i].low);
-    const highPrevClose = Math.abs(Number(sortedData[i].high) - Number(sortedData[i - 1].close));
-    const lowPrevClose = Math.abs(Number(sortedData[i].low) - Number(sortedData[i - 1].close));
+  for (let i = 1; i < data.length; i++) {
+    const highLow = Number(data[i].high) - Number(data[i].low);
+    const highPrevClose = Math.abs(Number(data[i].high) - Number(data[i - 1].close));
+    const lowPrevClose = Math.abs(Number(data[i].low) - Number(data[i - 1].close));
     const trueRange = Math.max(highLow, highPrevClose, lowPrevClose);
     tr.push(trueRange);
   }
@@ -150,15 +118,84 @@ export const calculateATR = (data: OHLC[], period: number = 14): { periodStartUn
 };
 
 export const interpretATR = (data: { periodStartUnix: number; value: number }[]): string => {
-  const atr = data[0].value;
-  const near = data[Math.floor(data.length/2)].value;
-  const far = data[data.length-1].value;
+  const atr = data[data.length - 1].value;
+  const near = data[Math.floor(data.length / 2)].value;
+  const far = data[0].value;
 
   if (atr > near && atr > far) {
-    return 'Increasing volatility';
+    return 'increasing volatility';
   } else if (atr < near && atr < far) {
-    return 'Decreasing volatility';
+    return 'decreasing volatility';
   } else {
-    return 'Stable volatility';
+    return 'stable volatility';
   }
 }
+
+/**
+ * Calculates Donchian Channel
+ * @param data Array of OHLC data (ascending order)
+ * @param period Number of periods for Donchian channel
+ * @returns Array of Donchian channel values with corresponding periodStartUnix
+ */
+export const calculateDonchianChannel = (
+  data: OHLC[],
+  period: number = 30
+): {
+  periodStartUnix: number;
+  upper: number;
+  lower: number;
+}[] => {
+  if (period <= 0) {
+    throw new Error("Period must be a positive integer.");
+  }
+
+  if (data.length < period) {
+    console.warn(`Insufficient data to calculate Donchian channel. Required: ${period}, Provided: ${data.length}.`);
+    return [];
+  }
+
+  const donchian: { periodStartUnix: number; upper: number; lower: number }[] = [];
+
+  // Start computing Donchian channel once we have at least `period` data points
+  for (let i = period - 1; i < data.length; i++) {
+    // Slice out the last `period` data points to find highest high & lowest low
+    const windowData = data.slice(i - period + 1, i + 1);
+
+    const highestHigh = Math.max(...windowData.map((d) => Number(d.high)));
+    const lowestLow = Math.min(...windowData.map((d) => Number(d.low)));
+
+    donchian.push({
+      periodStartUnix: data[i].periodStartUnix,
+      upper: parseFloat(highestHigh.toFixed(2)),
+      lower: parseFloat(lowestLow.toFixed(2))
+    });
+  }
+
+  return donchian;
+};
+
+/**
+ * Interprets the Donchian channel relative to the current price.
+ *
+ * @param channel Array of Donchian channel data
+ * @param price Current price
+ */
+export const interpretDonchianChannel = (
+  channel: { periodStartUnix: number; upper: number; lower: number }[],
+  price: number
+): string => {
+  if (channel.length === 0) {
+    return "No Donchian data";
+  }
+
+  const { upper, lower } = channel[channel.length - 1];
+  console.log(upper, lower, price);
+
+  if (price > upper) {
+    return "price at resistance";
+  } else if (price < lower) {
+    return "price at support";
+  } else {
+    return "price within range";
+  }
+};
