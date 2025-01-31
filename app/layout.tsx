@@ -42,7 +42,7 @@ export default function RootLayout({
                 </div>
               </Disclosure>
 
-              <div className="flex flex-col flex-1 h-full min-h-0">
+              <div className="flex flex-col flex-1 h-full min-h-0 relative">
                 <main className="flex flex-col flex-1 overflow-y-auto">
                   <div className="flex flex-col mx-auto w-full h-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
                     {children}

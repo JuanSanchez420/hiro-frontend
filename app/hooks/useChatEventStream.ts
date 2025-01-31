@@ -1,12 +1,14 @@
 // useChatEventStream.ts
 import { useCallback, useEffect } from "react";
 import { useMessagesContext } from "../context/Context";
+import { useAccount } from "wagmi";
 
 const useChatEventStream = () => {
   const { messages, addChunk, addMessage } = useMessagesContext();
+  const account = useAccount()
 
   const handleChatEvent = useCallback(() => {
-    const eventSource = new EventSource(`/api/stream?content=${messages[messages.length - 1]?.message}`);
+    const eventSource = new EventSource(`/api/stream?content=${messages[messages.length - 1]?.message}${account?.isConnected ? "" : `&demo=true`}`);
 
     eventSource.onmessage = (event) => {
       const chunk = JSON.parse(event.data);
@@ -40,7 +42,7 @@ const useChatEventStream = () => {
       console.error('EventSource error:', err);
       eventSource.close();
     }
-  }, [addChunk, messages, addMessage])
+  }, [addChunk, messages, addMessage, account])
 
   useEffect(() => {
     if (messages.length > 0 && messages[messages.length - 1].completed && messages[messages.length - 1].type === "user")

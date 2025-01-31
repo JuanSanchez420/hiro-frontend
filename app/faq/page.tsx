@@ -1,5 +1,7 @@
 'use client'
 
+import BackButton from "../components/BackButton";
+
 interface FAQ {
     question: string;
     answer: string;
@@ -46,5 +48,6 @@ export default function FAQ() {
                     </div>
                 ))}
             </div>
+            <BackButton />
         </div>)
 }

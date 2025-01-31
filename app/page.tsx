@@ -1,16 +1,16 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import MessageBox from "./components/MessageBox";
 import { Message, useMessagesContext } from "./context/Context";
-import TypingEffect from "./components/TypingEffect";
 import useSession from "./hooks/useSession";
 import useChatEventStream from "./hooks/useChatEventStream";
 import Image from 'next/image'
+import { ChatBubbleLeftIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
 import { styles } from "./utils/styles";
 
 export default function Home() {
-  const { messages, widget } = useMessagesContext();
+  const { messages, widget, addMessage } = useMessagesContext();
   useSession()
   useChatEventStream()
 
@@ -26,20 +26,12 @@ export default function Home() {
         <Image src="/images/hiro-large.png" alt="Hiro" width={32} height={32} />
         <h1 className="bold text-2xl ml-4">Hi, I&apos;m Hiro!</h1>
       </div>
-      <div className="py-5">
-        <TypingEffect
-          lines={["I'm an AI agent here to help you with crypto. I can swap, stake, and even run transactions while you sleep! I'm in demo mode right now, so click around try anthing you want."]}
-          speed={10} />
-      </div>
-      <div className="flex">
-        <ul>
-          <li><span className="font-bold italic">Safe: </span>the agent can only use whitelisted contracts</li>
-          <li><span className="font-bold italic">Smart: </span>AI decisions with market data</li>
-          <li><span className="font-bold italic">Simple: </span>no annoying contract approvals</li>
-        </ul>
+      <div className="flex justify-evenly mt-20">
+        <div><button className={`flex ${styles.button}`} onClick={() => addMessage('',"user",true)}><GlobeAltIcon className="size-5 mr-2" />Take a quick tour</button></div>
+        <div><button className={`flex ${styles.button}`}><ChatBubbleLeftIcon className="size-5 mr-2" />Tell me what you do, Hiro</button></div>
       </div>
     </div>)
-  }, [])
+  }, [addMessage])
 
   const Content = () => {
     return (<section className="message-list">

@@ -1,3 +1,4 @@
+import BackButton from "../components/BackButton";
 
 
 type RowProps = {
@@ -36,6 +37,7 @@ export default function Token() {
                     <Row label="distribution" value="50% team, 50% public sale" isGray={true} />
                 </dl>
             </div>
+            <BackButton />
         </div>
     )
 }

@@ -22,7 +22,7 @@ const useSession = () => {
     }, [session, setSession])
 
     useEffect(() => {
-        if (account && didFetch.current) {
+        if (account?.isConnected && didFetch.current) {
             const f = async () => {
                 const response = await fetch("/api/account", {
                     method: "POST",

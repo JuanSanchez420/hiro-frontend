@@ -1,6 +1,7 @@
 'use client'
 
 import { CheckIcon, ClockIcon, CogIcon } from '@heroicons/react/20/solid'
+import BackButton from '../components/BackButton'
 
 const timeline = [
     {
@@ -146,6 +147,7 @@ export default function RoadMap() {
                     </li>
                 ))}
             </ul>
+            <BackButton />
         </div>
     )
 }

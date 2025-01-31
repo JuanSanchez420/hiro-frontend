@@ -15,7 +15,7 @@ const CallToAventure = () => {
                 </div>
             </div>
             <div className="flex mt-10">
-                <div className="mx-auto hover:cursor-pointer animate-pulse">
+                <div className="mx-auto hover:cursor-pointer animate-bounce">
                     <Image src="/images/wooden-sword.gif" width={14} height={32} alt="magical sword"/>
                 </div>
             </div>

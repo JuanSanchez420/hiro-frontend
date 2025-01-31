@@ -44,7 +44,7 @@ export const calculateEMA = (
 
 export const interpretEMA = (ema: { periodStartUnix: number; value: number }, price: number): string => {
   if (price >= ema.value) {
-    return 'uptend';
+    return 'uptrend';
   } else {
     return 'downtrend';
   }

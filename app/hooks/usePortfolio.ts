@@ -10,8 +10,10 @@ interface Balance {
 const usePortfolio = () => {
     const account = useAccount();
     const [balances, setBalances] = useState<Balance[]>([]);
+    const [loading, setLoading] = useState(false);
 
     const fetchBalances = useCallback(async () => {
+        if(!account?.isConnected) return;
         const response = await fetch(`/api/portfolio?account=${account.address}`);
         const data = await response.json();
         setBalances(data);
@@ -19,14 +21,16 @@ const usePortfolio = () => {
 
     useEffect(() => {
         const f = async () => {
+            setLoading(true);
             const response = await fetch(`/api/portfolio?account=${account.address}`);
             const data = await response.json();
             setBalances(data);
+            setLoading(false);
         }
-        if(account) f();
+        if(account?.isConnected) f();
     }, [account])
 
-    return { balances, fetchBalances };
+    return { balances, fetchBalances, loading };
 }
 
 export default usePortfolio;

@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
           ...req.headers,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
       });
   

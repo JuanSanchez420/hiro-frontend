@@ -14,8 +14,10 @@ export async function GET(req: NextRequest) {
       method: req.method,
       headers: {
         ...req.headers,
+        cookie: req.headers.get('cookie') || '',
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
     });
 

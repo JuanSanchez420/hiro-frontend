@@ -9,12 +9,13 @@ import usePortfolio from '../hooks/usePortfolio';
 import { useMemo, useState } from 'react';
 import formatNumber from '../utils/formatNumber';
 import TokenData from './TokenData';
+import { Spinner } from './Spinner';
 
 export default function DrawerRight() {
   const { drawerRightOpen, setDrawerRightOpen } = useMessagesContext();
   const [token, setToken] = useState<Token | null>(null);
 
-  const { balances } = usePortfolio();
+  const { balances, loading } = usePortfolio();
   const tokens: TokensData = tokensData;
 
   const balancesWithTokens = useMemo(() => {
@@ -64,6 +65,7 @@ export default function DrawerRight() {
                 </div>
                 <div className="relative flex-1 px-4 sm:px-6">
                   {/* Portfolio */}
+                  {!token && loading && <Spinner />}
                   {!token && <div className="flex flex-col h-full">
                     <div className="flex-1">
                       <div>

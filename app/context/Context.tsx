@@ -15,15 +15,15 @@ interface MessagesContextType {
     addChunk: (chunk: string, status: "start" | "middle" | "end") => void
     resetMessages: () => void
     drawerLeftOpen: boolean
-    setDrawerLeftOpen: (open: boolean) => void
+    setDrawerLeftOpen: React.Dispatch<React.SetStateAction<boolean>>
     drawerRightOpen: boolean
-    setDrawerRightOpen: (open: boolean) => void
+    setDrawerRightOpen: React.Dispatch<React.SetStateAction<boolean>>
     widget: WidgetOption
-    setWidget: (widgetOption: WidgetOption) => void
+    setWidget: React.Dispatch<React.SetStateAction<WidgetOption>>
     session: string
-    setSession: (session: string) => void
+    setSession: React.Dispatch<React.SetStateAction<string>>
     thinking: boolean
-    setThinking: (thinking: boolean) => void
+    setThinking: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const MessagesContext = createContext<MessagesContextType | undefined>(undefined);
