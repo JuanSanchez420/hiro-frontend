@@ -8,6 +8,7 @@ import tokens from "../utils/tokens.json";
 import { useMessagesContext } from '../context/Context';
 import MarketStats from './MarketStats';
 import { Spinner } from './Spinner';
+import { useAccount } from 'wagmi';
 
 interface TokenDataProps {
   token: Token;
@@ -16,6 +17,7 @@ interface TokenDataProps {
 }
 
 const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
+  const account = useAccount();
   const didFetch = useRef(false);
   const { addMessage, setWidget, setDrawerRightOpen } = useMessagesContext();
   const [ohlcData, setOhlcData] = useState<OHLC[]>([]);
@@ -54,7 +56,7 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
       rsi,
       atr,
       trend,
-      donchian: interpretDonchianChannel(dcData, Number(price))
+      donchian: interpretDonchianChannel(dcData, ohlcData[ohlcData.length - 1])
     };
   }, [ohlcData, rsiData, atrData, emaData, dcData, token]);
 
@@ -123,11 +125,11 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
       />
       <MarketStats market={market} />
       <div className='grid grid-cols-2 gap-1 sm:grid-cols-3'>
-        <button className={styles.button} onClick={() => {
+        <button className={`${styles.button} ${account?.isConnected ? '' : 'hidden'}`} onClick={() => {
           setWidget('Swap')
         }}>Swap</button>
-        <button className={styles.button} onClick={() => setWidget('Earn')}>Earn</button>
-        <button className={styles.button} onClick={() => setWidget('Autonomous')}>Autonomous</button>
+        <button className={`${styles.button} ${account?.isConnected ? '' : 'hidden'}`} onClick={() => setWidget('Earn')}>Earn</button>
+        <button className={`${styles.button} ${account?.isConnected ? '' : 'hidden'}`} onClick={() => setWidget('Autonomous')}>Autonomous</button>
         <button className={styles.button} onClick={handleHirosTake}>Hiro&apos;s Take</button>
         <button className={styles.button} onClick={() => exit()}>Portfolio</button>
       </div>

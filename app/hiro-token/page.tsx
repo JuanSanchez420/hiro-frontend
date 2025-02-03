@@ -27,8 +27,8 @@ export default function Token() {
             </div>
             <div className="mt-6 border-t border-gray-100">
                 <dl className="divide-y divide-gray-100">
-                    <Row label="name" value="Hiro Token" isGray={true} />
-                    <Row label="symbol" value="HIRO" isGray={false} />
+                    <Row label="name" value="TBD" isGray={true} />
+                    <Row label="symbol" value="TBD" isGray={false} />
                     <Row label="total supply" value="1 billion, fixed supply" isGray={true} />
                     <Row label="contract address" value="TBD" isGray={true} />
                     <Row label="decimals" value="18" isGray={false} />

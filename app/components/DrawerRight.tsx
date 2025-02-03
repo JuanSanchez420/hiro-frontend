@@ -10,11 +10,15 @@ import { useMemo, useState } from 'react';
 import formatNumber from '../utils/formatNumber';
 import TokenData from './TokenData';
 import { Spinner } from './Spinner';
+import useMarketData from '../hooks/useMarketData';
+import { useAccount } from 'wagmi';
 
 export default function DrawerRight() {
+  const account = useAccount()
   const { drawerRightOpen, setDrawerRightOpen } = useMessagesContext();
   const [token, setToken] = useState<Token | null>(null);
 
+  const { market } = useMarketData();
   const { balances, loading } = usePortfolio();
   const tokens: TokensData = tokensData;
 
@@ -50,7 +54,10 @@ export default function DrawerRight() {
                 <div className="absolute left-0 top-0 -ml-12 flex pl-2 pt-4 duration-500 ease-in-out data-[closed]:opacity-0 sm:-mr-10 sm:pl-4">
                   <button
                     type="button"
-                    onClick={() => setDrawerRightOpen(false)}
+                    onClick={() => {
+                      setDrawerRightOpen(false)
+                      setToken(null)
+                    }}
                     className="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
                   >
                     <span className="absolute inset-2.5" />
@@ -66,7 +73,7 @@ export default function DrawerRight() {
                 <div className="relative flex-1 px-4 sm:px-6">
                   {/* Portfolio */}
                   {!token && loading && <Spinner />}
-                  {!token && <div className="flex flex-col h-full">
+                  {!token && account?.isConnected && <div className="flex flex-col h-full">
                     <div className="flex-1">
                       <div>
                         <a className="grid grid-cols-4 gap-2 p-2 text-gray-700 group rounded-md text-sm/6 font-semibold">
@@ -93,6 +100,33 @@ export default function DrawerRight() {
                       })}
                     </div>
                   </div>}
+                  {!token && market.length > 0 && !account?.isConnected &&
+                    <div className="flex flex-col h-full">
+                      <div className="flex-1">
+                        <div>
+                          <a className="grid grid-cols-4 gap-2 p-2 text-gray-700 group rounded-md text-sm/6 font-semibold">
+                            <div>ICON</div>
+                            <div>SYMBOL</div>
+                            <div>USD</div>
+                          </a>
+                        </div>
+                        {market.map((item) => {
+                          return (
+                            <div key={item.token.symbol}>
+                              <a
+                                className="grid grid-cols-4 gap-2 p-2 text-gray-700 hover:bg-gray-50 hover:text-emerald-600 group rounded-md text-sm/6 font-semibold hover:cursor-pointer"
+                                onClick={() => setToken(item.token)}
+                                href="#">
+                                <div><img src={item.token.logoURI} height={30} width={30} alt={item.token.symbol} className="rounded-full" /></div>
+                                <div>{item.token.symbol}</div>
+                                <div>${formatNumber(Number(item.usdPrice))}</div>
+                              </a>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  }
                   {/* Chart */}
                   {token && <TokenData token={token} hours={200} exit={() => setToken(null)} />}
                 </div>

@@ -28,7 +28,7 @@ export interface OHLC {
   close: string;
 }
 
-export type WidgetOption = "Swap" | "Earn" | "Lend" | "Autonomous" | "Portfolio" | null
+export type WidgetOption = "Swap" | "Earn" | "Market" | "Autonomous" | "Portfolio" | null
 
 export type MarketData = {
   symbol: string;

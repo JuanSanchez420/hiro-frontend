@@ -12,6 +12,8 @@ const friendlyNames = {
     "unwrapWETH": "Unwrap WETH",
     "addLiquidity": "Add Liquidity",
     "setAutonomousInstructions": "Set Autonomous Instructions",
+    'highlight': 'Highlight',
+    'swapDemo': 'Swap Demo',
 }
 
 const parseMessage = (message: string) => {
@@ -112,15 +114,24 @@ const FunctionCall = ({ message }: { message: Message }) => {
 
 const FunctionCallResult = ({ message }: { message: Message }) => {
     const obj = message.functionCall as unknown as FunctionCallMessage;
-
+    
     if (obj.transactionHash === undefined) return null
+
+    const isDemo = obj.transactionHash === '0xdummytxhash'
+
+    const handleTxLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (isDemo) {
+          e.preventDefault();
+          // Optionally alert or log for demo users
+        }
+      };
 
     return (
         <Disclosure as="div" className="w-full">
             <DisclosureButton className="group w-full text-left">
                 <div className="flex flex-1 items-center mb-3 w-full">
                     <div className="flex flex-1 items-center italic justify-end">
-                        <a href="https://basescan.org/tx/" target="_blank" className="flex items-center">View transaction on Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
+                        <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex items-center">View transaction on Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
                     </div>
                     <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
                 </div>
@@ -175,6 +186,7 @@ const AssistantMessage = ({ message }: { message: Message }) => {
 }
 
 const MessageBox = ({ message }: { message: Message }) => {
+
     return message.type === "user" ? <UserMessage message={message} /> :
         message.type === "assistant" && message.functionCall === undefined ? <AssistantMessage message={message} /> :
             message.type === "function" ?

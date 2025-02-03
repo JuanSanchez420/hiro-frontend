@@ -1,12 +1,12 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import MessageBox from "./components/MessageBox";
 import { Message, useMessagesContext } from "./context/Context";
 import useSession from "./hooks/useSession";
 import useChatEventStream from "./hooks/useChatEventStream";
 import Image from 'next/image'
-import { ChatBubbleLeftIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
+import { ArrowPathIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
 import { styles } from "./utils/styles";
 
 export default function Home() {
@@ -27,8 +27,8 @@ export default function Home() {
         <h1 className="bold text-2xl ml-4">Hi, I&apos;m Hiro!</h1>
       </div>
       <div className="flex justify-evenly mt-20">
-        <div><button className={`flex ${styles.button}`} onClick={() => addMessage('',"user",true)}><GlobeAltIcon className="size-5 mr-2" />Take a quick tour</button></div>
-        <div><button className={`flex ${styles.button}`}><ChatBubbleLeftIcon className="size-5 mr-2" />Tell me what you do, Hiro</button></div>
+        <div><button className={`flex ${styles.button}`} onClick={() => addMessage(`i'd like a tour`, "user", true)}><GlobeAltIcon className="size-5 mr-2" />Take a quick tour</button></div>
+        <div><button className={`flex ${styles.button}`} onClick={() => addMessage('do a barrel roll!', "user", true)}><ArrowPathIcon className="size-5 mr-2" />Do a barrel roll</button></div>
       </div>
     </div>)
   }, [addMessage])

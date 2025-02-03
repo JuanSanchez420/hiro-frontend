@@ -182,18 +182,17 @@ export const calculateDonchianChannel = (
  */
 export const interpretDonchianChannel = (
   channel: { periodStartUnix: number; upper: number; lower: number }[],
-  price: number
+  currentBar: OHLC
 ): string => {
   if (channel.length === 0) {
     return "No Donchian data";
   }
 
   const { upper, lower } = channel[channel.length - 1];
-  console.log(upper, lower, price);
 
-  if (price > upper) {
+  if (Number(currentBar.high) >= upper) {
     return "price at resistance";
-  } else if (price < lower) {
+  } else if (Number(currentBar.low) <= lower) {
     return "price at support";
   } else {
     return "price within range";

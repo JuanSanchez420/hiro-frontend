@@ -1,4 +1,4 @@
-function createConfettiBurst(x: number, y: number) {
+function createConfettiBurst() {
     const colors = [
         '#a0c4ff', // Soft sky blue
         '#bde0fe', // Pale azure
@@ -6,8 +6,20 @@ function createConfettiBurst(x: number, y: number) {
         '#d4a5a5', // Rose quartz
         '#c8b6ff', // Lavender
         '#98f5e1', // Mint green
-      ];
-    const confettiCount = 30;
+    ];
+    const confettiCount = 40;
+    const offsetRange = 50;
+
+    // Calculate viewport center
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+
+    // Create a random offset between -offsetRange and +offsetRange
+    const offsetX = (Math.random() - 0.5) * 2 * offsetRange;
+    const offsetY = (Math.random() - 0.5) * 2 * offsetRange;
+
+    const x = centerX + offsetX;
+    const y = centerY + offsetY;
 
     for (let i = 0; i < confettiCount; i++) {
         const confetti = document.createElement('div');

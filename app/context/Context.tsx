@@ -1,6 +1,7 @@
 'use client'
 import { createContext, useContext, useState } from "react";
 import { WidgetOption } from "../types";
+import { useHighlight } from "../hooks/useHighlight";
 
 export interface Message {
     message: string
@@ -24,6 +25,8 @@ interface MessagesContextType {
     setSession: React.Dispatch<React.SetStateAction<string>>
     thinking: boolean
     setThinking: React.Dispatch<React.SetStateAction<boolean>>
+    highlight: string | undefined
+    triggerHighlight: (section: string) => void
 }
 
 export const MessagesContext = createContext<MessagesContextType | undefined>(undefined);
@@ -35,6 +38,8 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
     const [widget, setWidget] = useState<WidgetOption>(null);
     const [session, setSession] = useState("");
     const [thinking, setThinking] = useState(false);
+    const { highlight, triggerHighlight } = useHighlight();
+
 
     const addMessage = (message: string, type: "assistant" | "user" | "function", completed: boolean, functionCall?: Record<string, unknown>) => {
         setThinking(true);
@@ -74,7 +79,8 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
             drawerRightOpen, setDrawerRightOpen,
             widget, setWidget, 
             session, setSession,
-            thinking, setThinking
+            thinking, setThinking,
+            highlight, triggerHighlight
              }}>
             {children}
         </MessagesContext.Provider>

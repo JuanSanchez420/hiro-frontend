@@ -5,8 +5,10 @@ import AccountDetails from "./AccountDetailsMenu"
 import { useCallback, useEffect, useState } from "react"
 import { styles } from "../utils/styles"
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react"
+import { useMessagesContext } from "../context/Context"
 
 const ConnectWallet = () => {
+    const { highlight } = useMessagesContext()
     const { connectors, connect } = useConnect()
     const { isConnected } = useAccount()
     const [isLoaded, setIsLoaded] = useState(false)
@@ -38,7 +40,7 @@ const ConnectWallet = () => {
     const WalletMenu = () => {
         return (<Menu as="div" className="relative ml-3">
             <div>
-                <MenuButton className={`${styles.button} max-w-40`}>
+                <MenuButton className={`${highlight === 'highlight-connectwallet' ? 'animate-bounce' : ''} ${styles.button} max-w-40`}>
                     Connect Wallet
                 </MenuButton>
             </div>
