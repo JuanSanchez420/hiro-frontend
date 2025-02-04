@@ -8,6 +8,7 @@ import useChatEventStream from "./hooks/useChatEventStream";
 import Image from 'next/image'
 import { ArrowPathIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
 import { styles } from "./utils/styles";
+import Confirm from "./components/Confirm";
 
 export default function Home() {
   const { messages, widget, addMessage } = useMessagesContext();
@@ -27,7 +28,7 @@ export default function Home() {
         <h1 className="bold text-2xl ml-4">Hi, I&apos;m Hiro!</h1>
       </div>
       <div className="flex justify-evenly mt-20">
-        <div><button className={`flex ${styles.button}`} onClick={() => addMessage(`i'd like a tour`, "user", true)}><GlobeAltIcon className="size-5 mr-2" />Take a quick tour</button></div>
+        <div><button className={`flex ${styles.button}`} onClick={() => addMessage(`what can you do?`, "user", true)}><GlobeAltIcon className="size-5 mr-2" />What can you do?</button></div>
         <div><button className={`flex ${styles.button}`} onClick={() => addMessage('do a barrel roll!', "user", true)}><ArrowPathIcon className="size-5 mr-2" />Do a barrel roll</button></div>
       </div>
     </div>)
@@ -38,6 +39,7 @@ export default function Home() {
       {messages.map((m: Message, index: number) => (
         <MessageBox key={index} message={m} />
       ))}
+      <Confirm />
     </section>)
   }
 

@@ -6,7 +6,7 @@ import createConfettiBurst from "../utils/createConfettiBurst";
 import useDoABarrelRoll from "./useDoABarrelRoll";
 
 const useChatEventStream = () => {
-  const { messages, addChunk, addMessage, triggerHighlight } = useMessagesContext();
+  const { messages, addChunk, addMessage, triggerHighlight, setShowConfirm } = useMessagesContext();
   const account = useAccount()
   const doABarrelRoll = useDoABarrelRoll()
 
@@ -33,6 +33,10 @@ console.log('functionCall:', obj)
       }
       if(obj.name === "doABarrelRoll") {
         doABarrelRoll();
+        return
+      }
+      if(obj.name === "confirm") {
+        setShowConfirm(true);
         return
       }
       addMessage("", "assistant", true, obj)

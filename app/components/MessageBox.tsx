@@ -14,6 +14,8 @@ const friendlyNames = {
     "setAutonomousInstructions": "Set Autonomous Instructions",
     'highlight': 'Highlight',
     'swapDemo': 'Swap Demo',
+    'addLiquidityDemo': 'Add Liquidity Demo',
+    'setAutonomousInstructionsDemo': 'Set Autonomous Instructions Demo',
 }
 
 const parseMessage = (message: string) => {

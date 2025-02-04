@@ -3,7 +3,7 @@ import { useState } from "react";
 
 
 const AutonomousInstructions = () => {
-    const { addMessage } = useMessagesContext();
+    const { addMessage, setWidget } = useMessagesContext();
     const [value, setValue] = useState("");
     
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -11,6 +11,7 @@ const AutonomousInstructions = () => {
           e.preventDefault();
           addMessage(`Set autonomous instructions: ${value}. Please ask if I was unclear on anything.`, "user", true);
           setValue("");
+          setWidget(null)
         }
       }
 
