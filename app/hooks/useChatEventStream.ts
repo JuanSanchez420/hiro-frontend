@@ -29,6 +29,8 @@ console.log('functionCall:', obj)
       }
       if (obj.name === "confettiBurst") {
         createConfettiBurst();
+        createConfettiBurst();
+        createConfettiBurst();
         return
       }
       if(obj.name === "doABarrelRoll") {
