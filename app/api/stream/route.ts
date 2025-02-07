@@ -17,12 +17,15 @@ export async function GET(req: NextRequest) {
             credentials: "include",
         });
 
+        const headers = new Headers(response.headers);
+
         if (!response.body) {
             return new Response("No response body", { status: 500 });
         }
 
         return new Response(response.body, {
             headers: {
+                ...headers,
                 "Content-Type": "text/event-stream",
                 "Cache-Control": "no-cache",
                 "Connection": "keep-alive",

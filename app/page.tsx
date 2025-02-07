@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useRef } from "react";
 import MessageBox from "./components/MessageBox";
 import { Message, useMessagesContext } from "./context/Context";
-import useSession from "./hooks/useSession";
 import useChatEventStream from "./hooks/useChatEventStream";
 import Image from 'next/image'
 import { ArrowPathIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
 import { styles } from "./utils/styles";
 import Confirm from "./components/Confirm";
+import useSession from "./hooks/useSession";
 
 export default function Home() {
   const { messages, widget, addMessage } = useMessagesContext();

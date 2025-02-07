@@ -20,8 +20,13 @@ export async function GET(req: NextRequest) {
       body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
     });
 
+    const headers = new Headers(response.headers);
+
     const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
+    return NextResponse.json(data, {
+      status: response.status,
+      headers: headers
+    });
   } catch (error) {
     console.error('Error connecting to server:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

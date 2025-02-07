@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
     try {
       const apiUrl = `${process.env.NEXT_PUBLIC_SERVER_URL}:${process.env.NEXT_PUBLIC_SERVER_PORT}/session`;
-  
-      console.log('cookie', req.headers.get('cookie') || '')
 
       // Forward the request to the server
       const response = await fetch(apiUrl, {

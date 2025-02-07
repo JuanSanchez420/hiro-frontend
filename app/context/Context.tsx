@@ -21,8 +21,6 @@ interface MessagesContextType {
     setDrawerRightOpen: React.Dispatch<React.SetStateAction<boolean>>
     widget: WidgetOption
     setWidget: React.Dispatch<React.SetStateAction<WidgetOption>>
-    session: string
-    setSession: React.Dispatch<React.SetStateAction<string>>
     thinking: boolean
     setThinking: React.Dispatch<React.SetStateAction<boolean>>
     highlight: string | undefined
@@ -39,7 +37,6 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
     const [drawerRightOpen, setDrawerRightOpen] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [widget, setWidget] = useState<WidgetOption>(null);
-    const [session, setSession] = useState("");
     const [thinking, setThinking] = useState(false);
     const { highlight, triggerHighlight } = useHighlight();
 
@@ -81,7 +78,6 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
             drawerLeftOpen, setDrawerLeftOpen,
             drawerRightOpen, setDrawerRightOpen,
             widget, setWidget, 
-            session, setSession,
             thinking, setThinking,
             highlight, triggerHighlight,
             showConfirm, setShowConfirm

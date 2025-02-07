@@ -1,17 +1,17 @@
 import React, { useMemo, useState } from "react";
-import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useMessagesContext } from "@/app/context/Context";
 import usePortfolio from "@/app/hooks/usePortfolio";
 import formatNumber from "@/app/utils/formatNumber";
 import { styles } from "@/app/utils/styles";
+import SearchableSelect from "../SearchableSelect";
 
 const SwapWidget = () => {
   const [fromAmount, setFromAmount] = useState("");
-  const [fromToken, setFromToken] = useState("WETH");
-  const [toToken, setToToken] = useState("USDC");
+  const [fromToken, setFromToken] = useState("");
+  const [toToken, setToToken] = useState("");
 
   const { addMessage, setWidget, setDrawerRightOpen } = useMessagesContext()
-  const { balances } = usePortfolio()
+  const { portfolio } = usePortfolio()
 
   const handleSwap = () => {
     if (confirm(`Swap ${fromAmount} of ${fromToken} to ${toToken}?`)) {
@@ -22,12 +22,14 @@ const SwapWidget = () => {
   };
 
   const balance0 = useMemo(() => {
-    return balances.find(b => b.symbol === fromToken)?.balance || 0
-  }, [fromToken, balances])
+    if (!portfolio) return 0
+    return portfolio.tokens.find(b => b.symbol === fromToken)?.balance || 0
+  }, [fromToken, portfolio])
 
   const balance1 = useMemo(() => {
-    return balances.find(b => b.symbol === toToken)?.balance || 0
-  }, [toToken, balances])
+    if (!portfolio) return 0
+    return portfolio.tokens.find(b => b.symbol === toToken)?.balance || 0
+  }, [toToken, portfolio])
 
   const ButtonRow = ({ handler }: { handler: React.Dispatch<React.SetStateAction<string>> }) => {
     const percents = [25, 50, 75, 100]
@@ -70,25 +72,10 @@ const SwapWidget = () => {
                 className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
               />
               <div className="grid shrink-0 grid-cols-1 focus-within:relative">
-                <select
-                  id="currency"
-                  name="currency"
-                  aria-label="Currency"
-                  value={fromToken}
-                  onChange={(e) => {
-                    setFromToken(e.target.value)
-                    setFromAmount("")
-                  }}
-                  className="col-start-1 row-start-1 w-full appearance-none rounded-md py-1.5 pl-3 pr-7 text-base text-gray-500 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-emerald-600 sm:text-sm/6"
-                >
-                  <option value="USDC">USDC</option>
-                  <option value="WETH">WETH</option>
-                  <option value="AERO">AERO</option>
-                </select>
-                <ChevronDownIcon
-                  aria-hidden="true"
-                  className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-                />
+                <SearchableSelect options={[{ label: "USDC", value: "USDC" }, { label: "WETH", value: "WETH" }, { label: "AERO", value: "AERO" }]} onChange={(e) => {
+                  setFromToken(e.value)
+                  setFromAmount("")
+                }} />
               </div>
             </div>
           </div>
@@ -115,22 +102,9 @@ const SwapWidget = () => {
               className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
             />
             <div className="grid shrink-0 grid-cols-1 focus-within:relative">
-              <select
-                id="currency"
-                name="currency"
-                aria-label="Currency"
-                value={toToken}
-                onChange={(e) => setToToken(e.target.value)}
-                className="col-start-1 row-start-1 w-full appearance-none rounded-md py-1.5 pl-3 pr-7 text-base text-gray-500 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-emerald-600 sm:text-sm/6"
-              >
-                <option value="USDC">USDC</option>
-                <option value="WETH">WETH</option>
-                <option value="AERO">AERO</option>
-              </select>
-              <ChevronDownIcon
-                aria-hidden="true"
-                className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-              />
+              <SearchableSelect options={[{ label: "USDC", value: "USDC" }, { label: "WETH", value: "WETH" }, { label: "AERO", value: "AERO" }]} onChange={(e) => {
+                setToToken(e.value)
+              }} />
             </div>
           </div>
         </div>

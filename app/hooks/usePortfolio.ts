@@ -1,22 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-
-interface Balance {
-    symbol: string,
-    balance: string,
-    usdPrice: string
-}
+import { Portfolio } from "../types";
 
 const usePortfolio = () => {
     const account = useAccount();
-    const [balances, setBalances] = useState<Balance[]>([]);
+    const [portfolio, setPortfolio] = useState<Portfolio>();
     const [loading, setLoading] = useState(false);
 
     const fetchBalances = useCallback(async () => {
         if(!account?.isConnected) return;
         const response = await fetch(`/api/portfolio?account=${account.address}`);
         const data = await response.json();
-        setBalances(data);
+        setPortfolio(data);
     }, [account])
 
     useEffect(() => {
@@ -24,13 +19,13 @@ const usePortfolio = () => {
             setLoading(true);
             const response = await fetch(`/api/portfolio?account=${account.address}`);
             const data = await response.json();
-            setBalances(data);
+            setPortfolio(data);
             setLoading(false);
         }
         if(account?.isConnected) f();
     }, [account])
 
-    return { balances, fetchBalances, loading };
+    return { portfolio, fetchBalances, loading };
 }
 
 export default usePortfolio;

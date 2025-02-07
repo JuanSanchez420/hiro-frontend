@@ -40,3 +40,29 @@ export type MarketData = {
   trend: string;
   donchian: string;
 }
+
+type PoolDetails = {
+  address: `0x${string}`
+  tickSpacing: number
+  token0: Token
+  token1: Token
+}
+
+type SimpleLiquidityPosition = {
+  index: number;
+  token0: string;
+  token1: string;
+  tickSpacing: number;
+  tickLower: number;
+  tickUpper: number;
+  liquidity: bigint;
+};
+
+export interface Portfolio {
+  tokens: {
+    symbol: string;
+    balance: string;
+    usdPrice: number;
+  }[],
+  positions: SimpleLiquidityPosition[]
+}

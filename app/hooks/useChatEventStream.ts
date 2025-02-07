@@ -67,7 +67,7 @@ console.log('functionCallResult:', obj)
       console.error('EventSource error:', err);
       eventSource.close();
     }
-  }, [addChunk, messages, addMessage, account, triggerHighlight])
+  }, [addChunk, messages, addMessage, account, triggerHighlight, setShowConfirm, doABarrelRoll])
 
   useEffect(() => {
     if (messages.length > 0 && messages[messages.length - 1].completed && messages[messages.length - 1].type === "user")

@@ -19,19 +19,19 @@ export default function DrawerRight() {
   const [token, setToken] = useState<Token | null>(null);
 
   const { market } = useMarketData();
-  const { balances, loading } = usePortfolio();
+  const { portfolio, loading } = usePortfolio();
   const tokens: TokensData = tokensData;
 
   const balancesWithTokens = useMemo(() => {
-    if (!balances) return [];
-    return balances.map((balance) => {
+    if (!portfolio) return [];
+    return portfolio.tokens.map((t) => {
       return {
-        token: tokens[balance.symbol],
-        balance: balance.balance,
-        usdPrice: balance.usdPrice,
+        token: tokens[t.symbol],
+        balance: t.balance,
+        usdPrice: t.usdPrice,
       };
     });
-  }, [balances, tokens]);
+  }, [portfolio, tokens]);
 
   return (
     <Dialog open={drawerRightOpen} onClose={() => {

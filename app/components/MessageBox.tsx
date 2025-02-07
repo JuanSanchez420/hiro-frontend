@@ -7,10 +7,12 @@ import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 
 const friendlyNames = {
     "getETHBalance": "Get ETH Balance",
+    "getPrices": "Get Prices",
     "swap": "Swap",
     "wrapWETH": "Wrap ETH",
     "unwrapWETH": "Unwrap WETH",
     "addLiquidity": "Add Liquidity",
+    "removeLiquidityByIndex": "Remove Liquidity",
     "setAutonomousInstructions": "Set Autonomous Instructions",
     'highlight': 'Highlight',
     'swapDemo': 'Swap Demo',
@@ -133,7 +135,7 @@ const FunctionCallResult = ({ message }: { message: Message }) => {
             <DisclosureButton className="group w-full text-left">
                 <div className="flex flex-1 items-center mb-3 w-full">
                     <div className="flex flex-1 items-center italic justify-end">
-                        <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex items-center">View transaction on Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
+                        <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex text-sm items-center">View transaction on Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
                     </div>
                     <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
                 </div>
