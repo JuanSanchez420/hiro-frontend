@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import tokensData from "../utils/tokens.json";
 import { Token } from "../types";
+import { useMessagesContext } from "../context/Context";
 
 interface Price {
     token: Token,
@@ -18,6 +19,7 @@ export interface TokenHourData {
 
 const useMarketData = () => {
     const didFetch = useRef(false);
+    const { hasSession } = useMessagesContext();
     const [market, setMarket] = useState<Price[]>([]);
     const cbBTC = tokensData['cbBTC'];
     const WETH = tokensData['WETH'];
@@ -32,8 +34,8 @@ const useMarketData = () => {
     }, [cbBTC, WETH])
 
     useEffect(() => {
-        if (cbBTC && WETH && !didFetch.current) fetchMarket();
-    }, [cbBTC, WETH, fetchMarket]);
+        if (cbBTC && WETH && !didFetch.current && hasSession) fetchMarket();
+    }, [cbBTC, WETH, fetchMarket, hasSession]);
 
     return { market, fetchMarket };
 }

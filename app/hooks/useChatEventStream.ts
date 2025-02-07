@@ -2,8 +2,8 @@
 import { useCallback, useEffect } from "react";
 import { useMessagesContext } from "../context/Context";
 import { useAccount } from "wagmi";
-import createConfettiBurst from "../utils/createConfettiBurst";
 import useDoABarrelRoll from "./useDoABarrelRoll";
+import confetti from "canvas-confetti";
 
 const useChatEventStream = () => {
   const { messages, addChunk, addMessage, triggerHighlight, setShowConfirm } = useMessagesContext();
@@ -22,22 +22,29 @@ const useChatEventStream = () => {
       // event.data will be an object { role: "assistant", content: null, function_call: functionCall }
       const obj = JSON.parse(event.data)
       obj.arguments = obj.arguments ? JSON.parse(obj.arguments) : {}
-console.log('functionCall:', obj)
+      console.log('functionCall:', obj)
       if (obj.name === "highlight") {
         triggerHighlight(obj.arguments.section)
         return
       }
       if (obj.name === "confettiBurst") {
-        createConfettiBurst();
-        createConfettiBurst();
-        createConfettiBurst();
+        function randomInRange(min: number, max: number) {
+          return Math.random() * (max - min) + min;
+        }
+
+        confetti({
+          angle: randomInRange(55, 125),
+          spread: randomInRange(50, 70),
+          particleCount: randomInRange(50, 100),
+          origin: { y: 0.6 }
+        })
         return
       }
-      if(obj.name === "doABarrelRoll") {
+      if (obj.name === "doABarrelRoll") {
         doABarrelRoll();
         return
       }
-      if(obj.name === "confirm") {
+      if (obj.name === "confirm") {
         setShowConfirm(true);
         return
       }
@@ -48,7 +55,7 @@ console.log('functionCall:', obj)
       // event.data will be an object { role: "function", name: `${currentFunctionCall}`, content: result }
       // addMessage(event.data, "function", true)
       const obj = JSON.parse(event.data)
-console.log('functionCallResult:', obj)
+      console.log('functionCallResult:', obj)
       /*
         swap obj: {"amount0":-1,"amount1":0.9350678712419804,"transactionHash":"0x89bc843fade18dfa522c185f8f63916aefc21d93ffddea7398b5586ed72c9311"}
       */

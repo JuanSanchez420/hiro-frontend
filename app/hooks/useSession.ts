@@ -1,29 +1,30 @@
 import { useEffect } from "react"
 import { useAccount } from "wagmi"
+import { useMessagesContext } from "../context/Context"
 
 
 const useSession = () => {
+    const { hasSession, setHasSession } = useMessagesContext()
     const account = useAccount()
 
     useEffect(() => {
-        const f = async () => {
-            const response = await fetch(`/api/account`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+        if (account?.isConnected && !hasSession) {
+            console.log('setting session')
+            fetch('/api/session', {
+                method: 'POST',
                 credentials: 'include',
                 body: JSON.stringify({ account: account.address })
             })
-            const data = await response.json()
-            if (data.error) {
-                console.error(data.error)
-            }
+                .then(() => {
+                    return fetch('/api/session', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                })
+                .then(() => setHasSession(true))
+                .catch(console.error)
         }
-        if (account?.isConnected) {
-            f()
-        }
-    }, [account.address, account.isConnected])
+    }, [account.address, account.isConnected, setHasSession, hasSession])
 }
 
 export default useSession

@@ -6,7 +6,6 @@ export function useHighlight() {
     const [highlight, setHighlight] = useState<string | undefined>();
 
     const triggerHighlight = useCallback((section: string) => {
-        console.log(`highlight-${section.toLowerCase().replace(" ", "")}`);
         setHighlight(`highlight-${section.toLowerCase().replace(" ", "")}`);
         setTimeout(() => setHighlight(undefined), 10_000);
     }, []);

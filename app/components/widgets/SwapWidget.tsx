@@ -4,6 +4,7 @@ import usePortfolio from "@/app/hooks/usePortfolio";
 import formatNumber from "@/app/utils/formatNumber";
 import { styles } from "@/app/utils/styles";
 import SearchableSelect from "../SearchableSelect";
+import TOKENS from "@/app/utils/tokens.json";
 
 const SwapWidget = () => {
   const [fromAmount, setFromAmount] = useState("");
@@ -14,6 +15,10 @@ const SwapWidget = () => {
   const { portfolio } = usePortfolio()
 
   const handleSwap = () => {
+    if (!fromAmount || !fromToken || !toToken) {
+      alert("Please fill in all fields")
+      return
+    }
     if (confirm(`Swap ${fromAmount} of ${fromToken} to ${toToken}?`)) {
       addMessage(`Swap ${fromAmount} of ${fromToken} to ${toToken}`, "user", true)
       setWidget(null)
@@ -30,6 +35,24 @@ const SwapWidget = () => {
     if (!portfolio) return 0
     return portfolio.tokens.find(b => b.symbol === toToken)?.balance || 0
   }, [toToken, portfolio])
+
+  const tokenList = useMemo(() => {
+    const portfolioTokens = new Set(portfolio?.tokens.map(t => t.symbol) || []);
+
+    return Object.keys(TOKENS)
+      .map((key) => {
+        const token = TOKENS[key as keyof typeof TOKENS];
+        return { label: token.symbol, value: token.symbol };
+      })
+      .sort((a, b) => {
+        const aInPortfolio = portfolioTokens.has(a.value);
+        const bInPortfolio = portfolioTokens.has(b.value);
+        // If both are in portfolio or both are not, retain their order
+        if (aInPortfolio === bInPortfolio) return 0;
+        // Otherwise, sort portfolio tokens to the top
+        return aInPortfolio ? -1 : 1;
+      });
+  }, [portfolio]);
 
   const ButtonRow = ({ handler }: { handler: React.Dispatch<React.SetStateAction<string>> }) => {
     const percents = [25, 50, 75, 100]
@@ -72,7 +95,7 @@ const SwapWidget = () => {
                 className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
               />
               <div className="grid shrink-0 grid-cols-1 focus-within:relative">
-                <SearchableSelect options={[{ label: "USDC", value: "USDC" }, { label: "WETH", value: "WETH" }, { label: "AERO", value: "AERO" }]} onChange={(e) => {
+                <SearchableSelect options={tokenList} onChange={(e) => {
                   setFromToken(e.value)
                   setFromAmount("")
                 }} />
@@ -102,7 +125,7 @@ const SwapWidget = () => {
               className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
             />
             <div className="grid shrink-0 grid-cols-1 focus-within:relative">
-              <SearchableSelect options={[{ label: "USDC", value: "USDC" }, { label: "WETH", value: "WETH" }, { label: "AERO", value: "AERO" }]} onChange={(e) => {
+              <SearchableSelect options={tokenList} onChange={(e) => {
                 setToToken(e.value)
               }} />
             </div>
