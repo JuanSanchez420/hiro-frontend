@@ -4,9 +4,11 @@ import { useMessagesContext } from "../context/Context";
 import { useAccount } from "wagmi";
 import useDoABarrelRoll from "./useDoABarrelRoll";
 import confetti from "canvas-confetti";
+import usePortfolio from "./usePortfolio";
 
 const useChatEventStream = () => {
   const { messages, addChunk, addMessage, triggerHighlight, setShowConfirm } = useMessagesContext();
+  const { fetchPortfolio } = usePortfolio();
   const account = useAccount()
   const doABarrelRoll = useDoABarrelRoll()
 
@@ -62,6 +64,9 @@ const useChatEventStream = () => {
 
       // don't throw a message for highlight
       if (obj.section) return
+      if (obj.transactionHash) {
+        fetchPortfolio()
+      }
       addMessage("", "function", true, obj)
     })
 

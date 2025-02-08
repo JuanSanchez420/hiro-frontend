@@ -6,6 +6,7 @@ import { useMessagesContext } from "@/app/context/Context";
 import SearchableSelect from "../SearchableSelect";
 import { formatEther } from "viem";
 import { SimpleLiquidityPosition } from "@/app/types";
+import TOKENS from "@/app/utils/tokens.json";
 
 export default function LiquidityWidget() {
   const [amount0, setAmount0] = useState("");
@@ -65,6 +66,24 @@ export default function LiquidityWidget() {
     return portfolio.positions
   }, [portfolio])
 
+  const tokenList = useMemo(() => {
+    const portfolioTokens = new Set(portfolio?.tokens.map(t => t.symbol) || []);
+
+    return Object.keys(TOKENS)
+      .map((key) => {
+        const token = TOKENS[key as keyof typeof TOKENS];
+        return { label: token.symbol, value: token.symbol };
+      })
+      .sort((a, b) => {
+        const aInPortfolio = portfolioTokens.has(a.value);
+        const bInPortfolio = portfolioTokens.has(b.value);
+        // If both are in portfolio or both are not, retain their order
+        if (aInPortfolio === bInPortfolio) return 0;
+        // Otherwise, sort portfolio tokens to the top
+        return aInPortfolio ? -1 : 1;
+      });
+  }, [portfolio]);
+
   return (
     <div className="bg-white w-full max-w-md mx-auto">
       <div className="flex items-center space-x-4 mb-4">
@@ -88,8 +107,12 @@ export default function LiquidityWidget() {
         </button>
       </div>
 
+
       {action === "add" && (
         <div id="add-liquidity">
+          <div className="text-sm italic mb-3">
+            Note: Hiro will try to add a 50/50 split of the two tokens (ex: 1 WETH and $3,700 USDC). You will be refunded anything that cannot be added. Will upgrade this soon.
+          </div>
           {/* Token0 */}
           <div className="mb-4">
             <div>
@@ -111,11 +134,7 @@ export default function LiquidityWidget() {
                   />
                   <div className="grid shrink-0 grid-cols-1">
                     <SearchableSelect
-                      options={[
-                        { label: "USDC", value: "USDC" },
-                        { label: "WETH", value: "WETH" },
-                        { label: "AERO", value: "AERO" }
-                      ]}
+                      options={tokenList}
                       onChange={(e) => {
                         setToken0(e.value);
                         setAmount0("");
@@ -150,11 +169,7 @@ export default function LiquidityWidget() {
                 />
                 <div className="grid shrink-0 grid-cols-1">
                   <SearchableSelect
-                    options={[
-                      { label: "USDC", value: "USDC" },
-                      { label: "WETH", value: "WETH" },
-                      { label: "AERO", value: "AERO" }
-                    ]}
+                    options={tokenList}
                     onChange={(e) => {
                       setToken1(e.value);
                       setAmount1("");

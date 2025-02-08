@@ -29,6 +29,8 @@ interface MessagesContextType {
     setShowConfirm: React.Dispatch<React.SetStateAction<boolean>>
     hasSession: boolean
     setHasSession: React.Dispatch<React.SetStateAction<boolean>>
+    isSignedIn: boolean
+    setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const MessagesContext = createContext<MessagesContextType | undefined>(undefined);
@@ -42,6 +44,7 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
     const [thinking, setThinking] = useState(false);
     const { highlight, triggerHighlight } = useHighlight();
     const [hasSession, setHasSession] = useState(false);
+    const [isSignedIn, setIsSignedIn] = useState(false);
 
 
     const addMessage = (message: string, type: "assistant" | "user" | "function", completed: boolean, functionCall?: Record<string, unknown>) => {
@@ -84,7 +87,8 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
             thinking, setThinking,
             highlight, triggerHighlight,
             showConfirm, setShowConfirm,
-            hasSession, setHasSession
+            hasSession, setHasSession,
+            isSignedIn, setIsSignedIn
              }}>
             {children}
         </MessagesContext.Provider>

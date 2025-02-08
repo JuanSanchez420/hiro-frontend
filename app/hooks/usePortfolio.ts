@@ -9,7 +9,7 @@ const usePortfolio = () => {
     const [portfolio, setPortfolio] = useState<Portfolio>();
     const [loading, setLoading] = useState(false);
 
-    const fetchBalances = useCallback(async () => {
+    const fetchPortfolio = useCallback(async () => {
         if (!account?.isConnected || !hasSession) return;
         const response = await fetch(`/api/portfolio?account=${account.address}`);
         const data = await response.json();
@@ -27,7 +27,7 @@ const usePortfolio = () => {
         if (account?.isConnected && hasSession) f();
     }, [account, hasSession])
 
-    return { portfolio, fetchBalances, loading };
+    return { portfolio, fetchPortfolio, loading };
 }
 
 export default usePortfolio;

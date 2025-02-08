@@ -105,9 +105,9 @@ const FunctionCall = ({ message }: { message: Message }) => {
                     className="origin-top transition duration-200 ease-out data-[closed]:-translate-y-6 data-[closed]:opacity-0"
                 >
                     {obj?.arguments && Object.entries(obj.arguments).map(([key, value]) => (
-                        <div key={key} className="grid grid-cols-2 grid-cols-max gap-2">
-                            <div className="text-right">{key}</div>
-                            <div className="text-right">{value}</div>
+                        <div key={key} className="flex items-center justify-between gap-1">
+                            <div className="w-1/3 text-right text-sm">{key}</div>
+                            <div className="w-2/3 text-right text-sm">{value}</div>
                         </div>
                     ))}
                 </DisclosurePanel>
@@ -118,17 +118,17 @@ const FunctionCall = ({ message }: { message: Message }) => {
 
 const FunctionCallResult = ({ message }: { message: Message }) => {
     const obj = message.functionCall as unknown as FunctionCallMessage;
-    
+
     if (obj.transactionHash === undefined) return null
 
     const isDemo = obj.transactionHash === '0xdummytxhash'
 
     const handleTxLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         if (isDemo) {
-          e.preventDefault();
-          // Optionally alert or log for demo users
+            e.preventDefault();
+            // Optionally alert or log for demo users
         }
-      };
+    };
 
     return (
         <Disclosure as="div" className="w-full">
@@ -145,12 +145,26 @@ const FunctionCallResult = ({ message }: { message: Message }) => {
                     transition
                     className="origin-top transition duration-200 ease-out data-[closed]:-translate-y-6 data-[closed]:opacity-0"
                 >
-                    {obj && Object.entries(obj).map(([key, value]) => (
-                        <div key={key} className="grid grid-cols-2 grid-cols-max gap-2">
-                            <div className="text-right">{key}</div>
-                            <div className="text-right overflow-hidden text-ellipsis">{value}</div>
-                        </div>
-                    ))}
+                    {obj &&
+                        Object.entries(obj).map(([key, value]) => (
+                            <div
+                                key={key}
+                                className="flex items-center justify-between gap-1"
+                            >
+                                <div className="w-1/3 text-right text-sm">{key}</div>
+                                <div className="w-2/3 flex items-center justify-end gap-2">
+                                    <span className="overflow-hidden text-ellipsis text-sm">{value}</span>
+                                    {key === "transactionHash" && (
+                                        <button
+                                            onClick={() => navigator.clipboard.writeText(value)}
+                                            className="ml-2 rounded bg-gray-200 px-2 py-1 text-xs hover:bg-gray-400"
+                                        >
+                                            Copy
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                 </DisclosurePanel>
             </div>
         </Disclosure>

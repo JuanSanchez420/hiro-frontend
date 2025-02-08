@@ -6,11 +6,14 @@ import { useCallback, useEffect, useState } from "react"
 import { styles } from "../utils/styles"
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react"
 import { useMessagesContext } from "../context/Context"
+import useSIWE from "../hooks/useSIWE"
 
 const ConnectWallet = () => {
     const { highlight } = useMessagesContext()
     const { connectors, connect } = useConnect()
     const { isConnected } = useAccount()
+    const { isSignedIn } = useMessagesContext()
+    const { doSIWE } = useSIWE()
     const [isLoaded, setIsLoaded] = useState(false)
     const itemClass = "block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
 
@@ -59,7 +62,22 @@ const ConnectWallet = () => {
         </Menu>)
     }
 
-    return isConnected ? <AccountDetails /> : connectors?.length > 0 ? <WalletMenu /> : <div>No connectors available</div>
+    const SignIn = () => {
+        return (
+            <div className="relative ml-3">
+                <button
+                    className={`${styles.button} w-40`}
+                    onClick={
+                        doSIWE}
+                >
+                    Sign In
+                </button>
+            </div>
+
+        )
+    }
+
+    return isConnected && isSignedIn ? <AccountDetails /> : isConnected ? <SignIn /> : connectors?.length > 0 ? <WalletMenu /> : <div>No connectors available</div>
 }
 
 export default ConnectWallet
