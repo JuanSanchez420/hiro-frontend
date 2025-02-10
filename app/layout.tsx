@@ -27,7 +27,7 @@ export default function RootLayout({
     <Providers>
       <MessagesProvider>
         <html lang="en" className="h-full">
-          <body className={`h-full`}>
+          <body className={`h-full bg-white`}>
             <div className="flex flex-col min-h-full h-full">
               <Disclosure as="nav">
                 <div className="mx-auto w-full px-4">
