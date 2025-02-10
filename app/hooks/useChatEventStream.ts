@@ -82,7 +82,7 @@ const useChatEventStream = () => {
       console.error('EventSource error:', err);
       eventSource.close();
     }
-  }, [addChunk, messages, addMessage, account, triggerHighlight, setShowConfirm, doABarrelRoll, fetchPortfolio])
+  }, [addChunk, messages, addMessage, account, triggerHighlight, setShowConfirm, doABarrelRoll, fetchPortfolio, setRain])
 
   useEffect(() => {
     if (messages.length > 0 && messages[messages.length - 1].completed && messages[messages.length - 1].type === "user")
