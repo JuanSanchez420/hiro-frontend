@@ -7,7 +7,7 @@ import confetti from "canvas-confetti";
 import usePortfolio from "./usePortfolio";
 
 const useChatEventStream = () => {
-  const { messages, addChunk, addMessage, triggerHighlight, setShowConfirm } = useMessagesContext();
+  const { messages, addChunk, addMessage, triggerHighlight, setShowConfirm, setRain } = useMessagesContext();
   const { fetchPortfolio } = usePortfolio();
   const account = useAccount()
   const doABarrelRoll = useDoABarrelRoll()
@@ -46,6 +46,9 @@ const useChatEventStream = () => {
         doABarrelRoll();
         return
       }
+      if(obj.name === "makeItRain") {
+        setRain(obj.arguments.symbol)
+      }
       if (obj.name === "confirm") {
         setShowConfirm(true);
         return
@@ -79,7 +82,7 @@ const useChatEventStream = () => {
       console.error('EventSource error:', err);
       eventSource.close();
     }
-  }, [addChunk, messages, addMessage, account, triggerHighlight, setShowConfirm, doABarrelRoll])
+  }, [addChunk, messages, addMessage, account, triggerHighlight, setShowConfirm, doABarrelRoll, fetchPortfolio])
 
   useEffect(() => {
     if (messages.length > 0 && messages[messages.length - 1].completed && messages[messages.length - 1].type === "user")

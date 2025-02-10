@@ -12,6 +12,7 @@ import TokenData from './TokenData';
 import { Spinner } from './Spinner';
 import useMarketData from '../hooks/useMarketData';
 import { useAccount } from 'wagmi';
+import truncateAddress from '../utils/truncateAddress';
 
 export default function DrawerRight() {
   const account = useAccount()
@@ -75,6 +76,7 @@ export default function DrawerRight() {
                   {!token && loading && <Spinner />}
                   {!token && account?.isConnected && <div className="flex flex-col h-full">
                     <div className="flex-1">
+                    <div className='border-b mb-3'>Portfolio <span className='text-sm gray-500'>({truncateAddress(account.address || "0x")})</span></div>
                       <div>
                         <a className="grid grid-cols-4 gap-2 p-2 text-gray-700 group rounded-md text-sm/6 font-semibold">
                           <div>ICON</div>
@@ -102,6 +104,7 @@ export default function DrawerRight() {
                   </div>}
                   {!token && market.length > 0 && !account?.isConnected &&
                     <div className="flex flex-col h-full">
+                      <div className='border-b mb-3'>Market Data</div>
                       <div className="flex-1">
                         <div>
                           <a className="grid grid-cols-4 gap-2 p-2 text-gray-700 group rounded-md text-sm/6 font-semibold">

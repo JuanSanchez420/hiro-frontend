@@ -10,6 +10,8 @@ import DrawerLeft from "./components/DrawerLeft";
 import Link from "next/link";
 import NewChat from "./components/NewChat";
 import DrawerRight from "./components/DrawerRight";
+import RainingIcons from "./components/RainingIcons";
+
 export const metadata: Metadata = {
   title: "Hiro",
   description: "You need a Hiro! An AI agent for simplifying crypto.",
@@ -53,6 +55,7 @@ export default function RootLayout({
                 <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8"><PromptInput /></div>
               </div>
             </div>
+            <RainingIcons />
           </body>
         </html>
       </MessagesProvider>

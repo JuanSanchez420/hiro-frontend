@@ -8,13 +8,13 @@ interface Option {
 
 interface SearchableSelectProps {
     options: Option[];
+    value: Option | null;
     onChange: (option: Option) => void;
 }
 
-const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, onChange }) => {
+const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, value, onChange }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selected, setSelected] = useState<Option | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const filteredOptions = options.filter(option =>
@@ -22,7 +22,6 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, onChange }
     );
 
     const handleSelect = (option: Option) => {
-        setSelected(option);
         onChange(option);
         setIsOpen(false);
         setSearchTerm('');
@@ -44,14 +43,14 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, onChange }
                 className="rounded px-4 py-2 cursor-pointer text-sm text-gray-500 flex"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <div className='text-sm'>{selected ? selected.label : 'Select...'}</div>
+                <div className='text-sm'>{value ? value.label : 'Select...'}</div>
                 <ChevronDownIcon
                     aria-hidden="true"
                     className="pointer-events-none col-start-1 row-start-1 ml-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
                 />
             </div>
             {isOpen && (
-                <div className="absolute mt-1 bg-white text-sm border border-gray-300 rounded shadow-lg z-10">
+                <div className="absolute -ml-10 mt-1 bg-white text-sm border border-gray-300 rounded shadow-lg z-10">
                     <input
                         type="text"
                         className="w-full px-3 py-2 border-b border-gray-300 focus:outline-none"
@@ -60,7 +59,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, onChange }
                         onChange={e => setSearchTerm(e.target.value)}
                         autoFocus
                     />
-                    <ul className="max-h-60 overflow-y-auto">
+                    <ul className="max-h-40 overflow-y-auto">
                         {filteredOptions.length > 0 ? (
                             filteredOptions.map(option => (
                                 <li

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useMessagesContext } from "@/app/context/Context";
 import usePortfolio from "@/app/hooks/usePortfolio";
 import formatNumber from "@/app/utils/formatNumber";
@@ -8,8 +8,8 @@ import TOKENS from "@/app/utils/tokens.json";
 
 const SwapWidget = () => {
   const [fromAmount, setFromAmount] = useState("");
-  const [fromToken, setFromToken] = useState("");
-  const [toToken, setToToken] = useState("");
+  const [fromToken, setFromToken] = useState("WETH");
+  const [toToken, setToToken] = useState("USDC");
 
   const { addMessage, setWidget, setDrawerRightOpen } = useMessagesContext()
   const { portfolio } = usePortfolio()
@@ -35,6 +35,10 @@ const SwapWidget = () => {
     if (!portfolio) return 0
     return portfolio.tokens.find(b => b.symbol === toToken)?.balance || 0
   }, [toToken, portfolio])
+
+  useEffect(()=>{
+    setFromToken(portfolio?.tokens[0]?.symbol || "WETH")
+  },[portfolio])
 
   const tokenList = useMemo(() => {
     const portfolioTokens = new Set(portfolio?.tokens.map(t => t.symbol) || []);
@@ -63,7 +67,7 @@ const SwapWidget = () => {
             key={index}
             type="button"
             onClick={() => handler((Number(balance0) * percent / 100).toString())}
-            className={styles.buttonSm}
+            className={styles.button}
           >
             {percent}%
           </button>
@@ -95,7 +99,7 @@ const SwapWidget = () => {
                 className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
               />
               <div className="grid shrink-0 grid-cols-1 focus-within:relative">
-                <SearchableSelect options={tokenList} onChange={(e) => {
+                <SearchableSelect options={tokenList} value={{ label: fromToken, value: fromToken}} onChange={(e) => {
                   setFromToken(e.value)
                   setFromAmount("")
                 }} />
@@ -125,7 +129,7 @@ const SwapWidget = () => {
               className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
             />
             <div className="grid shrink-0 grid-cols-1 focus-within:relative">
-              <SearchableSelect options={tokenList} onChange={(e) => {
+              <SearchableSelect options={tokenList} value={{ label: toToken, value: toToken}}  onChange={(e) => {
                 setToToken(e.value)
               }} />
             </div>

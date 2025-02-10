@@ -66,7 +66,7 @@ const ConnectWallet = () => {
         return (
             <div className="relative ml-3">
                 <button
-                    className={`${styles.button} w-40`}
+                    className={`${styles.button} w-40 animate-bounce`}
                     onClick={
                         doSIWE}
                 >

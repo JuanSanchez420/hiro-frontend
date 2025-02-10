@@ -135,6 +135,7 @@ export default function LiquidityWidget() {
                   <div className="grid shrink-0 grid-cols-1">
                     <SearchableSelect
                       options={tokenList}
+                      value={{ label: token0, value: token0 }}
                       onChange={(e) => {
                         setToken0(e.value);
                         setAmount0("");
@@ -170,6 +171,7 @@ export default function LiquidityWidget() {
                 <div className="grid shrink-0 grid-cols-1">
                   <SearchableSelect
                     options={tokenList}
+                    value={{ label: token1, value: token1 }}
                     onChange={(e) => {
                       setToken1(e.value);
                       setAmount1("");

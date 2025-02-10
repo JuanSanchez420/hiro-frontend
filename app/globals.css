@@ -53,7 +53,7 @@ body {
   background: radial-gradient(circle, #ffd700 0%, #ff4500 50%, transparent 70%);
   border-radius: 50%;
   box-shadow: 0 0 10px #ff4500, 0 0 20px #ffd700, 0 0 30px #ff4500;
-  animation: sparkle 1s linear infinite;
+  animation: sparkle 1s linear 10;
 }
 
 /* Glowing particles */
@@ -66,7 +66,7 @@ body {
   background: radial-gradient(circle, #ffd700 0%, transparent 70%);
   border-radius: 50%;
   box-shadow: 0 0 10px #ffd700;
-  animation: float 1.5s infinite ease-in-out;
+  animation: float 1.5s 10 ease-in-out;
 }
 
 /* Particle positions */
@@ -157,3 +157,81 @@ body {
 /* bubble end */
 
 
+/* raining start */
+@keyframes iconFall {
+  0% {
+    opacity: 1;
+    transform: translate(0, -100%) rotateZ(0deg);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(100px, 75vh) rotateZ(270deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(150px, 100vh) rotateZ(360deg);
+  }
+}
+
+.falling-icon {
+  display: inline-flex;
+  position: fixed;
+  top: -50px;
+  transform: translate3d(0, -100%, 0);
+  user-select: none;
+  pointer-events: none;
+  z-index: 99999;
+  animation-name: iconFall;
+  animation-duration: 10s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-play-state: running;
+}
+
+/* Static animation delays */
+.falling-icon:nth-child(5n + 5) {
+  animation-delay: 1.3s;
+}
+
+.falling-icon:nth-child(3n + 2) {
+  animation-delay: 1.5s;
+}
+
+.falling-icon:nth-child(2n + 5) {
+  animation-delay: 1.7s;
+}
+
+.falling-icon:nth-child(3n + 10) {
+  animation-delay: 2.7s;
+}
+
+.falling-icon:nth-child(7n + 2) {
+  animation-delay: 3.5s;
+}
+
+.falling-icon:nth-child(4n + 5) {
+  animation-delay: 5.5s;
+}
+
+.falling-icon:nth-child(3n + 7) {
+  animation-delay: 8s;
+}
+
+/* raining end */
+
+.fade-in-text {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 1.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

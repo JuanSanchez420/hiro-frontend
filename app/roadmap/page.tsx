@@ -111,6 +111,9 @@ export default function RoadMap() {
     return (
         <div className="flow-root">
             <h1 className='font-2xl uppercase font-bold mb-5'>Roadmap</h1>
+            <div className='mb-5'>
+                <div>The goal for Hiro is to make crypto UX tappable. Tap for swap, tap to earn interest, tap, tap, tap. Hiro won&apos;t be everything to everyone. The goal is for a streamlined daily experience. </div>
+            </div>
             <ul role="list" className="-mb-8">
                 {timeline.map((event, eventIdx) => (
                     <li key={event.id}>

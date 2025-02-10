@@ -27,10 +27,10 @@ interface MessagesContextType {
     triggerHighlight: (section: string) => void
     showConfirm: boolean
     setShowConfirm: React.Dispatch<React.SetStateAction<boolean>>
-    hasSession: boolean
-    setHasSession: React.Dispatch<React.SetStateAction<boolean>>
     isSignedIn: boolean
     setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>
+    rain: string | undefined
+    setRain: React.Dispatch<React.SetStateAction<string | undefined>>
 }
 
 export const MessagesContext = createContext<MessagesContextType | undefined>(undefined);
@@ -43,18 +43,18 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
     const [widget, setWidget] = useState<WidgetOption>(null);
     const [thinking, setThinking] = useState(false);
     const { highlight, triggerHighlight } = useHighlight();
-    const [hasSession, setHasSession] = useState(false);
     const [isSignedIn, setIsSignedIn] = useState(false);
+    const [rain, setRain] = useState<string | undefined>();
 
 
     const addMessage = (message: string, type: "assistant" | "user" | "function", completed: boolean, functionCall?: Record<string, unknown>) => {
         setThinking(true);
-        setMessages(prev=> [...prev, { message, type, completed, functionCall }]);
+        setMessages(prev => [...prev, { message, type, completed, functionCall }]);
     }
 
     const addChunk = (chunk: string, status: "start" | "middle" | "end") => {
         if (status === "start") {
-            setMessages(prev=> [...prev, { message: chunk, type: "assistant", completed: false }]);
+            setMessages(prev => [...prev, { message: chunk, type: "assistant", completed: false }]);
         }
         if (status === "middle") {
             setMessages((prev) => {
@@ -78,18 +78,18 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
     }
 
     return (
-        <MessagesContext.Provider value={{ 
+        <MessagesContext.Provider value={{
             messages, addMessage, resetMessages,
-            addChunk, 
+            addChunk,
             drawerLeftOpen, setDrawerLeftOpen,
             drawerRightOpen, setDrawerRightOpen,
-            widget, setWidget, 
+            widget, setWidget,
             thinking, setThinking,
             highlight, triggerHighlight,
             showConfirm, setShowConfirm,
-            hasSession, setHasSession,
-            isSignedIn, setIsSignedIn
-             }}>
+            isSignedIn, setIsSignedIn,
+            rain, setRain
+        }}>
             {children}
         </MessagesContext.Provider>
     );

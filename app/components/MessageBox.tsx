@@ -4,6 +4,7 @@ import WandSpinner from "./WandSpinner";
 import Image from "next/image"
 import { Message } from "../context/Context";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
+import React, { useMemo } from "react";
 
 const friendlyNames = {
     "getETHBalance": "Get ETH Balance",
@@ -18,6 +19,7 @@ const friendlyNames = {
     'swapDemo': 'Swap Demo',
     'addLiquidityDemo': 'Add Liquidity Demo',
     'setAutonomousInstructionsDemo': 'Set Autonomous Instructions Demo',
+    "makeItRain": "Make it Rain",
 }
 
 const parseMessage = (message: string) => {
@@ -89,13 +91,27 @@ interface FunctionCallMessage {
 }
 
 const FunctionCall = ({ message }: { message: Message }) => {
-    const obj = message.functionCall as unknown as FunctionCallMessage;
+    const obj = useMemo(() => {
+        return message.functionCall as unknown as FunctionCallMessage
+    }, [message.functionCall]);
+
+    const entries = useMemo(() => {
+        return (
+            obj?.arguments && Object.entries(obj.arguments).map(([key, value]) => (
+                <div key={key} className="flex items-center justify-between gap-1">
+                    <div className="w-1/3 text-right text-sm">{key}</div>
+                    <div className="w-2/3 text-right text-sm">{value}</div>
+                </div>
+            ))
+        )
+    }, [obj])
+
     return (
         <Disclosure as="div" className="w-full py-5">
             <DisclosureButton className="group w-full text-left">
-                <div className="flex flex-1 items-center mb-3 w-full">
+                <div className="flex flex-1 items-center mb-3 w-full pl-3">
                     <WandSpinner />
-                    <div className="flex flex-1 items-center italic">{friendlyNames[obj.name]}</div>
+                    <div className={"flex flex-1 items-center italic"}>{friendlyNames[obj.name]}</div>
                     <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
                 </div>
             </DisclosureButton>
@@ -104,12 +120,7 @@ const FunctionCall = ({ message }: { message: Message }) => {
                     transition
                     className="origin-top transition duration-200 ease-out data-[closed]:-translate-y-6 data-[closed]:opacity-0"
                 >
-                    {obj?.arguments && Object.entries(obj.arguments).map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between gap-1">
-                            <div className="w-1/3 text-right text-sm">{key}</div>
-                            <div className="w-2/3 text-right text-sm">{value}</div>
-                        </div>
-                    ))}
+                    {entries}
                 </DisclosurePanel>
             </div>
         </Disclosure>

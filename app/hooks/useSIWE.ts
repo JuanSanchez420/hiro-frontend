@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
 import { useMessagesContext } from '../context/Context';
 
@@ -6,8 +6,14 @@ const useSIWE = () => {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { signMessageAsync } = useSignMessage();
-  const { setIsSignedIn } = useMessagesContext();
+  const { isSignedIn, setIsSignedIn } = useMessagesContext();
   const [status, setStatus] = useState<string>('');
+
+  useEffect(()=>{
+    if(isSignedIn){
+      setStatus('Signed in');
+    }
+  },[isSignedIn, isConnected])
 
   const doSIWE = useCallback(async () => {
     if (!isConnected) {

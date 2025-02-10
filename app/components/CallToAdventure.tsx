@@ -10,7 +10,7 @@ const CallToAventure = () => {
                 </div>
                 <div className="flex justify-evenly">
                     <div className="text-5xl"><Image src="/images/fire.gif" height={50} width={50} alt="fire"/></div>
-                    <div><Image src="/images/hiro-large.png" height={50} width={50} alt="hiro" /></div>
+                    <div><Image src="/images/hiro.png" height={50} width={50} alt="hiro" /></div>
                     <div className="text-5xl"><Image src="/images/fire.gif" height={50} width={50} alt="fire"/></div>
                 </div>
             </div>
