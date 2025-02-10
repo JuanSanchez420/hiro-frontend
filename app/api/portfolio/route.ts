@@ -13,7 +13,6 @@ export async function GET(req: NextRequest) {
       headers: {
         ...req.headers,
         cookie: req.headers.get('cookie') || '',
-        Origin: "http://localhost:3000",
         'Content-Type': 'application/json',
       },
       credentials: 'include',
