@@ -5,7 +5,7 @@ export async function GET(req: NextRequest) {
     const content = searchParams.get("content");
     const demo = searchParams.get("demo");
 
-    const targetUrl = `${process.env.NEXT_PUBLIC_SERVER_URL}:${process.env.NEXT_PUBLIC_SERVER_PORT}/${demo ? `prompt-demo` : "prompt"}?content=${content}`;
+    const targetUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/${demo ? `prompt-demo` : "prompt"}?content=${content}`;
 
     try {
         const response = await fetch(targetUrl, {

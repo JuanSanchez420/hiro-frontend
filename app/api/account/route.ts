@@ -7,7 +7,7 @@ interface EnhancedRequestInit extends RequestInit {
 
 export async function POST(req: NextRequest) {
   try {
-    const apiUrl = `${process.env.NEXT_PUBLIC_SERVER_URL}:${process.env.NEXT_PUBLIC_SERVER_PORT}/account`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/account`;
 
     const fetchOptions: EnhancedRequestInit = {
       method: "POST",

@@ -7,7 +7,7 @@ interface EnhancedRequestInit extends RequestInit {
 
 export async function POST(req: NextRequest) {
   try {
-    const apiUrl = `${process.env.NEXT_PUBLIC_SERVER_URL}:${process.env.NEXT_PUBLIC_SERVER_PORT}/set-session`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/set-session`;
 
     const fetchOptions: EnhancedRequestInit = {
       method: "POST",
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
     try {
-      const apiUrl = `${process.env.NEXT_PUBLIC_SERVER_URL}:${process.env.NEXT_PUBLIC_SERVER_PORT}/get-session`;
+      const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/get-session`;
 
       // Forward the request to the server
       const response = await fetch(apiUrl, {

@@ -5,7 +5,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const account = searchParams.get('account')
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_SERVER_URL}:${process.env.NEXT_PUBLIC_SERVER_PORT}/api/instructions?account=${account}`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/api/instructions?account=${account}`;
 
     // Forward the request to the server
     const response = await fetch(apiUrl, {

@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
     const tokens = searchParams.get('tokens')
     const hours = searchParams.get('hours')
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_SERVER_URL}:${process.env.NEXT_PUBLIC_SERVER_PORT}/api/prices?tokens=${tokens}&hours=${hours}`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/api/prices?tokens=${tokens}&hours=${hours}`;
 
     // Forward the request to the server
     const response = await fetch(apiUrl, {
