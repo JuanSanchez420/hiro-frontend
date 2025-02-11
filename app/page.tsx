@@ -9,12 +9,10 @@ import { GlobeAltIcon } from "@heroicons/react/24/outline";
 import { styles } from "./utils/styles";
 import Confirm from "./components/Confirm";
 import InterestingButton from "./components/InterestingButton";
-import useHello from "./hooks/useHello";
 
 export default function Home() {
   const { messages, widget, addMessage } = useMessagesContext();
   useChatEventStream()
-  useHello()
 
   const bottomRef = useRef<HTMLDivElement>(null)
 
