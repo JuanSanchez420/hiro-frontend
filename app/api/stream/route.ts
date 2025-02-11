@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
+    const headersObject = Object.fromEntries(req.headers);
     const { searchParams } = new URL(req.url);
     const content = searchParams.get("content");
     const demo = searchParams.get("demo");
@@ -10,10 +11,16 @@ export async function GET(req: NextRequest) {
     try {
         const response = await fetch(targetUrl, {
             headers: {
-                ...req.headers,
+                ...headersObject,
+                'X-Real-IP': req.headers.get('x-real-ip') || '',
+                'X-Forwarded-For': req.headers.get('x-forwarded-for') || '',
+                'X-Forwarded-Proto': req.headers.get('x-forwarded-proto') || 'http',
+                'X-Forwarded-Host': req.headers.get('x-forwarded-host') || req.headers.get('host') || '',
+                'X-NginX-Proxy': req.headers.get('x-nginx-proxy') || 'true',
+                'Host': req.headers.get('host') || '',
                 cookie: req.headers.get('cookie') || '',
-                "Accept": "text/event-stream"
-            },
+                'Content-Type': 'application/json',
+              },
             credentials: "include",
         });
 

@@ -7,14 +7,21 @@ interface EnhancedRequestInit extends RequestInit {
 
 export async function POST(req: NextRequest) {
   try {
+    const headersObject = Object.fromEntries(req.headers);
     const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/set-session`;
 
     const fetchOptions: EnhancedRequestInit = {
       method: "POST",
       headers: {
-        ...req.headers,
-        "Content-Type": "application/json",
-        cookie: req.headers.get("cookie") || "",
+        ...headersObject,
+        'X-Real-IP': req.headers.get('x-real-ip') || '',
+        'X-Forwarded-For': req.headers.get('x-forwarded-for') || '',
+        'X-Forwarded-Proto': req.headers.get('x-forwarded-proto') || 'http',
+        'X-Forwarded-Host': req.headers.get('x-forwarded-host') || req.headers.get('host') || '',
+        'X-NginX-Proxy': req.headers.get('x-nginx-proxy') || 'true',
+        'Host': req.headers.get('host') || '',
+        cookie: req.headers.get('cookie') || '',
+        'Content-Type': 'application/json',
       },
       credentials: "include",
       body: req.body,

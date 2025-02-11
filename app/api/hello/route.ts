@@ -2,13 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
-    // Convert Headers object to plain object and ensure X-Forwarded headers are included
     const headersObject = Object.fromEntries(req.headers);
-    console.log('Incoming headers:', headersObject);
 
     const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/api/hello`;
 
-    // Forward the request to the server
     const response = await fetch(apiUrl, {
       method: req.method,
       headers: {
@@ -27,7 +24,6 @@ export async function GET(req: NextRequest) {
     });
 
     const headers = new Headers(response.headers);
-    console.log(response)
     const data = await response.json();
     return NextResponse.json(data, {
       status: response.status,
