@@ -1,8 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import MessageBox from "./components/MessageBox";
-import { Message, useMessagesContext } from "./context/Context";
+import { useMessagesContext } from "./context/Context";
 import useChatEventStream from "./hooks/useChatEventStream";
 import Image from 'next/image'
 import { GlobeAltIcon } from "@heroicons/react/24/outline";
@@ -34,14 +34,18 @@ export default function Home() {
   }, [addMessage])
 
   const Content = () => {
+    const boxes = useMemo(() => {
+      return Array.from({ length: messages.length }, (_e, index: number) => (
+        <MessageBox key={index} index={index} />
+      ));
+    }, [])
+
     return (<section className="message-list">
-      {messages.map((m: Message, index: number) => (
-        <MessageBox key={index} message={m} />
-      ))}
+      {boxes}
       <Confirm />
     </section>)
   }
-//
+
   return (<div className={`flex flex-col h-full`}>
     {messages.length === 0 ? <Intro /> : <Content />}
     <div ref={bottomRef} />

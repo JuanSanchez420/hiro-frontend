@@ -2,7 +2,7 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import WandSpinner from "./WandSpinner";
 import Image from "next/image"
-import { Message } from "../context/Context";
+import { Message, useMessagesContext } from "../context/Context";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 import React, { useMemo } from "react";
 
@@ -225,13 +225,15 @@ const AssistantMessage = ({ message }: { message: Message }) => {
     );
 }
 
-const MessageBox = ({ message }: { message: Message }) => {
+const MessageBox = ({ index }: { index: number }) => {
+    const { messages } = useMessagesContext();
+    const message = messages[index];
 
-    return message.type === "user" ? <UserMessage message={message} /> :
-        message.type === "assistant" && message.functionCall === undefined ? <AssistantMessage message={message} /> :
-            message.type === "function" ?
-                <FunctionCallResult message={message} /> :
-                <FunctionCall message={message} />
+    if (message.type === "user") return <UserMessage message={message} />
+    if (message.type === "assistant" && message.functionCall === undefined) return <AssistantMessage message={message} />
+    if (message.type === "function") return <FunctionCallResult message={message} />
+
+    return <FunctionCall message={message} />
 }
 
 export default MessageBox;
