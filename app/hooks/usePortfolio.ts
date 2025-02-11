@@ -9,7 +9,7 @@ const usePortfolio = () => {
 
     const fetchPortfolio = useCallback(async () => {
         if (!account?.isConnected) return;
-        const response = await fetch(`/api/portfolio?account=${account.address}`);
+        const response = await fetch(`/api/portfolio?account=${account.address}`, { credentials: 'include', });
         const data = await response.json();
         setPortfolio(data);
     }, [account])
@@ -17,7 +17,7 @@ const usePortfolio = () => {
     useEffect(() => {
         const f = async () => {
             setLoading(true);
-            const response = await fetch(`/api/portfolio?account=${account.address}`);
+            const response = await fetch(`/api/portfolio?account=${account.address}`, { credentials: 'include', });
             const data = await response.json();
             setPortfolio(data);
             setLoading(false);

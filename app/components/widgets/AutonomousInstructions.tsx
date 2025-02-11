@@ -9,14 +9,14 @@ const AutonomousInstructions = () => {
   const { addMessage, setWidget } = useMessagesContext();
   const [value, setValue] = useState("");
 
-  useEffect(()=>{
+  useEffect(() => {
     const f = async () => {
-      const i = await fetch(`/api/instructions?account=${account.address}`, { credentials: 'same-origin', });
+      const i = await fetch(`/api/instructions?account=${account.address}`, { credentials: 'include', });
       const j = await i.json();
       setValue(j.instructions)
     }
     f()
-  },[account.address])
+  }, [account.address])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter") {

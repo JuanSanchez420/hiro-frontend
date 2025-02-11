@@ -26,7 +26,7 @@ const useMarketData = () => {
         if (!cbBTC || !WETH) return;
         console.log('fetching market data');
         didFetch.current = true;
-        const response = await fetch(`/api/prices?tokens=${[cbBTC.address, WETH.address].join(',')}&hours=1`, { credentials: 'same-origin', });
+        const response = await fetch(`/api/prices?tokens=${[cbBTC.address, WETH.address].join(',')}&hours=1`, { credentials: 'include', });
         const data: { [token: string]: TokenHourData[] } = await response.json();
 
         setMarket([{ token: cbBTC, usdPrice: data[cbBTC.address.toLowerCase()][0].close.toString() || "0" }, { token: WETH, usdPrice: data[WETH.address.toLowerCase()][0].close.toString() || "0" }]);
