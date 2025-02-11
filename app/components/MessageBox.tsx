@@ -184,41 +184,45 @@ const FunctionCallResult = ({ message }: { message: Message }) => {
 
 const AssistantMessage = ({ message }: { message: Message }) => {
 
-  const segments = useMemo(() => parseMessage(message.message), [message.message]);
+    const memoizedImage = useMemo(() => (
+        <div className="shrink-0 mr-2">
+            <Image src="/images/hiro.png" height={32} width={32} alt="hiro" />
+        </div>
+    ), []);
 
-  const renderedSegments = useMemo(
-    () =>
-      segments.map((segment, index) => {
-        switch (segment.type) {
-          case "bold":
-            return (
-              <span key={index} className="inline-block font-bold">
-                {segment.content}
-              </span>
-            );
-          case "quote":
-            return (
-              <span key={index} className="inline-block bg-gray-200 p-1 rounded italic">
-                {segment.content}
-              </span>
-            );
-          case "newline":
-            return <br key={index} />;
-          default:
-            return segment.content;
-        }
-      }),
-    [segments]
-  );
+    const segments = useMemo(() => parseMessage(message.message), [message.message]);
 
-  return (
-    <div className="flex w-full py-5 my-2">
-      <div className="shrink-0 mr-2">
-        <Image src="/images/hiro.png" height={32} width={32} alt="hiro" />
-      </div>
-      <div>{renderedSegments}</div>
-    </div>
-  );
+    const renderedSegments = useMemo(
+        () =>
+            segments.map((segment, index) => {
+                switch (segment.type) {
+                    case "bold":
+                        return (
+                            <span key={index} className="inline-block font-bold">
+                                {segment.content}
+                            </span>
+                        );
+                    case "quote":
+                        return (
+                            <span key={index} className="inline-block bg-gray-200 p-1 rounded italic">
+                                {segment.content}
+                            </span>
+                        );
+                    case "newline":
+                        return <br key={index} />;
+                    default:
+                        return segment.content;
+                }
+            }),
+        [segments]
+    );
+
+    return (
+        <div className="flex w-full py-5 my-2">
+            {memoizedImage}
+            <div>{renderedSegments}</div>
+        </div>
+    );
 }
 
 const MessageBox = ({ message }: { message: Message }) => {
