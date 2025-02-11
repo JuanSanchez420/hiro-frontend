@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
-
+    console.log(req.headers)
     const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/api/hello`;
 
     // Forward the request to the server
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     });
 
     const headers = new Headers(response.headers);
-
+console.log(response)
     const data = await response.json();
     return NextResponse.json(data, {
       status: response.status,
