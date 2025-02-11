@@ -2,7 +2,7 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import WandSpinner from "./WandSpinner";
 import Image from "next/image"
-import { Message, useMessagesContext } from "../context/Context";
+import { useMessagesContext } from "../context/Context";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 import React, { useMemo } from "react";
 
@@ -54,7 +54,9 @@ const parseMessage = (message: string) => {
     return segments;
 };
 
-const UserMessage = ({ message }: { message: Message }) => {
+const UserMessage = ({ index }: { index: number }) => {
+    const { messages } = useMessagesContext();
+    const message = messages[index];
     const segments = parseMessage(message.message);
     return (
         <div className="flex w-full justify-end my-3">
@@ -90,7 +92,10 @@ interface FunctionCallMessage {
     transactionHash?: string
 }
 
-const FunctionCall = ({ message }: { message: Message }) => {
+const FunctionCall = ({ index }: { index: number }) => {
+    const { messages } = useMessagesContext();
+    const message = messages[index];
+
     const obj = useMemo(() => {
         return message.functionCall as unknown as FunctionCallMessage
     }, [message.functionCall]);
@@ -127,7 +132,10 @@ const FunctionCall = ({ message }: { message: Message }) => {
     );
 }
 
-const FunctionCallResult = ({ message }: { message: Message }) => {
+const FunctionCallResult = ({ index }: { index: number }) => {
+    const { messages } = useMessagesContext();
+    const message = messages[index];
+
     const obj = message.functionCall as unknown as FunctionCallMessage;
 
     if (obj.transactionHash === undefined) return null
@@ -182,7 +190,9 @@ const FunctionCallResult = ({ message }: { message: Message }) => {
     );
 }
 
-const AssistantMessage = ({ message }: { message: Message }) => {
+const AssistantMessage = ({ index }: { index: number }) => {
+    const { messages } = useMessagesContext();
+    const message = messages[index];
 
     const memoizedImage = useMemo(() => (
         <div className="shrink-0 mr-2">
@@ -229,11 +239,16 @@ const MessageBox = ({ index }: { index: number }) => {
     const { messages } = useMessagesContext();
     const message = messages[index];
 
-    if (message.type === "user") return <UserMessage message={message} />
-    if (message.type === "assistant" && message.functionCall === undefined) return <AssistantMessage message={message} />
-    if (message.type === "function") return <FunctionCallResult message={message} />
+    const box = useMemo(() => {
+        if (message.type === "user") return <UserMessage index={index} />
+        if (message.type === "assistant" && message.functionCall === undefined) return <AssistantMessage index={index} />
+        if (message.type === "function") return <FunctionCallResult index={index} />
 
-    return <FunctionCall message={message} />
+        return <FunctionCall index={index} />
+    }, [index, message.type, message.functionCall])
+
+    return box
+
 }
 
 export default MessageBox;
