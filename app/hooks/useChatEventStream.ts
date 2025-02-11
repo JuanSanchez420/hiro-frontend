@@ -3,8 +3,8 @@ import { useCallback, useEffect } from "react";
 import { useMessagesContext } from "../context/Context";
 import { useAccount } from "wagmi";
 import useDoABarrelRoll from "./useDoABarrelRoll";
-import confetti from "canvas-confetti";
 import usePortfolio from "./usePortfolio";
+import doConfettiBurst from "../utils/doConfettiBurst";
 
 const useChatEventStream = () => {
   const { messages, addChunk, addMessage, triggerHighlight, setShowConfirm, setRain } = useMessagesContext();
@@ -30,23 +30,14 @@ const useChatEventStream = () => {
         return
       }
       if (obj.name === "confettiBurst") {
-        function randomInRange(min: number, max: number) {
-          return Math.random() * (max - min) + min;
-        }
-
-        confetti({
-          angle: randomInRange(55, 125),
-          spread: randomInRange(50, 70),
-          particleCount: randomInRange(50, 100),
-          origin: { y: 0.6 }
-        })
+        doConfettiBurst()
         return
       }
       if (obj.name === "doABarrelRoll") {
         doABarrelRoll();
         return
       }
-      if(obj.name === "makeItRain") {
+      if (obj.name === "makeItRain") {
         setRain(obj.arguments.symbol)
       }
       if (obj.name === "confirm") {

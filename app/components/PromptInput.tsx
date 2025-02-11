@@ -13,7 +13,7 @@ const PromptInput = (
   const path = usePathname();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && value.trim() !== "") {
       e.preventDefault();
       addMessage(value, "user", true);
       setValue("");
