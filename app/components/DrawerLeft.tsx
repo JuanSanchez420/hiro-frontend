@@ -2,16 +2,16 @@
 
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { useMessagesContext } from '../context/Context';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useGlobalContext } from '../context/GlobalContext';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
 export default function Drawer() {
-  const { drawerLeftOpen, setDrawerLeftOpen } = useMessagesContext();
+  const { drawerLeftOpen, setDrawerLeftOpen } = useGlobalContext();
   const path = usePathname();
 
   const navigation = [

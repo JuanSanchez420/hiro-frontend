@@ -1,8 +1,10 @@
-import { useMessagesContext } from "../context/Context"
+import { useGlobalContext } from "../context/GlobalContext"
+import { useMessagesContext } from "../context/MessagesContext"
 import { styles } from "../utils/styles"
 
 const Confirm = () => {
-    const { addMessage, showConfirm, setShowConfirm } = useMessagesContext()
+    const { addMessage } = useMessagesContext()
+    const { showConfirm, setShowConfirm} = useGlobalContext()
 
     const handleClick = (confirm: boolean) => {
         addMessage(confirm ? 'Yes' : 'No', "user", true)

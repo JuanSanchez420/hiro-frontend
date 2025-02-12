@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
-import { useMessagesContext } from '../context/Context';
+import { useGlobalContext } from '../context/GlobalContext';
 
 const useSIWE = () => {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { signMessageAsync } = useSignMessage();
-  const { isSignedIn, setIsSignedIn } = useMessagesContext();
+  const { isSignedIn, setIsSignedIn } = useGlobalContext();
   const [status, setStatus] = useState<string>('');
 
   useEffect(()=>{

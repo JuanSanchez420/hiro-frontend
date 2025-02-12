@@ -1,17 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useMessagesContext } from "@/app/context/Context";
+import { useMessagesContext } from "@/app/context/MessagesContext";
 import usePortfolio from "@/app/hooks/usePortfolio";
 import formatNumber from "@/app/utils/formatNumber";
 import { styles } from "@/app/utils/styles";
 import SearchableSelect from "../SearchableSelect";
 import TOKENS from "@/app/utils/tokens.json";
+import { useGlobalContext } from "@/app/context/GlobalContext";
 
 const SwapWidget = () => {
   const [fromAmount, setFromAmount] = useState("");
   const [fromToken, setFromToken] = useState("WETH");
   const [toToken, setToToken] = useState("USDC");
 
-  const { addMessage, setWidget, setDrawerRightOpen } = useMessagesContext()
+  const { addMessage,  } = useMessagesContext()
+  const { setWidget, setDrawerRightOpen } = useGlobalContext();
   const { portfolio } = usePortfolio()
 
   const handleSwap = () => {

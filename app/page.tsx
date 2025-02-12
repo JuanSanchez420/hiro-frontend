@@ -2,16 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import MessageBox from "./components/MessageBox";
-import { useMessagesContext } from "./context/Context";
+import { useMessagesContext } from "./context/MessagesContext";
 import useChatEventStream from "./hooks/useChatEventStream";
 import Image from 'next/image'
 import { GlobeAltIcon } from "@heroicons/react/24/outline";
 import { styles } from "./utils/styles";
 import Confirm from "./components/Confirm";
 import InterestingButton from "./components/InterestingButton";
+import { useGlobalContext } from "./context/GlobalContext";
 
 export default function Home() {
-  const { messages, widget, addMessage } = useMessagesContext();
+  const { messages, addMessage } = useMessagesContext();
+  const { widget } = useGlobalContext();
   useChatEventStream()
 
   const bottomRef = useRef<HTMLDivElement>(null)

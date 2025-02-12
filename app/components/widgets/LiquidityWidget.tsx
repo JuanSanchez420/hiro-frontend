@@ -2,11 +2,12 @@ import usePortfolio from "@/app/hooks/usePortfolio";
 import formatNumber from "@/app/utils/formatNumber";
 import { styles } from "@/app/utils/styles";
 import React, { useMemo, useState } from "react";
-import { useMessagesContext } from "@/app/context/Context";
+import { useMessagesContext } from "@/app/context/MessagesContext";
 import SearchableSelect from "../SearchableSelect";
 import { formatEther } from "viem";
 import { SimpleLiquidityPosition } from "@/app/types";
 import TOKENS from "@/app/utils/tokens.json";
+import { useGlobalContext } from "@/app/context/GlobalContext";
 
 export default function LiquidityWidget() {
   const [amount0, setAmount0] = useState("");
@@ -16,7 +17,8 @@ export default function LiquidityWidget() {
   const [width, setWidth] = useState<"5%" | "10%" | "15%">("15%");
   const [action, setAction] = useState<"add" | "remove">("add");
 
-  const { addMessage, setWidget } = useMessagesContext();
+  const { addMessage } = useMessagesContext();
+  const { setWidget } = useGlobalContext();
   const { portfolio } = usePortfolio();
 
   const handleAddLiquidity = () => {

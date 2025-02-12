@@ -1,13 +1,15 @@
 // useChatEventStream.ts
 import { useCallback, useEffect } from "react";
-import { useMessagesContext } from "../context/Context";
+import { useMessagesContext } from "../context/MessagesContext";
 import { useAccount } from "wagmi";
 import useDoABarrelRoll from "./useDoABarrelRoll";
 import usePortfolio from "./usePortfolio";
 import doConfettiBurst from "../utils/doConfettiBurst";
+import { useGlobalContext } from "../context/GlobalContext";
 
 const useChatEventStream = () => {
-  const { messages, addChunk, addMessage, triggerHighlight, setShowConfirm, setRain } = useMessagesContext();
+  const { messages, addChunk, addMessage, } = useMessagesContext();
+  const { triggerHighlight, setShowConfirm, setRain } = useGlobalContext();
   const { fetchPortfolio } = usePortfolio();
   const account = useAccount()
   const doABarrelRoll = useDoABarrelRoll()

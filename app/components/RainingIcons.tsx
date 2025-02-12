@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo } from "react";
-import { useMessagesContext } from "../context/Context";
+import { useMessagesContext } from "../context/MessagesContext";
 import tokens from "../utils/tokens.json";
 
 const FallingIcons: React.FC = () => {

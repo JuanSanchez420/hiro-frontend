@@ -1,5 +1,5 @@
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
-import { useMessagesContext } from "../context/Context";
+import { useMessagesContext } from "../context/MessagesContext";
 import { styles } from "../utils/styles";
 import { useEffect, useMemo, useState } from "react";
 

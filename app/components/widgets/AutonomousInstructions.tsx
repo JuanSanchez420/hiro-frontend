@@ -1,4 +1,5 @@
-import { useMessagesContext } from "@/app/context/Context";
+import { useGlobalContext } from "@/app/context/GlobalContext";
+import { useMessagesContext } from "@/app/context/MessagesContext";
 import { styles } from "@/app/utils/styles";
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
@@ -6,7 +7,8 @@ import { useAccount } from "wagmi";
 
 const AutonomousInstructions = () => {
   const account = useAccount()
-  const { addMessage, setWidget } = useMessagesContext();
+  const { addMessage } = useMessagesContext();
+  const { setWidget } = useGlobalContext();
   const [value, setValue] = useState("");
 
   useEffect(() => {

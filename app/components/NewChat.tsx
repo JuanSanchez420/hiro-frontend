@@ -1,7 +1,7 @@
 'use client'
 
 import { PencilSquareIcon } from "@heroicons/react/24/outline"
-import { useMessagesContext } from "../context/Context";
+import { useMessagesContext } from "../context/MessagesContext";
 
 const NewChat = () => {
     const { resetMessages } = useMessagesContext();

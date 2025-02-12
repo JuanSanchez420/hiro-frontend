@@ -5,10 +5,11 @@ import { calculateATR, calculateDonchianChannel, calculateEMA, calculateRSI, int
 import formatNumber from '../utils/formatNumber';
 import { styles } from '../utils/styles';
 import tokens from "../utils/tokens.json";
-import { useMessagesContext } from '../context/Context';
+import { useMessagesContext } from '../context/MessagesContext';
 import MarketStats from './MarketStats';
 import { Spinner } from './Spinner';
 import { useAccount } from 'wagmi';
+import { useGlobalContext } from '../context/GlobalContext';
 
 interface TokenDataProps {
   token: Token;
@@ -19,7 +20,8 @@ interface TokenDataProps {
 const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
   const account = useAccount();
   const didFetch = useRef(false);
-  const { addMessage, setWidget, setDrawerRightOpen } = useMessagesContext();
+  const { addMessage, } = useMessagesContext();
+  const { setWidget, setDrawerRightOpen } = useGlobalContext();
   const [ohlcData, setOhlcData] = useState<OHLC[]>([]);
   const [emaData, setEmaData] = useState<{ periodStartUnix: number; value: number }[]>([]);
   const [rsiData, setRsiData] = useState<{ periodStartUnix: number, value: number }[]>([]);

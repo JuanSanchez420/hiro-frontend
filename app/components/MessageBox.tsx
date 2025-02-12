@@ -2,7 +2,7 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import WandSpinner from "./WandSpinner";
 import Image from "next/image"
-import { useMessagesContext } from "../context/Context";
+import { useMessagesContext } from "../context/MessagesContext";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 import React, { useMemo } from "react";
 

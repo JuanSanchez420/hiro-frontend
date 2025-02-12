@@ -1,11 +1,11 @@
-import { useMessagesContext } from "@/app/context/Context";
 import TokenSwap from "./SwapWidget";
 import AddLiquidityWidget from "./LiquidityWidget";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import AutonomousInstructions from "./AutonomousInstructions";
+import { useGlobalContext } from "@/app/context/GlobalContext";
 
 const Widget = () => {
-    const { widget, setWidget } = useMessagesContext();
+    const { widget, setWidget } = useGlobalContext();
 
     return (widget &&
         <Dialog open={widget !== null} onClose={() => setWidget(null)} className="relative z-10">

@@ -1,7 +1,5 @@
 'use client'
 import { createContext, useContext, useState } from "react";
-import { WidgetOption } from "../types";
-import { useHighlight } from "../hooks/useHighlight";
 
 export interface Message {
     message: string
@@ -15,37 +13,15 @@ interface MessagesContextType {
     addMessage: (message: string, type: "assistant" | "user" | "function", completed: boolean, functionCall?: Record<string, unknown>) => void
     addChunk: (chunk: string, status: "start" | "middle" | "end") => void
     resetMessages: () => void
-    drawerLeftOpen: boolean
-    setDrawerLeftOpen: React.Dispatch<React.SetStateAction<boolean>>
-    drawerRightOpen: boolean
-    setDrawerRightOpen: React.Dispatch<React.SetStateAction<boolean>>
-    widget: WidgetOption
-    setWidget: React.Dispatch<React.SetStateAction<WidgetOption>>
     thinking: boolean
     setThinking: React.Dispatch<React.SetStateAction<boolean>>
-    highlight: string | undefined
-    triggerHighlight: (section: string) => void
-    showConfirm: boolean
-    setShowConfirm: React.Dispatch<React.SetStateAction<boolean>>
-    isSignedIn: boolean
-    setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>
-    rain: string | undefined
-    setRain: React.Dispatch<React.SetStateAction<string | undefined>>
 }
 
 export const MessagesContext = createContext<MessagesContextType | undefined>(undefined);
 
 export const MessagesProvider = ({ children }: { children: React.ReactNode }) => {
     const [messages, setMessages] = useState<Message[]>([]);
-    const [drawerLeftOpen, setDrawerLeftOpen] = useState(false);
-    const [drawerRightOpen, setDrawerRightOpen] = useState(false);
-    const [showConfirm, setShowConfirm] = useState(false);
-    const [widget, setWidget] = useState<WidgetOption>(null);
     const [thinking, setThinking] = useState(false);
-    const { highlight, triggerHighlight } = useHighlight();
-    const [isSignedIn, setIsSignedIn] = useState(false);
-    const [rain, setRain] = useState<string | undefined>();
-
 
     const addMessage = (message: string, type: "assistant" | "user" | "function", completed: boolean, functionCall?: Record<string, unknown>) => {
         setThinking(true);
@@ -81,14 +57,7 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
         <MessagesContext.Provider value={{
             messages, addMessage, resetMessages,
             addChunk,
-            drawerLeftOpen, setDrawerLeftOpen,
-            drawerRightOpen, setDrawerRightOpen,
-            widget, setWidget,
             thinking, setThinking,
-            highlight, triggerHighlight,
-            showConfirm, setShowConfirm,
-            isSignedIn, setIsSignedIn,
-            rain, setRain
         }}>
             {children}
         </MessagesContext.Provider>

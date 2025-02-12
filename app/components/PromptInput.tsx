@@ -1,6 +1,6 @@
 'use client'
 import { useState } from "react";
-import { useMessagesContext } from "../context/Context";
+import { useMessagesContext } from "../context/MessagesContext";
 import { usePathname } from "next/navigation";
 import Widget from "./widgets/Widget";
 import Tabs from "./Tabs";

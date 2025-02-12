@@ -5,14 +5,13 @@ import AccountDetails from "./AccountDetailsMenu"
 import { useCallback, useEffect, useState } from "react"
 import { styles } from "../utils/styles"
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react"
-import { useMessagesContext } from "../context/Context"
 import useSIWE from "../hooks/useSIWE"
+import { useGlobalContext } from "../context/GlobalContext"
 
 const ConnectWallet = () => {
-    const { highlight } = useMessagesContext()
+    const { highlight, isSignedIn } = useGlobalContext()
     const { connectors, connect } = useConnect()
     const { isConnected } = useAccount()
-    const { isSignedIn } = useMessagesContext()
     const { doSIWE } = useSIWE()
     const [isLoaded, setIsLoaded] = useState(false)
     const itemClass = "block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"

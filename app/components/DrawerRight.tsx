@@ -2,7 +2,6 @@
 
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { useMessagesContext } from '../context/Context';
 import tokensData from "../utils/tokens.json";
 import { Token, TokensData } from "../types";
 import usePortfolio from '../hooks/usePortfolio';
@@ -13,10 +12,11 @@ import { Spinner } from './Spinner';
 import useMarketData from '../hooks/useMarketData';
 import { useAccount } from 'wagmi';
 import truncateAddress from '../utils/truncateAddress';
+import { useGlobalContext } from '../context/GlobalContext';
 
 export default function DrawerRight() {
   const account = useAccount()
-  const { drawerRightOpen, setDrawerRightOpen } = useMessagesContext();
+  const { drawerRightOpen, setDrawerRightOpen } = useGlobalContext();
   const [token, setToken] = useState<Token | null>(null);
 
   const { market } = useMarketData();
