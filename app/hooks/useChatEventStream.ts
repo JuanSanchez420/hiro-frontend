@@ -1,87 +1,126 @@
 // useChatEventStream.ts
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMessagesContext } from "../context/MessagesContext";
-import { useAccount } from "wagmi";
 import useDoABarrelRoll from "./useDoABarrelRoll";
 import usePortfolio from "./usePortfolio";
 import doConfettiBurst from "../utils/doConfettiBurst";
 import { useGlobalContext } from "../context/GlobalContext";
+import { useAccount } from "wagmi";
 
 const useChatEventStream = () => {
-  const { messages, addChunk, addMessage, } = useMessagesContext();
+  const { messages, addMessage } = useMessagesContext();
   const { triggerHighlight, setShowConfirm, setRain } = useGlobalContext();
   const { fetchPortfolio } = usePortfolio();
-  const account = useAccount()
-  const doABarrelRoll = useDoABarrelRoll()
+  const doABarrelRoll = useDoABarrelRoll();
+  const account = useAccount();
+  const isStreaming = useRef(false);
 
-  const handleChatEvent = useCallback(() => {
-    const eventSource = new EventSource(`/api/stream?content=${messages[messages.length - 1]?.message}${account?.isConnected ? "" : `&demo=true`}`);
+  // Use state for visual updates.
+  const [streamedContent, setStreamedContent] = useState("");
+  // Also track the latest content in a ref to avoid stale closures.
+  const streamedContentRef = useRef("");
+  const prevMessagesCount = useRef<number>(0)
 
-    eventSource.onmessage = (event) => {
-      const chunk = JSON.parse(event.data);
-      addChunk(chunk, "middle");
-    }
+  useEffect(() => {
+    // Ensure the ref is always up-to-date.
+    streamedContentRef.current = streamedContent;
+  }, [streamedContent]);
 
-    eventSource.addEventListener('functionCall', (event: MessageEvent) => {
-      // event.data will be an object { role: "assistant", content: null, function_call: functionCall }
-      const obj = JSON.parse(event.data)
-      obj.arguments = obj.arguments ? JSON.parse(obj.arguments) : {}
-      console.log('functionCall:', obj)
+  const isPrompt = messages.length > 0 && messages[messages.length - 1].type === "user";
+
+  const handleChatEvent = useCallback((prompt: string) => {
+    const eventSource = new EventSource(
+      `/api/stream?content=${prompt}${account?.isConnected ? "" : `&demo=true`}`
+    );
+
+    eventSource.addEventListener("functionCall", (event: MessageEvent) => {
+      const obj = JSON.parse(event.data);
+      obj.arguments = obj.arguments ? JSON.parse(obj.arguments) : {};
+      console.log("functionCall:", obj);
       if (obj.name === "highlight") {
-        triggerHighlight(obj.arguments.section)
-        return
+        triggerHighlight(obj.arguments.section);
+        return;
       }
       if (obj.name === "confettiBurst") {
-        doConfettiBurst()
-        return
+        doConfettiBurst();
+        return;
       }
       if (obj.name === "doABarrelRoll") {
         doABarrelRoll();
-        return
+        return;
       }
       if (obj.name === "makeItRain") {
-        setRain(obj.arguments.symbol)
+        setRain(obj.arguments.symbol);
       }
       if (obj.name === "confirm") {
         setShowConfirm(true);
-        return
+        return;
       }
-      addMessage("", "assistant", true, obj)
-    })
+      addMessage("", "assistant", true, obj);
+    });
 
-    eventSource.addEventListener('functionCallResult', (event: MessageEvent) => {
-      // event.data will be an object { role: "function", name: `${currentFunctionCall}`, content: result }
-      // addMessage(event.data, "function", true)
-      const obj = JSON.parse(event.data)
-      console.log('functionCallResult:', obj)
-      /*
-        swap obj: {"amount0":-1,"amount1":0.9350678712419804,"transactionHash":"0x89bc843fade18dfa522c185f8f63916aefc21d93ffddea7398b5586ed72c9311"}
-      */
-
-      // don't throw a message for highlight
-      if (obj.section) return
+    eventSource.addEventListener("functionCallResult", (event: MessageEvent) => {
+      const obj = JSON.parse(event.data);
+      console.log("functionCallResult:", obj);
+      if (obj.section) return;
       if (obj.transactionHash) {
-        fetchPortfolio()
+        fetchPortfolio();
       }
-      addMessage("", "function", true, obj)
-    })
+      addMessage("", "function", true, obj);
+    });
 
-    eventSource.addEventListener('open', () => addChunk("", "start"))
-    eventSource.addEventListener('end', () => {
-      addChunk("", "end")
-      eventSource.close()
-    })
+    eventSource.addEventListener("open", () => {
+      isStreaming.current = true;
+      setStreamedContent("");
+      streamedContentRef.current = "";
+    });
+
+    eventSource.onmessage = (event) => {
+      const chunk: string = JSON.parse(event.data);
+      setStreamedContent((prev) => {
+        const newContent = prev + chunk;
+        streamedContentRef.current = newContent;
+        return newContent;
+      });
+    };
+
+    eventSource.addEventListener("end", () => {
+      if (isStreaming.current) {
+        isStreaming.current = false;
+        addMessage(streamedContentRef.current, "assistant", true);
+        setStreamedContent("");
+        eventSource.close();
+      }
+    });
+
     eventSource.onerror = (err: Event) => {
-      console.error('EventSource error:', err);
+      console.error("EventSource error:", err);
       eventSource.close();
-    }
-  }, [addChunk, messages, addMessage, account, triggerHighlight, setShowConfirm, doABarrelRoll, fetchPortfolio, setRain])
+    };
+
+    // Clean up when the effect is unmounted.
+    return () => {
+      eventSource.close();
+    };
+  }, [
+    account,
+    addMessage,
+    doABarrelRoll,
+    fetchPortfolio,
+    setRain,
+    setShowConfirm,
+    triggerHighlight,
+  ]);
 
   useEffect(() => {
-    if (messages.length > 0 && messages[messages.length - 1].completed && messages[messages.length - 1].type === "user")
-      handleChatEvent()
-  }, [messages, handleChatEvent])
+    if (isPrompt && prevMessagesCount.current < messages.length) {
+      prevMessagesCount.current = messages.length;
+      handleChatEvent(messages[messages.length - 1].message);
+    }
+  }, [messages, isPrompt, handleChatEvent]);
 
+  // Return the state so consuming components update visually with each chunk.
+  return streamedContent;
 };
 
 export default useChatEventStream;

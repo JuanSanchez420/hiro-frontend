@@ -2,9 +2,10 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import WandSpinner from "./WandSpinner";
 import Image from "next/image"
-import { useMessagesContext } from "../context/MessagesContext";
+import { Message } from "../context/MessagesContext";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
+import useChatEventStream from "../hooks/useChatEventStream";
 
 const friendlyNames = {
     "getETHBalance": "Get ETH Balance",
@@ -54,9 +55,8 @@ const parseMessage = (message: string) => {
     return segments;
 };
 
-const UserMessage = ({ index }: { index: number }) => {
-    const { messages } = useMessagesContext();
-    const message = messages[index];
+const UserMessage = ({ message }: { message: Message }) => {
+
     const segments = parseMessage(message.message);
     return (
         <div className="flex w-full justify-end my-3">
@@ -92,9 +92,7 @@ interface FunctionCallMessage {
     transactionHash?: string
 }
 
-const FunctionCall = ({ index }: { index: number }) => {
-    const { messages } = useMessagesContext();
-    const message = messages[index];
+const FunctionCall = ({ message }: { message: Message }) => {
 
     const obj = useMemo(() => {
         return message.functionCall as unknown as FunctionCallMessage
@@ -132,9 +130,7 @@ const FunctionCall = ({ index }: { index: number }) => {
     );
 }
 
-const FunctionCallResult = ({ index }: { index: number }) => {
-    const { messages } = useMessagesContext();
-    const message = messages[index];
+const FunctionCallResult = ({ message }: { message: Message }) => {
 
     const obj = message.functionCall as unknown as FunctionCallMessage;
 
@@ -190,9 +186,50 @@ const FunctionCallResult = ({ index }: { index: number }) => {
     );
 }
 
-const AssistantMessage = ({ index }: { index: number }) => {
-    const { messages } = useMessagesContext();
-    const message = messages[index];
+const Avatar = () => {
+    useEffect(() => console.log('repaint'), [])
+    return (<div className="shrink-0 mr-2">
+        <Image src="/images/hiro.png" height={32} width={32} alt="hiro" />
+    </div>)
+}
+
+export const StreamedMessage = () => {
+    const streamedContent = useChatEventStream()
+
+    const segments = parseMessage(streamedContent || "")
+
+    const s = useMemo(() => segments.map((segment, index) => {
+        switch (segment.type) {
+            case "bold":
+                return (
+                    <span key={index} className="inline-block font-bold">
+                        {segment.content}
+                    </span>
+                );
+            case "quote":
+                return (
+                    <span key={index} className="inline-block bg-gray-200 p-1 rounded italic">
+                        {segment.content}
+                    </span>
+                );
+            case "newline":
+                return <br key={index} />;
+            default:
+                return segment.content;
+        }
+    }), [segments])
+
+    if (!streamedContent) return null
+
+    return (
+        <div className="flex w-full py-5 my-2">
+            <Avatar />
+            <div>{s}</div>
+        </div>
+    );
+}
+
+export const AssistantMessage = ({ message }: { message: Message }) => {
 
     const memoizedImage = useMemo(() => (
         <div className="shrink-0 mr-2">
@@ -235,17 +272,15 @@ const AssistantMessage = ({ index }: { index: number }) => {
     );
 }
 
-const MessageBox = ({ index }: { index: number }) => {
-    const { messages } = useMessagesContext();
-    const message = messages[index];
+const MessageBox = ({ message }: { message: Message }) => {
 
     const box = useMemo(() => {
-        if (message.type === "user") return <UserMessage index={index} />
-        if (message.type === "assistant" && message.functionCall === undefined) return <AssistantMessage index={index} />
-        if (message.type === "function") return <FunctionCallResult index={index} />
+        if (message.type === "user") return <UserMessage message={message} />
+        if (message.type === "assistant" && message.functionCall === undefined) return <AssistantMessage message={message} />
+        if (message.type === "function") return <FunctionCallResult message={message} />
 
-        return <FunctionCall index={index} />
-    }, [index, message.type, message.functionCall])
+        return <FunctionCall message={message} />
+    }, [message])
 
     return box
 

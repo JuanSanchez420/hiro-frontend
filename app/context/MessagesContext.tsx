@@ -1,17 +1,15 @@
 'use client'
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
 export interface Message {
     message: string
     type: "user" | "assistant" | "function"
-    completed: boolean
     functionCall?: Record<string, unknown>
 }
 
 interface MessagesContextType {
     messages: Message[]
     addMessage: (message: string, type: "assistant" | "user" | "function", completed: boolean, functionCall?: Record<string, unknown>) => void
-    addChunk: (chunk: string, status: "start" | "middle" | "end") => void
     resetMessages: () => void
     thinking: boolean
     setThinking: React.Dispatch<React.SetStateAction<boolean>>
@@ -28,26 +26,7 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
         setMessages(prev => [...prev, { message, type, completed, functionCall }]);
     }
 
-    const addChunk = (chunk: string, status: "start" | "middle" | "end") => {
-        if (status === "start") {
-            setMessages(prev => [...prev, { message: chunk, type: "assistant", completed: false }]);
-        }
-        if (status === "middle") {
-            setMessages((prev) => {
-                const incomplete = prev.filter((m) => !m.completed)
-
-                return [...prev.filter(m => m.completed), { message: incomplete[0].message + chunk, type: "assistant", completed: false }]
-            })
-        }
-        if (status === "end") {
-            setMessages((prev) => {
-                const incomplete = prev.filter((m) => !m.completed)
-
-                return [...prev.filter(m => m.completed), { message: incomplete[0].message + chunk, type: "assistant", completed: true }]
-            })
-            setThinking(false)
-        }
-    }
+    const messagesMemo = useMemo(() => messages, [messages]);
 
     const resetMessages = () => {
         setMessages([]);
@@ -55,8 +34,7 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
 
     return (
         <MessagesContext.Provider value={{
-            messages, addMessage, resetMessages,
-            addChunk,
+            messages: messagesMemo, addMessage, resetMessages,
             thinking, setThinking,
         }}>
             {children}
