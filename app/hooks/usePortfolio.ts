@@ -11,7 +11,7 @@ const usePortfolio = () => {
         if (!account?.isConnected) return;
         const response = await fetch(`/api/portfolio?account=${account.address}`, { credentials: 'include', });
         const data = await response.json();
-        setPortfolio(data);
+        setPortfolio({...data});
     }, [account])
 
     useEffect(() => {
@@ -19,7 +19,7 @@ const usePortfolio = () => {
             setLoading(true);
             const response = await fetch(`/api/portfolio?account=${account.address}`, { credentials: 'include', });
             const data = await response.json();
-            setPortfolio(data);
+            setPortfolio({...data});
             setLoading(false);
         }
         if (account?.isConnected) f();

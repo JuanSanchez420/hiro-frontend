@@ -9,11 +9,24 @@ const useSIWE = () => {
   const { isSignedIn, setIsSignedIn } = useGlobalContext();
   const [status, setStatus] = useState<string>('');
 
-  useEffect(()=>{
-    if(isSignedIn){
+  useEffect(() => {
+    if (isSignedIn) {
       setStatus('Signed in');
     }
-  },[isSignedIn, isConnected])
+  }, [isSignedIn, isConnected])
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch('/api/verified', { headers: { 'Content-Type': 'application/json' }, credentials: 'include' });
+        const session = await res.json();
+        setIsSignedIn(session.verified);
+      } catch (error) {
+        console.error("Error checking session", error);
+      }
+    }
+    checkSession();
+  }, [setIsSignedIn]);
 
   const doSIWE = useCallback(async () => {
     if (!isConnected) {

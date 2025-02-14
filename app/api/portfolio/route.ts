@@ -20,7 +20,6 @@ export async function GET(req: NextRequest) {
         'X-NginX-Proxy': req.headers.get('x-nginx-proxy') || 'true',
         'Host': req.headers.get('host') || '',
         cookie: req.headers.get('cookie') || '',
-        'Content-Type': 'application/json',
       },
       credentials: 'include',
       body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,

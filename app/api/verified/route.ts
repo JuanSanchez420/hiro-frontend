@@ -3,11 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   try {
     const headersObject = Object.fromEntries(req.headers);
-    const { searchParams } = new URL(req.url);
-    const tokens = searchParams.get('tokens')
-    const hours = searchParams.get('hours')
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/api/prices?tokens=${tokens}&hours=${hours}`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/api/verified`;
 
     // Forward the request to the server
     const response = await fetch(apiUrl, {

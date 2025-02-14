@@ -4,8 +4,10 @@ import usePortfolio from "./usePortfolio";
 import doConfettiBurst from "../utils/doConfettiBurst";
 import { useGlobalContext } from "../context/GlobalContext";
 import { Message } from "../context/PromptsContext";
+import { useAccount } from "wagmi";
 
 const useChatEventStream = (prompt: string) => {
+    const account = useAccount()
     const isStreaming = useRef(false)
     const [streamedContent, setStreamedContent] = useState("");
     const { triggerHighlight, setShowConfirm, setRain } = useGlobalContext();
@@ -93,9 +95,10 @@ const useChatEventStream = (prompt: string) => {
 
     useEffect(() => {
         if (isStreaming.current) return;
+        console.log(account, account?.isConnected)
         isStreaming.current = true;
-        doPrompt(prompt, true)
-    }, [doPrompt, prompt])
+        doPrompt(prompt, !account?.isConnected)
+    }, [doPrompt, prompt, account])
 
     return { streamedContent, functionCalls, functionResults };
 };

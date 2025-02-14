@@ -104,7 +104,6 @@ const FunctionResults = ({ calls, results }: { calls: Message[], results: Messag
 
     const outputs = useMemo(() => {
         return results.flatMap((result, index) => {
-            console.log('printing result...', result)
             return Object.entries(result.functionCall || {}).map(([key, value]) => (
                 <div
                     key={`result-${key}-${index}`}
@@ -127,8 +126,6 @@ const FunctionResults = ({ calls, results }: { calls: Message[], results: Messag
         })
     }, [results])
 
-    useEffect(() => console.log(outputs), [outputs])
-
     const txHash = useMemo(() => {
         return results[0]?.functionCall?.transactionHash || ""
     }, [results])
@@ -142,8 +139,9 @@ const FunctionResults = ({ calls, results }: { calls: Message[], results: Messag
         }
     };
 
-    const name = useMemo(() => {
-        return calls[0]?.functionCall?.name as keyof typeof friendlyNames || ""
+    const names = useMemo(() => {
+        const n = calls.map(call => friendlyNames[call.functionCall?.name as keyof typeof friendlyNames || ""])
+        return n.join(", ")
     }, [calls])
 
     if (inputs.length === 0 && outputs.length === 0) return null
@@ -153,7 +151,7 @@ const FunctionResults = ({ calls, results }: { calls: Message[], results: Messag
             <DisclosureButton className="group w-full text-left">
                 <div className="flex flex-1 items-center mb-3 w-full pl-3">
                     <WandSpinner />
-                    <div className={"flex flex-1 items-center italic"}>{friendlyNames[name]}</div>
+                    <div className={"flex flex-1 items-center italic"}>{names}</div>
                     <div className="flex flex-1 items-center italic justify-end">
                         <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex text-sm items-center">Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
                     </div>
