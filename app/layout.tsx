@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Disclosure } from '@headlessui/react'
 import PromptInput from './components/PromptInput'
-import { MessagesProvider } from "./context/MessagesContext";
 import Providers from "./providers";
 import ConnectWallet from "./components/ConnectWalletMenu";
 import DrawerButton from "./components/DrawerButton";
@@ -12,6 +11,7 @@ import NewChat from "./components/NewChat";
 import DrawerRight from "./components/DrawerRight";
 import RainingIcons from "./components/RainingIcons";
 import { GlobalContextProvider } from "./context/GlobalContext";
+import { PromptsProvider } from "./context/PromptsContext";
 
 export const metadata: Metadata = {
   title: "Hiro",
@@ -26,8 +26,8 @@ export default function RootLayout({
 
   return (
     <Providers>
-      <GlobalContextProvider>
-        <MessagesProvider>
+      <PromptsProvider>
+        <GlobalContextProvider>
           <html lang="en" className="h-full">
             <body className={`h-full bg-white`}>
               <div className="flex flex-col min-h-full h-full">
@@ -60,8 +60,8 @@ export default function RootLayout({
               <RainingIcons />
             </body>
           </html>
-        </MessagesProvider>
-      </GlobalContextProvider>
+        </GlobalContextProvider>
+      </PromptsProvider>
     </Providers>
   );
 }

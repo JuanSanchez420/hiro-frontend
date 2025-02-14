@@ -2,12 +2,12 @@ import usePortfolio from "@/app/hooks/usePortfolio";
 import formatNumber from "@/app/utils/formatNumber";
 import { styles } from "@/app/utils/styles";
 import React, { useMemo, useState } from "react";
-import { useMessagesContext } from "@/app/context/MessagesContext";
 import SearchableSelect from "../SearchableSelect";
 import { formatEther } from "viem";
 import { SimpleLiquidityPosition } from "@/app/types";
 import TOKENS from "@/app/utils/tokens.json";
 import { useGlobalContext } from "@/app/context/GlobalContext";
+import { usePromptsContext } from "@/app/context/PromptsContext";
 
 export default function LiquidityWidget() {
   const [amount0, setAmount0] = useState("");
@@ -17,20 +17,20 @@ export default function LiquidityWidget() {
   const [width, setWidth] = useState<"5%" | "10%" | "15%">("15%");
   const [action, setAction] = useState<"add" | "remove">("add");
 
-  const { addMessage } = useMessagesContext();
+  const { addPrompt } = usePromptsContext();
   const { setWidget } = useGlobalContext();
   const { portfolio } = usePortfolio();
 
   const handleAddLiquidity = () => {
     if (confirm(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} with a ${width} range?`)) {
-      addMessage(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} ${width} range`, "user", true);
+      addPrompt(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} ${width} range`);
       setWidget(null);
     }
   };
 
   const handleRemoveLiquidity = (position: SimpleLiquidityPosition) => {
     if (confirm(`Remove liquidity for ${position.token0}/${position.token1}?`)) {
-      addMessage(`Remove liquidity for ${position.token0}/${position.token1} and index ${position.index}`, "user", true);
+      addPrompt(`Remove liquidity for ${position.token0}/${position.token1} and index ${position.index}`);
       setWidget(null);
     }
   }

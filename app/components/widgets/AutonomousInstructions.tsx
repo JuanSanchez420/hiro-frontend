@@ -1,5 +1,5 @@
 import { useGlobalContext } from "@/app/context/GlobalContext";
-import { useMessagesContext } from "@/app/context/MessagesContext";
+import { usePromptsContext } from "@/app/context/PromptsContext";
 import { styles } from "@/app/utils/styles";
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
@@ -7,7 +7,7 @@ import { useAccount } from "wagmi";
 
 const AutonomousInstructions = () => {
   const account = useAccount()
-  const { addMessage } = useMessagesContext();
+  const { addPrompt } = usePromptsContext();
   const { setWidget } = useGlobalContext();
   const [value, setValue] = useState("");
 
@@ -23,14 +23,14 @@ const AutonomousInstructions = () => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      addMessage(`Set autonomous instructions: ${value}. Please ask if I was unclear on anything.`, "user", true);
+      addPrompt(`Set autonomous instructions: ${value}. Please ask if I was unclear on anything.`);
       setValue("");
       setWidget(null)
     }
   }
 
   const clearInstructions = () => {
-    addMessage(`Clear autonomous instructions.`, "user", true);
+    addPrompt(`Clear autonomous instructions.`);
     setValue("");
     setWidget(null)
   }

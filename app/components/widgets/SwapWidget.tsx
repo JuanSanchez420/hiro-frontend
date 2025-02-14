@@ -1,18 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useMessagesContext } from "@/app/context/MessagesContext";
 import usePortfolio from "@/app/hooks/usePortfolio";
 import formatNumber from "@/app/utils/formatNumber";
 import { styles } from "@/app/utils/styles";
 import SearchableSelect from "../SearchableSelect";
 import TOKENS from "@/app/utils/tokens.json";
 import { useGlobalContext } from "@/app/context/GlobalContext";
+import { usePromptsContext } from "@/app/context/PromptsContext";
 
 const SwapWidget = () => {
   const [fromAmount, setFromAmount] = useState("");
   const [fromToken, setFromToken] = useState("WETH");
   const [toToken, setToToken] = useState("USDC");
 
-  const { addMessage,  } = useMessagesContext()
+  const { addPrompt, } = usePromptsContext()
   const { setWidget, setDrawerRightOpen } = useGlobalContext();
   const { portfolio } = usePortfolio()
 
@@ -22,7 +22,7 @@ const SwapWidget = () => {
       return
     }
     if (confirm(`Swap ${fromAmount} of ${fromToken} to ${toToken}?`)) {
-      addMessage(`Swap ${fromAmount} of ${fromToken} to ${toToken}`, "user", true)
+      addPrompt(`Swap ${fromAmount} of ${fromToken} to ${toToken}`)
       setWidget(null)
       setDrawerRightOpen(false)
     }
@@ -38,9 +38,9 @@ const SwapWidget = () => {
     return portfolio.tokens.find(b => b.symbol === toToken)?.balance || 0
   }, [toToken, portfolio])
 
-  useEffect(()=>{
+  useEffect(() => {
     setFromToken(portfolio?.tokens[0]?.symbol || "WETH")
-  },[portfolio])
+  }, [portfolio])
 
   const tokenList = useMemo(() => {
     const portfolioTokens = new Set(portfolio?.tokens.map(t => t.symbol) || []);
@@ -101,7 +101,7 @@ const SwapWidget = () => {
                 className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
               />
               <div className="grid shrink-0 grid-cols-1 focus-within:relative">
-                <SearchableSelect options={tokenList} value={{ label: fromToken, value: fromToken}} onChange={(e) => {
+                <SearchableSelect options={tokenList} value={{ label: fromToken, value: fromToken }} onChange={(e) => {
                   setFromToken(e.value)
                   setFromAmount("")
                 }} />
@@ -131,7 +131,7 @@ const SwapWidget = () => {
               className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
             />
             <div className="grid shrink-0 grid-cols-1 focus-within:relative">
-              <SearchableSelect options={tokenList} value={{ label: toToken, value: toToken}}  onChange={(e) => {
+              <SearchableSelect options={tokenList} value={{ label: toToken, value: toToken }} onChange={(e) => {
                 setToToken(e.value)
               }} />
             </div>

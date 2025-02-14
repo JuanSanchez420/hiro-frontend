@@ -5,11 +5,11 @@ import { calculateATR, calculateDonchianChannel, calculateEMA, calculateRSI, int
 import formatNumber from '../utils/formatNumber';
 import { styles } from '../utils/styles';
 import tokens from "../utils/tokens.json";
-import { useMessagesContext } from '../context/MessagesContext';
 import MarketStats from './MarketStats';
 import { Spinner } from './Spinner';
 import { useAccount } from 'wagmi';
 import { useGlobalContext } from '../context/GlobalContext';
+import { usePromptsContext } from '../context/PromptsContext';
 
 interface TokenDataProps {
   token: Token;
@@ -20,7 +20,7 @@ interface TokenDataProps {
 const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
   const account = useAccount();
   const didFetch = useRef(false);
-  const { addMessage, } = useMessagesContext();
+  const { addPrompt, } = usePromptsContext();
   const { setWidget, setDrawerRightOpen } = useGlobalContext();
   const [ohlcData, setOhlcData] = useState<OHLC[]>([]);
   const [emaData, setEmaData] = useState<{ periodStartUnix: number; value: number }[]>([]);
@@ -65,7 +65,7 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
   const handleHirosTake = () => {
     setWidget(null);
     setDrawerRightOpen(false);
-    addMessage(`I'm looking for advice on: ${token.symbol}
+    addPrompt(`I'm looking for advice on: ${token.symbol}
 
       EMA (200): ${market.trend}
       RSI (14): ${market.rsi}
@@ -73,7 +73,7 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
       Donchian Channel (30): ${market.donchian}
       24 hour change: ${market.change24h}%, from a price of ${market.price24h} to its current price ${market.price}
 
-      What should I do here?`, "user", true)
+      What should I do here?`);
   }
 
   // Effect to fetch OHLC data and calculate indicators

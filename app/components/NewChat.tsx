@@ -1,14 +1,14 @@
 'use client'
 
 import { PencilSquareIcon } from "@heroicons/react/24/outline"
-import { useMessagesContext } from "../context/MessagesContext";
+import { usePromptsContext } from "../context/PromptsContext";
 
 const NewChat = () => {
-    const { resetMessages } = useMessagesContext();
+    const { resetPrompts } = usePromptsContext();
     
     const handleNewChat = () => {
         fetch("/api/reset")
-        resetMessages()
+        resetPrompts()
     }
 
     return (<div className="pl-5">

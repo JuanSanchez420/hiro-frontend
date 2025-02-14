@@ -2,9 +2,9 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import WandSpinner from "./WandSpinner";
 import Image from "next/image"
-import { Message } from "../context/MessagesContext";
+import { Message } from "../context/PromptsContext";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import useChatEventStream from "../hooks/useChatEventStream";
 
 const friendlyNames = {
@@ -21,6 +21,7 @@ const friendlyNames = {
     'addLiquidityDemo': 'Add Liquidity Demo',
     'setAutonomousInstructionsDemo': 'Set Autonomous Instructions Demo',
     "makeItRain": "Make it Rain",
+    "": ""
 }
 
 const parseMessage = (message: string) => {
@@ -86,57 +87,53 @@ const UserMessage = ({ message }: { message: Message }) => {
     )
 }
 
-interface FunctionCallMessage {
-    name: keyof typeof friendlyNames;
-    arguments?: string
-    transactionHash?: string
-}
 
-const FunctionCall = ({ message }: { message: Message }) => {
+const FunctionResults = ({ calls, results }: { calls: Message[], results: Message[] }) => {
 
-    const obj = useMemo(() => {
-        return message.functionCall as unknown as FunctionCallMessage
-    }, [message.functionCall]);
-
-    const entries = useMemo(() => {
-        return (
-            obj?.arguments && Object.entries(obj.arguments).map(([key, value]) => (
-                <div key={key} className="flex items-center justify-between gap-1">
+    const inputs = useMemo(() => {
+        return calls.flatMap((call, index) => {
+            return Object.entries(call.functionCall?.arguments || {}).map(([key, value]) => (
+                <div key={`call-${key}-${index}`} className="flex items-center justify-between gap-1">
                     <div className="w-1/3 text-right text-sm">{key}</div>
                     <div className="w-2/3 text-right text-sm">{value}</div>
                 </div>
-            ))
-        )
-    }, [obj])
+            )
+            )
+        })
+    }, [calls])
 
-    return (
-        <Disclosure as="div" className="w-full py-5">
-            <DisclosureButton className="group w-full text-left">
-                <div className="flex flex-1 items-center mb-3 w-full pl-3">
-                    <WandSpinner />
-                    <div className={"flex flex-1 items-center italic"}>{friendlyNames[obj.name]}</div>
-                    <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
-                </div>
-            </DisclosureButton>
-            <div className="overflow-hidden py-2">
-                <DisclosurePanel
-                    transition
-                    className="origin-top transition duration-200 ease-out data-[closed]:-translate-y-6 data-[closed]:opacity-0"
+    const outputs = useMemo(() => {
+        return results.flatMap((result, index) => {
+            console.log('printing result...', result)
+            return Object.entries(result.functionCall || {}).map(([key, value]) => (
+                <div
+                    key={`result-${key}-${index}`}
+                    className="flex items-center justify-between gap-1"
                 >
-                    {entries}
-                </DisclosurePanel>
-            </div>
-        </Disclosure>
-    );
-}
+                    <div className="w-1/3 text-right text-sm">{key}</div>
+                    <div className="w-2/3 flex items-center justify-end gap-2">
+                        <span className="overflow-hidden text-ellipsis text-sm">{value?.toString()}</span>
+                        {key === "transactionHash" && (
+                            <button
+                                onClick={() => navigator.clipboard.writeText(value?.toString() || "")}
+                                className="ml-2 rounded bg-gray-200 px-2 py-1 text-xs hover:bg-gray-400"
+                            >
+                                Copy
+                            </button>
+                        )}
+                    </div>
+                </div>
+            ))
+        })
+    }, [results])
 
-const FunctionCallResult = ({ message }: { message: Message }) => {
+    useEffect(() => console.log(outputs), [outputs])
 
-    const obj = message.functionCall as unknown as FunctionCallMessage;
+    const txHash = useMemo(() => {
+        return results[0]?.functionCall?.transactionHash || ""
+    }, [results])
 
-    if (obj.transactionHash === undefined) return null
-
-    const isDemo = obj.transactionHash === '0xdummytxhash'
+    const isDemo = txHash === '0xdummytxhash'
 
     const handleTxLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         if (isDemo) {
@@ -145,10 +142,18 @@ const FunctionCallResult = ({ message }: { message: Message }) => {
         }
     };
 
+    const name = useMemo(() => {
+        return calls[0]?.functionCall?.name as keyof typeof friendlyNames || ""
+    }, [calls])
+
+    if (inputs.length === 0 && outputs.length === 0) return null
+
     return (
-        <Disclosure as="div" className="w-full">
+        <Disclosure as="div" className="w-full py-5">
             <DisclosureButton className="group w-full text-left">
-                <div className="flex flex-1 items-center mb-3 w-full">
+                <div className="flex flex-1 items-center mb-3 w-full pl-3">
+                    <WandSpinner />
+                    <div className={"flex flex-1 items-center italic"}>{friendlyNames[name]}</div>
                     <div className="flex flex-1 items-center italic justify-end">
                         <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex text-sm items-center">View transaction on Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
                     </div>
@@ -160,26 +165,10 @@ const FunctionCallResult = ({ message }: { message: Message }) => {
                     transition
                     className="origin-top transition duration-200 ease-out data-[closed]:-translate-y-6 data-[closed]:opacity-0"
                 >
-                    {obj &&
-                        Object.entries(obj).map(([key, value]) => (
-                            <div
-                                key={key}
-                                className="flex items-center justify-between gap-1"
-                            >
-                                <div className="w-1/3 text-right text-sm">{key}</div>
-                                <div className="w-2/3 flex items-center justify-end gap-2">
-                                    <span className="overflow-hidden text-ellipsis text-sm">{value}</span>
-                                    {key === "transactionHash" && (
-                                        <button
-                                            onClick={() => navigator.clipboard.writeText(value)}
-                                            className="ml-2 rounded bg-gray-200 px-2 py-1 text-xs hover:bg-gray-400"
-                                        >
-                                            Copy
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
+                    <div className="flex justify-center border-b mb-1">INPUTS</div>
+                    <div>{inputs}</div>
+                    <div className="flex justify-center border-b mb-1">OUTPUTS</div>
+                    <div>{outputs}</div>
                 </DisclosurePanel>
             </div>
         </Disclosure>
@@ -187,14 +176,12 @@ const FunctionCallResult = ({ message }: { message: Message }) => {
 }
 
 const Avatar = () => {
-    useEffect(() => console.log('repaint'), [])
     return (<div className="shrink-0 mr-2">
         <Image src="/images/hiro.png" height={32} width={32} alt="hiro" />
     </div>)
 }
 
-export const StreamedMessage = () => {
-    const streamedContent = useChatEventStream()
+const StreamedContent = ({ streamedContent }: { streamedContent: string }) => {
 
     const segments = parseMessage(streamedContent || "")
 
@@ -221,69 +208,32 @@ export const StreamedMessage = () => {
 
     if (!streamedContent) return null
 
-    return (
-        <div className="flex w-full py-5 my-2">
-            <Avatar />
-            <div>{s}</div>
-        </div>
-    );
+    return s
 }
 
-export const AssistantMessage = ({ message }: { message: Message }) => {
+export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
+    const bottomRef = useRef<HTMLDivElement>(null)
 
-    const memoizedImage = useMemo(() => (
-        <div className="shrink-0 mr-2">
-            <Image src="/images/hiro.png" height={32} width={32} alt="hiro" />
-        </div>
-    ), []);
+    const { streamedContent, functionCalls, functionResults } = useChatEventStream(prompt)
 
-    const segments = useMemo(() => parseMessage(message.message), [message.message]);
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, [streamedContent, functionCalls, functionResults]);
 
-    const renderedSegments = useMemo(
-        () =>
-            segments.map((segment, index) => {
-                switch (segment.type) {
-                    case "bold":
-                        return (
-                            <span key={index} className="inline-block font-bold">
-                                {segment.content}
-                            </span>
-                        );
-                    case "quote":
-                        return (
-                            <span key={index} className="inline-block bg-gray-200 p-1 rounded italic">
-                                {segment.content}
-                            </span>
-                        );
-                    case "newline":
-                        return <br key={index} />;
-                    default:
-                        return segment.content;
-                }
-            }),
-        [segments]
-    );
+    const message = { type: "user", message: prompt, completed: true } as Message
 
     return (
-        <div className="flex w-full py-5 my-2">
-            {memoizedImage}
-            <div>{renderedSegments}</div>
+        <div>
+            <UserMessage message={message} />
+            {streamedContent && <div className="flex w-full py-5 my-2">
+                <Avatar />
+                <div><StreamedContent streamedContent={streamedContent} /></div>
+            </div>}
+            <FunctionResults calls={functionCalls} results={functionResults} />
+            <div ref={bottomRef} />
         </div>
-    );
+    )
 }
 
-const MessageBox = ({ message }: { message: Message }) => {
 
-    const box = useMemo(() => {
-        if (message.type === "user") return <UserMessage message={message} />
-        if (message.type === "assistant" && message.functionCall === undefined) return <AssistantMessage message={message} />
-        if (message.type === "function") return <FunctionCallResult message={message} />
-
-        return <FunctionCall message={message} />
-    }, [message])
-
-    return box
-
-}
-
-export default MessageBox;
+export default PromptAndResponse;

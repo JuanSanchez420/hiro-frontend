@@ -1,6 +1,6 @@
 'use client'
 import { useState } from "react";
-import { useMessagesContext } from "../context/MessagesContext";
+import { usePromptsContext } from "../context/PromptsContext";
 import { usePathname } from "next/navigation";
 import Widget from "./widgets/Widget";
 import Tabs from "./Tabs";
@@ -8,14 +8,14 @@ import Tabs from "./Tabs";
 const PromptInput = (
 
 ) => {
-  const { addMessage } = useMessagesContext();
+  const { addPrompt } = usePromptsContext();
   const [value, setValue] = useState("");
   const path = usePathname();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && value.trim() !== "") {
       e.preventDefault();
-      addMessage(value, "user", true);
+      addPrompt(value);
       setValue("");
     }
   }

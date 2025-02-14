@@ -1,126 +1,103 @@
-// useChatEventStream.ts
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useMessagesContext } from "../context/MessagesContext";
 import useDoABarrelRoll from "./useDoABarrelRoll";
 import usePortfolio from "./usePortfolio";
 import doConfettiBurst from "../utils/doConfettiBurst";
 import { useGlobalContext } from "../context/GlobalContext";
-import { useAccount } from "wagmi";
+import { Message } from "../context/PromptsContext";
 
-const useChatEventStream = () => {
-  const { messages, addMessage } = useMessagesContext();
-  const { triggerHighlight, setShowConfirm, setRain } = useGlobalContext();
-  const { fetchPortfolio } = usePortfolio();
-  const doABarrelRoll = useDoABarrelRoll();
-  const account = useAccount();
-  const isStreaming = useRef(false);
+const useChatEventStream = (prompt: string) => {
+    const isStreaming = useRef(false)
+    const [streamedContent, setStreamedContent] = useState("");
+    const { triggerHighlight, setShowConfirm, setRain } = useGlobalContext();
+    const { fetchPortfolio } = usePortfolio();
+    const doABarrelRoll = useDoABarrelRoll();
+    const [functionCalls, setFunctionCalls] = useState<Message[]>([]);
+    const [functionResults, setFunctionResults] = useState<Message[]>([]);
 
-  // Use state for visual updates.
-  const [streamedContent, setStreamedContent] = useState("");
-  // Also track the latest content in a ref to avoid stale closures.
-  const streamedContentRef = useRef("");
-  const prevMessagesCount = useRef<number>(0)
+    const doPrompt = useCallback((p: string, isDemo: boolean) => {
+        const eventSource = new EventSource(
+            `/api/stream?content=${p}${isDemo ? `&demo=true` : ""}`
+        );
 
-  useEffect(() => {
-    // Ensure the ref is always up-to-date.
-    streamedContentRef.current = streamedContent;
-  }, [streamedContent]);
+        eventSource.addEventListener("functionCall", (event: MessageEvent) => {
+            const obj = JSON.parse(event.data);
+            obj.arguments = obj.arguments ? JSON.parse(obj.arguments) : {};
+            console.log("functionCall:", obj);
+            if (obj.name === "highlight") {
+                triggerHighlight(obj.arguments.section);
+                return;
+            }
+            if (obj.name === "confettiBurst") {
+                doConfettiBurst();
+                return;
+            }
+            if (obj.name === "doABarrelRoll") {
+                doABarrelRoll();
+                return;
+            }
+            if (obj.name === "makeItRain") {
+                setRain(obj.arguments.symbol);
+                return
+            }
+            if (obj.name === "confirm") {
+                setShowConfirm(true);
+                return;
+            }
+            setFunctionCalls((prev) => [...prev, { message: "", type: "assistant", completed: true, functionCall: obj }])
+        });
 
-  const isPrompt = messages.length > 0 && messages[messages.length - 1].type === "user";
+        eventSource.addEventListener("functionCallResult", (event: MessageEvent) => {
+            const obj = JSON.parse(event.data);
+            console.log("functionCallResult:", obj);
+            if (obj.section || obj.confettiBurst || obj.barrelRoll || obj.madeItRain) return;
+            if (obj.transactionHash) {
+                fetchPortfolio();
+            }
 
-  const handleChatEvent = useCallback((prompt: string) => {
-    const eventSource = new EventSource(
-      `/api/stream?content=${prompt}${account?.isConnected ? "" : `&demo=true`}`
-    );
+            setFunctionResults((prev) => [...prev, { message: "", type: "function", completed: true, functionCall: obj }])
+        });
 
-    eventSource.addEventListener("functionCall", (event: MessageEvent) => {
-      const obj = JSON.parse(event.data);
-      obj.arguments = obj.arguments ? JSON.parse(obj.arguments) : {};
-      console.log("functionCall:", obj);
-      if (obj.name === "highlight") {
-        triggerHighlight(obj.arguments.section);
-        return;
-      }
-      if (obj.name === "confettiBurst") {
-        doConfettiBurst();
-        return;
-      }
-      if (obj.name === "doABarrelRoll") {
-        doABarrelRoll();
-        return;
-      }
-      if (obj.name === "makeItRain") {
-        setRain(obj.arguments.symbol);
-      }
-      if (obj.name === "confirm") {
-        setShowConfirm(true);
-        return;
-      }
-      addMessage("", "assistant", true, obj);
-    });
+        eventSource.addEventListener("open", () => {
+            // setStreamedContent("");
+        });
 
-    eventSource.addEventListener("functionCallResult", (event: MessageEvent) => {
-      const obj = JSON.parse(event.data);
-      console.log("functionCallResult:", obj);
-      if (obj.section) return;
-      if (obj.transactionHash) {
-        fetchPortfolio();
-      }
-      addMessage("", "function", true, obj);
-    });
+        eventSource.onmessage = (event) => {
+            const chunk: string = JSON.parse(event.data);
+            setStreamedContent((prev) => {
+                const newContent = prev + chunk;
+                return newContent;
+            });
+        };
 
-    eventSource.addEventListener("open", () => {
-      isStreaming.current = true;
-      setStreamedContent("");
-      streamedContentRef.current = "";
-    });
+        eventSource.addEventListener("end", () => {
+            eventSource.close();
+        });
 
-    eventSource.onmessage = (event) => {
-      const chunk: string = JSON.parse(event.data);
-      setStreamedContent((prev) => {
-        const newContent = prev + chunk;
-        streamedContentRef.current = newContent;
-        return newContent;
-      });
-    };
+        eventSource.onerror = (err: Event) => {
+            console.error("EventSource error:", err);
+            eventSource.close();
+        };
 
-    eventSource.addEventListener("end", () => {
-      if (isStreaming.current) {
-        isStreaming.current = false;
-        addMessage(streamedContentRef.current, "assistant", true);
-        setStreamedContent("");
-        eventSource.close();
-      }
-    });
+        // Clean up when the effect is unmounted.
+        return () => {
+            eventSource.close();
+        };
+    }, [
+        doABarrelRoll,
+        fetchPortfolio,
+        setRain,
+        setShowConfirm,
+        triggerHighlight,
+        setStreamedContent,
+    ]);
 
-    eventSource.onerror = (err: Event) => {
-      console.error("EventSource error:", err);
-      eventSource.close();
-    };
+    useEffect(() => {
+        if (isStreaming.current) return;
+        isStreaming.current = true;
+        doPrompt(prompt, true)
+    }, [doPrompt, prompt])
 
-    // Clean up when the effect is unmounted.
-    return () => {
-      eventSource.close();
-    };
-  }, [
-    account,
-    addMessage,
-    doABarrelRoll,
-    fetchPortfolio,
-    setRain,
-    setShowConfirm,
-    triggerHighlight,
-  ]);
-
-  useEffect(() => {
-    if (isPrompt && prevMessagesCount.current < messages.length) {
-      prevMessagesCount.current = messages.length;
-      handleChatEvent(messages[messages.length - 1].message);
-    }
-  }, [messages, isPrompt, handleChatEvent]);
-
-  // Return the state so consuming components update visually with each chunk.
-  return streamedContent;
+    return { streamedContent, functionCalls, functionResults };
 };
 
 export default useChatEventStream;
