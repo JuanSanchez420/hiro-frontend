@@ -155,7 +155,7 @@ const FunctionResults = ({ calls, results }: { calls: Message[], results: Messag
                     <WandSpinner />
                     <div className={"flex flex-1 items-center italic"}>{friendlyNames[name]}</div>
                     <div className="flex flex-1 items-center italic justify-end">
-                        <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex text-sm items-center">View transaction on Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
+                        <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex text-sm items-center">Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
                     </div>
                     <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
                 </div>
