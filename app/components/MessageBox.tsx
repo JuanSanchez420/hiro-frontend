@@ -223,11 +223,11 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
     return (
         <div>
             <UserMessage message={message} />
+            <FunctionResults calls={functionCalls} results={functionResults} />
             {streamedContent && <div className="flex w-full py-5 my-2">
                 <Avatar />
                 <div><StreamedContent streamedContent={streamedContent} /></div>
             </div>}
-            <FunctionResults calls={functionCalls} results={functionResults} />
             <div ref={bottomRef} />
         </div>
     )

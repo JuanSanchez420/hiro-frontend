@@ -95,7 +95,6 @@ const useChatEventStream = (prompt: string) => {
 
     useEffect(() => {
         if (isStreaming.current) return;
-        console.log(account, account?.isConnected)
         isStreaming.current = true;
         doPrompt(prompt, !account?.isConnected)
     }, [doPrompt, prompt, account])
