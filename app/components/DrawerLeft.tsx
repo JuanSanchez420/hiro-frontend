@@ -17,7 +17,6 @@ export default function Drawer() {
   const navigation = [
     { name: 'Chat', href: '/', current: path === '/' },
     { name: 'Token', href: '/hiro-token', current: path.startsWith('/hiro-token') },
-    { name: 'Roadmap', href: '/roadmap', current: path.startsWith('/roadmap') },
     { name: 'FAQ', href: '/faq', current: path.startsWith('/faq') },
   ]
 
@@ -36,7 +35,7 @@ export default function Drawer() {
               className="pointer-events-auto relative w-screen max-w-md transform transition duration-500 ease-in-out data-[closed]:-translate-x-full sm:duration-700"
             >
               <TransitionChild>
-                <div className="absolute right-0 top-0 -mr-8 flex pl-2 pt-4 duration-500 ease-in-out data-[closed]:opacity-0 sm:-mr-10 sm:pl-4">
+                <div className="absolute right-0 top-0 -mr-8 flex pl-2 pt-4 duration-500 ease-in-out data-[closed]:opacity-0 sm:pl-4">
                   <button
                     type="button"
                     onClick={() => setDrawerLeftOpen(false)}

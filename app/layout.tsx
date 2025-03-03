@@ -3,7 +3,7 @@ import "./globals.css";
 import { Disclosure } from '@headlessui/react'
 import PromptInput from './components/PromptInput'
 import Providers from "./providers";
-import ConnectWallet from "./components/ConnectWalletMenu";
+import ConnectWallet from "./components/WalletMenu/ConnectWalletMenu";
 import DrawerButton from "./components/DrawerButton";
 import DrawerLeft from "./components/DrawerLeft";
 import Link from "next/link";

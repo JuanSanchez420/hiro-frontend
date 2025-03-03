@@ -11,7 +11,7 @@ const friendlyNames = {
     "getETHBalance": "Get ETH Balance",
     "getPrices": "Get Prices",
     "swap": "Swap",
-    "wrapWETH": "Wrap ETH",
+    "wrapETH": "Wrap ETH",
     "unwrapWETH": "Unwrap WETH",
     "addLiquidity": "Add Liquidity",
     "removeLiquidityByIndex": "Remove Liquidity",
@@ -21,6 +21,8 @@ const friendlyNames = {
     'addLiquidityDemo': 'Add Liquidity Demo',
     'setAutonomousInstructionsDemo': 'Set Autonomous Instructions Demo',
     "makeItRain": "Make it Rain",
+    "depositAave": "Deposit Aave",
+    "withdrawAave": "Withdraw Aave",
     "": ""
 }
 

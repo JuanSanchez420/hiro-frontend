@@ -1,7 +1,7 @@
 'use client'
 
 import { useAccount, useDisconnect, useEnsName } from 'wagmi'
-import { styles } from '../utils/styles'
+import { styles } from '../../utils/styles'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 
 const AccountDetails = () => {

@@ -24,7 +24,7 @@ export default function DrawerRight() {
   const tokens: TokensData = tokensData;
 
   const balancesWithTokens = useMemo(() => {
-    if (!portfolio) return [];
+    if (!portfolio || !portfolio.tokens) return [];
     return portfolio.tokens.map((t) => {
       return {
         token: tokens[t.symbol],
@@ -71,10 +71,10 @@ export default function DrawerRight() {
                 <div className="px-4 sm:px-6">
                   <DialogTitle className="text-base font-semibold text-gray-900">{/* title area */}</DialogTitle>
                 </div>
-                <div className="relative flex-1 px-4 sm:px-6">
+                <div className="relative flex-1 px-4 sm:px-6 h-full">
                   {/* Portfolio */}
                   {!token && loading && <Spinner />}
-                  {!token && account?.isConnected && <div className="flex flex-col h-full">
+                  {!token && account?.isConnected && <div className="flex flex-col">
                     <div className="flex-1">
                     <div className='border-b mb-3'>Portfolio <span className='text-sm gray-500'>({truncateAddress(account.address || "0x")})</span></div>
                       <div>
@@ -102,8 +102,8 @@ export default function DrawerRight() {
                       })}
                     </div>
                   </div>}
-                  {!token && market.length > 0 && !account?.isConnected &&
-                    <div className="flex flex-col h-full">
+                  {!token && market.length > 0 &&
+                    <div className="flex flex-col mt-3">
                       <div className='border-b mb-3'>Market Data</div>
                       <div className="flex-1">
                         <div>

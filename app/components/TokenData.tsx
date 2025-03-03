@@ -126,7 +126,7 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
         label={token.symbol}
       />
       <MarketStats market={market} />
-      <div className='grid grid-cols-2 gap-1 sm:grid-cols-3'>
+      <div className='grid grid-cols-2 gap-1 mt-3'>
         <button className={`${styles.button} ${account?.isConnected ? '' : 'hidden'}`} onClick={() => {
           setWidget('Swap')
         }}>Swap</button>

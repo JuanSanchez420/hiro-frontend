@@ -1,10 +1,9 @@
 import { createConfig } from '@wagmi/core'
 import { http, Chain } from 'viem'
-import { base } from 'viem/chains'
 import { metaMask, walletConnect } from 'wagmi/connectors'
 
 export const localChain: Chain = {
-  id: base.id,
+  id: 31338,
   name: 'Localhost',
   nativeCurrency: {
     name: 'Ether',
