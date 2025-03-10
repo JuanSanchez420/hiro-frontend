@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { useGlobalContext } from '../context/GlobalContext';
 
 const tabs = [
-    { name: 'Swap', href: '#', highlight: 'swap' },
-    { name: 'Earn', href: '#', highlight: 'add/removeliquidity' },
-    { name: 'Autonomous', href: '#', highlight: 'autonomousinstructions' },
+    { name: 'Swap', href: '#' },
+    { name: 'Earn', href: '#' },
+    //{ name: 'Lend', href: '#' },
+    //{ name: 'Borrow', href: '#' },
+    { name: 'Autonomous', href: '#' },
 ]
 
 function classNames(...classes: string[]) {
@@ -16,7 +18,7 @@ function classNames(...classes: string[]) {
 export default function Tabs() {
     const [loaded, setLoaded] = useState(false)
     const account = useAccount()
-    const { widget, setWidget, setDrawerRightOpen, highlight } = useGlobalContext();
+    const { widget, setWidget, setDrawerRightOpen } = useGlobalContext();
 
     useEffect(() => {
         setLoaded(true)
@@ -25,27 +27,30 @@ export default function Tabs() {
 
     return (loaded &&
         <div className='mb-1'>
-            <nav aria-label="Tabs" className="flex space-x-4 justify-between">
-                {tabs.map((tab) => (
-                    <a
-                        key={tab.name}
-                        href={tab.href}
-                        className={classNames(
-                            tab.name === widget ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:text-gray-700',
-                            'rounded-md px-3 py-2 text-sm font-medium', highlight && highlight === `highlight-${tab.highlight}` ? 'animate-bounce' : ''
-                        )}
-                        onClick={() => setWidget(tab.name as WidgetOption)}
-                    >
-                        {tab.name}
-                    </a>
-                ))}
-                {account && account.isConnected ? <a href="#" onClick={() => setDrawerRightOpen(true)}
-                    className={`${highlight && highlight === `highlight-portfolio` ? 'animate-bounce' : ''} text-gray-500 hover:text-gray-700 rounded-md px-3 py-2 text-sm font-medium`}>Portfolio</a>
-                    :
-                    <a href="#" onClick={() => setDrawerRightOpen(true)}
-                        className={`${highlight && highlight === `highlight-portfolio` ? 'animate-bounce' : ''} text-gray-500 hover:text-gray-700 rounded-md px-3 py-2 text-sm font-medium`}>Market</a>}
-
-            </nav>
+            <div className="min-w-full w-full overflow-hidden">
+                <div
+                    className="flex overflow-x-auto justify-between gap-4"
+                >
+                    {tabs.map((tab) => (
+                        <a
+                            key={tab.name}
+                            href={tab.href}
+                            className={classNames(
+                                tab.name === widget ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:text-gray-700',
+                                'rounded-md px-1 py-2 text-sm font-medium', 'flex items-center justify-center'
+                            )}
+                            onClick={() => setWidget(tab.name as WidgetOption)}
+                        >
+                            {tab.name}
+                        </a>
+                    ))}
+                    {account && account.isConnected ? <a href="#" onClick={() => setDrawerRightOpen(true)}
+                        className={`text-gray-500 hover:text-gray-700 rounded-md px-1 py-2 text-sm font-medium`}>Portfolio</a>
+                        :
+                        <a href="#" onClick={() => setDrawerRightOpen(true)}
+                            className={`text-gray-500 hover:text-gray-700 rounded-md px-1 py-2 text-sm font-medium`}>Market</a>}
+                </div>
+            </div>
         </div>
     )
 }

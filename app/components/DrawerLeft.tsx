@@ -2,23 +2,12 @@
 
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { useGlobalContext } from '../context/GlobalContext';
-
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
-}
+import {styles} from "../utils/styles"
+import History from "./History"
 
 export default function Drawer() {
   const { drawerLeftOpen, setDrawerLeftOpen } = useGlobalContext();
-  const path = usePathname();
-
-  const navigation = [
-    { name: 'Chat', href: '/', current: path === '/' },
-    { name: 'Token', href: '/hiro-token', current: path.startsWith('/hiro-token') },
-    { name: 'FAQ', href: '/faq', current: path.startsWith('/faq') },
-  ]
 
   return (
     <Dialog open={drawerLeftOpen} onClose={setDrawerLeftOpen} className="relative z-10">
@@ -54,28 +43,11 @@ export default function Drawer() {
                 <div className="relative mt-6 flex-1 px-4 sm:px-6">
                   {/* Your content */}
                   <nav className="flex flex-1 flex-col">
-                    <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                      <li>
-                        <ul role="list" className="-mx-2 space-y-1">
-                          {navigation.map((item) => (
-                            <li key={item.name}>
-                              <Link
-                                href={item.href}
-                                className={classNames(
-                                  item.current
-                                    ? 'bg-gray-50 text-emerald-600'
-                                    : 'text-gray-700 hover:bg-gray-50 hover:text-emerald-600',
-                                  'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
-                                )}
-                                onClick={() => setDrawerLeftOpen(false)}
-                              >
-                                {item.name}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-                    </ul>
+                    <div className='flex justify-between mb-2'>
+                      <div className='bold'>History</div>
+                      <div><button className={styles.buttonSm} onClick={()=>confirm('Are you sure?')}>Clear</button></div>
+                    </div>
+                    <History />
                   </nav>
                 </div>
               </div>

@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState } from "react"
 import { WidgetOption } from "../types"
-import { useHighlight } from "../hooks/useHighlight"
 
 interface GlobalContextType {
     drawerLeftOpen: boolean
@@ -11,8 +10,6 @@ interface GlobalContextType {
     setDrawerRightOpen: React.Dispatch<React.SetStateAction<boolean>>
     widget: WidgetOption
     setWidget: React.Dispatch<React.SetStateAction<WidgetOption>>
-    highlight: string | undefined
-    triggerHighlight: (section: string) => void
     showConfirm: boolean
     setShowConfirm: React.Dispatch<React.SetStateAction<boolean>>
     isSignedIn: boolean
@@ -28,7 +25,6 @@ export const GlobalContextProvider = ({ children }: { children: React.ReactNode 
     const [drawerRightOpen, setDrawerRightOpen] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [widget, setWidget] = useState<WidgetOption>(null);
-    const { highlight, triggerHighlight } = useHighlight();
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [rain, setRain] = useState<string | undefined>();
     return (
@@ -36,7 +32,6 @@ export const GlobalContextProvider = ({ children }: { children: React.ReactNode 
             drawerLeftOpen, setDrawerLeftOpen,
             drawerRightOpen, setDrawerRightOpen,
             widget, setWidget,
-            highlight, triggerHighlight,
             showConfirm, setShowConfirm,
             isSignedIn, setIsSignedIn,
             rain, setRain

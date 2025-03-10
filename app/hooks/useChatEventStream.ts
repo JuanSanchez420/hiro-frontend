@@ -10,7 +10,7 @@ const useChatEventStream = (prompt: string) => {
     const account = useAccount()
     const isStreaming = useRef(false)
     const [streamedContent, setStreamedContent] = useState("");
-    const { triggerHighlight, setShowConfirm, setRain } = useGlobalContext();
+    const { setShowConfirm, setRain } = useGlobalContext();
     const { fetchPortfolio } = usePortfolio();
     const doABarrelRoll = useDoABarrelRoll();
     const [functionCalls, setFunctionCalls] = useState<Message[]>([]);
@@ -25,10 +25,6 @@ const useChatEventStream = (prompt: string) => {
             const obj = JSON.parse(event.data);
             obj.arguments = obj.arguments ? JSON.parse(obj.arguments) : {};
             console.log("functionCall:", obj);
-            if (obj.name === "highlight") {
-                triggerHighlight(obj.arguments.section);
-                return;
-            }
             if (obj.name === "confettiBurst") {
                 doConfettiBurst();
                 return;
@@ -89,7 +85,6 @@ const useChatEventStream = (prompt: string) => {
         fetchPortfolio,
         setRain,
         setShowConfirm,
-        triggerHighlight,
         setStreamedContent,
     ]);
 

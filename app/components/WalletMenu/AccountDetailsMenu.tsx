@@ -1,20 +1,23 @@
 'use client'
 
-import { useAccount, useDisconnect, useEnsName } from 'wagmi'
+import { useAccount, useDisconnect } from 'wagmi'
 import { styles } from '../../utils/styles'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
+import useHiro from '@/app/hooks/useHiro'
+import { NULL_ADDRESS } from '@/app/utils/constants'
+import { useGlobalContext } from '@/app/context/GlobalContext'
 
 const AccountDetails = () => {
-
-  const { address } = useAccount()
+  const { hiro } = useHiro()
+  const account = useAccount()
+  const { setWidget } = useGlobalContext();
   const { disconnect } = useDisconnect()
-  const { data: ensName } = useEnsName({ address })
   const itemClass = "block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
 
   return (<Menu as="div" className="relative ml-3">
     <div>
       <MenuButton className={`${styles.button} max-w-40`}>
-        {address && <div className='overflow-hidden text-ellipsis'>{ensName ? `${ensName} (${address})` : address}</div>}
+        <div className='overflow-hidden text-ellipsis'>{account?.address}</div>
       </MenuButton>
     </div>
     <MenuItems
@@ -23,11 +26,47 @@ const AccountDetails = () => {
     >
       <MenuItem>
         <a
-          href={`https://basescan.org/address/${address}`}
+          href={`https://basescan.org/address/${account?.address}`}
           className={itemClass}
           target="_blank"
         >
-          Basescan
+          Basescan for wallet
+        </a>
+      </MenuItem>
+      {hiro && hiro !== NULL_ADDRESS && <MenuItem>
+        <a
+          href={`https://basescan.org/address/${hiro}`}
+          className={itemClass}
+          target="_blank"
+        >
+          Basescan for Hiro
+        </a>
+      </MenuItem>}
+      <MenuItem>
+        <a
+          href="#"
+          className={itemClass}
+          target="_blank"
+          onClick={(e) => {
+            e.preventDefault()
+            setWidget('Deposit')
+          }
+          }
+        >
+          Deposit
+        </a>
+      </MenuItem>
+      <MenuItem>
+        <a
+          href="#"
+          className={itemClass}
+          target="_blank"
+          onClick={(e) => {
+            e.preventDefault()
+            setWidget('Withdraw')
+          }}
+        >
+          Withdraw
         </a>
       </MenuItem>
       <MenuItem>

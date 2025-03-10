@@ -4,6 +4,7 @@ import { usePromptsContext } from "../context/PromptsContext";
 import { usePathname } from "next/navigation";
 import Widget from "./widgets/Widget";
 import Tabs from "./Tabs";
+import CreateAHiro from "./CreateAHiro";
 
 const PromptInput = (
 
@@ -25,6 +26,7 @@ const PromptInput = (
   return (
     <div className="min-w-0 flex-1">
       <Widget />
+      <CreateAHiro />
       <Tabs />
       <form action="#" className="relative mb-2">
         <div className="rounded-lg bg-white outline outline-1 -outline-offset-1 outline-gray-300 focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-emerald-600">

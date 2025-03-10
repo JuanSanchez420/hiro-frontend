@@ -10,16 +10,16 @@ import formatNumber from '../utils/formatNumber';
 import TokenData from './TokenData';
 import { Spinner } from './Spinner';
 import useMarketData from '../hooks/useMarketData';
-import { useAccount } from 'wagmi';
-import truncateAddress from '../utils/truncateAddress';
 import { useGlobalContext } from '../context/GlobalContext';
+import useHiro from '../hooks/useHiro';
+import { NULL_ADDRESS } from '../utils/constants';
 
 export default function DrawerRight() {
-  const account = useAccount()
   const { drawerRightOpen, setDrawerRightOpen } = useGlobalContext();
   const [token, setToken] = useState<Token | null>(null);
 
   const { market } = useMarketData();
+  const { hiro } = useHiro()
   const { portfolio, loading } = usePortfolio();
   const tokens: TokensData = tokensData;
 
@@ -74,9 +74,9 @@ export default function DrawerRight() {
                 <div className="relative flex-1 px-4 sm:px-6 h-full">
                   {/* Portfolio */}
                   {!token && loading && <Spinner />}
-                  {!token && account?.isConnected && <div className="flex flex-col">
+                  {!token && hiro && hiro !== NULL_ADDRESS && <div className="flex flex-col">
                     <div className="flex-1">
-                    <div className='border-b mb-3'>Portfolio <span className='text-sm gray-500'>({truncateAddress(account.address || "0x")})</span></div>
+                      <div className='border-b mb-3 truncate'>Portfolio (<span className='text-sm gray-500'>{hiro}</span>)</div>
                       <div>
                         <a className="grid grid-cols-4 gap-2 p-2 text-gray-700 group rounded-md text-sm/6 font-semibold">
                           <div>ICON</div>

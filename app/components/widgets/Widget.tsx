@@ -3,6 +3,9 @@ import AddLiquidityWidget from "./LiquidityWidget";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import AutonomousInstructions from "./AutonomousInstructions";
 import { useGlobalContext } from "@/app/context/GlobalContext";
+import Deposit from "./Deposit";
+import Withdraw from "./Withdraw";
+import SignupWidget from "./SignupWidget";
 
 const Widget = () => {
     const { widget, setWidget } = useGlobalContext();
@@ -25,7 +28,13 @@ const Widget = () => {
                                 <AddLiquidityWidget /> :
                                 widget === 'Autonomous' ?
                                     <AutonomousInstructions /> :
-                                    null}
+                                    widget === 'Deposit' ?
+                                        <Deposit /> :
+                                        widget === 'Withdraw' ?
+                                            <Withdraw /> :
+                                            widget === 'Signup' ?
+                                            <SignupWidget /> :
+                                            null}
                     </DialogPanel>
                 </div>
             </div>

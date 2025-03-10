@@ -1,14 +1,21 @@
-import { getContract, parseEther } from 'viem';
+import { getContract } from 'viem';
 import HIRO_FACTORY_ABI from '../abi/HiroFactory.json';
 import { useAccount, useSimulateContract, useWalletClient } from 'wagmi';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { waitForTransactionReceipt } from 'viem/actions';
 import { NULL_ADDRESS } from '../utils/constants';
 
+enum HiroWalletStatus {
+    NOT_CREATED = 'NOT_CREATED',
+    CREATING = 'CREATING',
+    CREATED = 'CREATED'
+}
+
 const useHiroFactory = () => {
     const account = useAccount();
-    const [hiroAddress, setHiroAddress] = useState<`0x${string}` | null>(null);
+    const [hiro, setHiro] = useState<`0x${string}` | null>(null);
     const { data: client } = useWalletClient();
+    const [status, setStatus] = useState<HiroWalletStatus>(HiroWalletStatus.NOT_CREATED);
     const depositAmount = 10000000000000000n; // 0.01 ETH
     const estimatedAmountOut = useSimulateContract({
         abi: HIRO_FACTORY_ABI,
@@ -29,12 +36,13 @@ const useHiroFactory = () => {
 
     const signUp = useCallback(async () => {
         if (!factory || !client || !estimatedAmountOut?.data) return null;
+        setStatus(HiroWalletStatus.CREATING);
 
         try {
             const raw = estimatedAmountOut.data.result as unknown as bigint
             const withSlippage = raw * 98n / 100n;
 
-            const hash = await factory.write.createHiroWallet([withSlippage], { value: depositAmount + parseEther("2") });
+            const hash = await factory.write.createHiroWallet([withSlippage], { value: depositAmount });
 
             await waitForTransactionReceipt(client, { hash });
 
@@ -46,8 +54,12 @@ const useHiroFactory = () => {
                 },
             })
             const data: { success: boolean; wallet: string } = await response.json();
+            setStatus(HiroWalletStatus.CREATED);
+            setHiro(data.wallet as `0x${string}`);
+
             return data.wallet;
         } catch (error) {
+            setStatus(HiroWalletStatus.NOT_CREATED);
             console.error("Error creating HiroWallet:", error);
         }
     }, [factory, client, estimatedAmountOut, depositAmount])
@@ -56,6 +68,9 @@ const useHiroFactory = () => {
         if (!factory || !client) return NULL_ADDRESS;
 
         const wallet: unknown = await factory.read.getWallet([address]);
+        if (wallet && wallet !== NULL_ADDRESS) {
+            setStatus(HiroWalletStatus.CREATED);
+        }
 
         return wallet as `0x${string}` || NULL_ADDRESS;
     }, [factory, client])
@@ -63,13 +78,13 @@ const useHiroFactory = () => {
     useEffect(() => {
         const f = async () => {
             if (!client || !account?.address) return;
-            const hiroAddress = await getHiroWallet(account.address);
-            setHiroAddress(hiroAddress);
+            const hiro = await getHiroWallet(account.address);
+            setHiro(hiro);
         }
         f()
     }, [client, account, getHiroWallet])
 
-    return { factory, hiroAddress, signUp, getHiroWallet }
+    return { factory, hiro, status, signUp, getHiroWallet }
 }
 
 export default useHiroFactory;
