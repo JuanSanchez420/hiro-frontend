@@ -1,21 +1,35 @@
 import React, { useMemo, useState } from "react";
-import usePortfolio from "@/app/hooks/usePortfolio";
 import formatNumber from "@/app/utils/formatNumber";
 import { styles } from "@/app/utils/styles";
 import SearchableSelect from "../SearchableSelect";
 import TOKENS from "@/app/utils/tokens.json";
+import useHiro from "@/app/hooks/useHiro";
+import { parseEther, parseUnits } from "viem";
+import { usePortfolioContext } from "@/app/context/PortfolioContext";
+import { useGlobalContext } from "@/app/context/GlobalContext";
 
 const WithdrawWidget = () => {
   const [amount, setAmount] = useState("");
   const [withdrawToken, setWithdrawToken] = useState("ETH");
+  const { withdraw, withdrawETH } = useHiro();
+  const { setWidget } = useGlobalContext()
 
-  const { portfolio } = usePortfolio()
+  const { portfolio, fetchPortfolio } = usePortfolioContext()
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     if (!amount || !withdrawToken) {
       alert("Please fill in all fields")
       return
     }
+    if (withdrawToken === "ETH") {
+      await withdrawETH(parseEther(amount))
+
+    } else {
+      const t = TOKENS[withdrawToken as keyof typeof TOKENS]
+      await withdraw(t, parseUnits(amount, t.decimals))
+    }
+    fetchPortfolio()
+    setWidget(null)
   };
 
   const balance0 = useMemo(() => {

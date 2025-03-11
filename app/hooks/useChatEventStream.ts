@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import useDoABarrelRoll from "./useDoABarrelRoll";
-import usePortfolio from "./usePortfolio";
 import doConfettiBurst from "../utils/doConfettiBurst";
 import { useGlobalContext } from "../context/GlobalContext";
 import { Message } from "../context/PromptsContext";
 import { useAccount } from "wagmi";
+import { usePortfolioContext } from "../context/PortfolioContext";
 
 const useChatEventStream = (prompt: string) => {
     const account = useAccount()
     const isStreaming = useRef(false)
     const [streamedContent, setStreamedContent] = useState("");
     const { setShowConfirm, setRain } = useGlobalContext();
-    const { fetchPortfolio } = usePortfolio();
+    const { fetchPortfolio } = usePortfolioContext();
     const doABarrelRoll = useDoABarrelRoll();
     const [functionCalls, setFunctionCalls] = useState<Message[]>([]);
     const [functionResults, setFunctionResults] = useState<Message[]>([]);
@@ -49,7 +49,7 @@ const useChatEventStream = (prompt: string) => {
             console.log("functionCallResult:", obj);
             if (obj.section || obj.confettiBurst || obj.barrelRoll || obj.madeItRain) return;
             if (obj.transactionHash) {
-                fetchPortfolio();
+                fetchPortfolio()
             }
 
             setFunctionResults((prev) => [...prev, { message: "", type: "function", completed: true, functionCall: obj }])

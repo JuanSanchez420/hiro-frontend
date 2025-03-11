@@ -2,25 +2,20 @@ import { useEffect, useState } from 'react';
 import { erc20Abi, getContract } from 'viem';
 import { sendTransaction, waitForTransactionReceipt } from 'viem/actions';
 import { useAccount, useWalletClient } from 'wagmi';
-import useHiroFactory from './useHiroFactory';
 import HIRO_WALLET_ABI from '../abi/HiroWallet.json';
 import { Token } from '../types';
 import { NULL_ADDRESS } from '../utils/constants';
+import { usePortfolioContext } from '../context/PortfolioContext';
 
 const useHiro = () => {
     const account = useAccount();
     const { data: client } = useWalletClient();
-    const { getHiroWallet } = useHiroFactory();
     const [hiro, setHiro] = useState<`0x${string}` | null>(null);
+    const {portfolio} = usePortfolioContext();
 
-    useEffect(() => {
-        const f = async () => {
-            if (!client || !account?.address) return;
-            const hiro = await getHiroWallet(account.address);
-            setHiro(hiro);
-        }
-        f()
-    }, [client, account, getHiroWallet])
+    useEffect(()=>{
+        setHiro(portfolio?.hiro)
+    },[portfolio])
 
     const deposit = async (token: Token, amount: bigint) => {
         if (!hiro || hiro === NULL_ADDRESS || !client) return null;

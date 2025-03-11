@@ -1,34 +1,41 @@
 import React, { useMemo, useState } from "react";
-import usePortfolio from "@/app/hooks/usePortfolio";
 import formatNumber from "@/app/utils/formatNumber";
 import { styles } from "@/app/utils/styles";
 import SearchableSelect from "../SearchableSelect";
 import TOKENS from "@/app/utils/tokens.json";
 import useHiro from "@/app/hooks/useHiro";
 import { parseEther } from "viem";
+import { useGlobalContext } from "@/app/context/GlobalContext";
+import { usePortfolioContext } from "@/app/context/PortfolioContext";
 
 const DepositWidget = () => {
+  const { setWidget } = useGlobalContext()
   const [amount, setAmount] = useState("");
   const [depositToken, setDepositToken] = useState("ETH");
-  const { deposit, depositETH } = useHiro()
+  const { depositETH } = useHiro()
 
-  // TODO: get hiro portfolio
-  const { portfolio } = usePortfolio()
+  const { portfolio, fetchPortfolio } = usePortfolioContext()
 
   const handleDeposit = async () => {
     if (!amount || !depositToken) {
       alert("Please fill in all fields")
-      if (depositToken === "ETH") {
-        await depositETH(parseEther(amount))
-      } else {
-        await deposit(depositToken, parseEther(amount))
-      }
+      return
     }
+
+    if (depositToken === "ETH") {
+      await depositETH(parseEther(amount))
+      fetchPortfolio()
+      setWidget(null)
+    } else {
+      // TODO
+    }
+
   };
 
   const balance0 = useMemo(() => {
-    if (!portfolio) return 0
-    return portfolio.tokens.find(b => b.symbol === depositToken)?.balance || 0
+    if (!portfolio) return "0"
+    if(depositToken === "ETH") return portfolio.balance
+    return portfolio.tokens.find(b => b.symbol === depositToken)?.balance || "0"
   }, [depositToken, portfolio])
 
   const tokenList = useMemo(() => {

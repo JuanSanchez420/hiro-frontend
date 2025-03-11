@@ -4,7 +4,6 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, TransitionChild } fro
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import tokensData from "../utils/tokens.json";
 import { Token, TokensData } from "../types";
-import usePortfolio from '../hooks/usePortfolio';
 import { useMemo, useState } from 'react';
 import formatNumber from '../utils/formatNumber';
 import TokenData from './TokenData';
@@ -13,6 +12,7 @@ import useMarketData from '../hooks/useMarketData';
 import { useGlobalContext } from '../context/GlobalContext';
 import useHiro from '../hooks/useHiro';
 import { NULL_ADDRESS } from '../utils/constants';
+import { usePortfolioContext } from '../context/PortfolioContext';
 
 export default function DrawerRight() {
   const { drawerRightOpen, setDrawerRightOpen } = useGlobalContext();
@@ -20,7 +20,7 @@ export default function DrawerRight() {
 
   const { market } = useMarketData();
   const { hiro } = useHiro()
-  const { portfolio, loading } = usePortfolio();
+  const { portfolio, loading } = usePortfolioContext();
   const tokens: TokensData = tokensData;
 
   const balancesWithTokens = useMemo(() => {

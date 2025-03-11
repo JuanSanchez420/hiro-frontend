@@ -1,4 +1,4 @@
-import usePortfolio from "@/app/hooks/usePortfolio";
+
 import formatNumber from "@/app/utils/formatNumber";
 import { styles } from "@/app/utils/styles";
 import React, { useMemo, useState } from "react";
@@ -8,6 +8,7 @@ import { SimpleLiquidityPosition } from "@/app/types";
 import TOKENS from "@/app/utils/tokens.json";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { usePromptsContext } from "@/app/context/PromptsContext";
+import { usePortfolioContext } from "@/app/context/PortfolioContext";
 
 export default function LiquidityWidget() {
   const [amount0, setAmount0] = useState("");
@@ -19,7 +20,7 @@ export default function LiquidityWidget() {
 
   const { addPrompt } = usePromptsContext();
   const { setWidget } = useGlobalContext();
-  const { portfolio } = usePortfolio();
+  const { portfolio } = usePortfolioContext();
 
   const handleAddLiquidity = () => {
     if (confirm(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} with a ${width} range?`)) {
@@ -30,18 +31,18 @@ export default function LiquidityWidget() {
 
   const handleRemoveLiquidity = (position: SimpleLiquidityPosition) => {
     if (confirm(`Remove liquidity for ${position.token0}/${position.token1}?`)) {
-      addPrompt(`Remove liquidity for ${position.token0}/${position.token1} and index ${position.index}`);
+      addPrompt(`Remove liquidity for ${position.token0}/${position.token1}, index ${position.index}`);
       setWidget(null);
     }
   }
 
   const balance0 = useMemo(() => {
-    if (!portfolio) return "0";
+    if (!portfolio || !portfolio.tokens) return "0";
     return portfolio.tokens.find((b) => b.symbol === token0)?.balance || "0";
   }, [token0, portfolio]);
 
   const balance1 = useMemo(() => {
-    if (!portfolio) return "0";
+    if (!portfolio || !portfolio.tokens) return "0";
     return portfolio.tokens.find((b) => b.symbol === token1)?.balance || "0";
   }, [token1, portfolio]);
 
@@ -113,7 +114,7 @@ export default function LiquidityWidget() {
       {action === "add" && (
         <div id="add-liquidity">
           <div className="text-sm italic mb-3">
-            Note: Hiro will try to add a 50/50 split of the two tokens (ex: 1 WETH and $3,700 USDC). You will be refunded anything that cannot be added. Will upgrade this soon.
+            Note: Hiro will try to add a 50/50 split of the two tokens (ex: 1 WETH and $3,700 USDC). You will be refunded anything that cannot be added.
           </div>
           {/* Token0 */}
           <div className="mb-4">

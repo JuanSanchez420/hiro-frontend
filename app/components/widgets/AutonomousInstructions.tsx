@@ -88,7 +88,7 @@ const AutonomousInstructions = () => {
         <li>Specify tokens and amounts.</li>
       </ul>
       <div className="w-full flex">
-        <button className={`${styles.button} mr-1 w-full`} disabled={value === ""} onClick={doPrompt}>Set</button>
+        <button className={`w-full mr-1 bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1`} disabled={value === ""} onClick={doPrompt}>Save</button>
         <button className={`${styles.button} w-full`} onClick={clearInstructions}>Clear</button>
       </div>
     </div>

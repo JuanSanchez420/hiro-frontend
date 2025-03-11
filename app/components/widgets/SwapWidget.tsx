@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import usePortfolio from "@/app/hooks/usePortfolio";
 import formatNumber from "@/app/utils/formatNumber";
 import { styles } from "@/app/utils/styles";
 import SearchableSelect from "../SearchableSelect";
 import TOKENS from "@/app/utils/tokens.json";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { usePromptsContext } from "@/app/context/PromptsContext";
+import { usePortfolioContext } from "@/app/context/PortfolioContext";
 
 const SwapWidget = () => {
   const [fromAmount, setFromAmount] = useState("");
@@ -14,7 +14,7 @@ const SwapWidget = () => {
 
   const { addPrompt, } = usePromptsContext()
   const { setWidget, setDrawerRightOpen } = useGlobalContext();
-  const { portfolio } = usePortfolio()
+  const { portfolio } = usePortfolioContext();
 
   const handleSwap = () => {
     if (!fromAmount || !fromToken || !toToken) {

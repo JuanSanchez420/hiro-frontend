@@ -59,10 +59,15 @@ type SimpleLiquidityPosition = {
 };
 
 export interface Portfolio {
+  address: `0x${string}`;
+  hiro: `0x${string}`;
+  balance: string;
+  hiroBalance: string;
   tokens: {
     symbol: string;
     balance: string;
     usdPrice: number;
   }[],
   positions: SimpleLiquidityPosition[]
+  timestamp: number;
 }

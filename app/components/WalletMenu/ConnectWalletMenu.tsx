@@ -7,11 +7,15 @@ import { styles } from "../../utils/styles"
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react"
 import useSIWE from "../../hooks/useSIWE"
 import { useGlobalContext } from "../../context/GlobalContext"
+import { NULL_ADDRESS } from "@/app/utils/constants"
+import useHiro from "@/app/hooks/useHiro"
+import CreateAHiro from "./CreateAHiro"
 
 const ConnectWallet = () => {
     const { isSignedIn } = useGlobalContext()
     const { connectors, connect } = useConnect()
     const { isConnected } = useAccount()
+    const { hiro } = useHiro()
     const { doSIWE } = useSIWE()
     const { disconnect } = useDisconnect()
     const [isLoaded, setIsLoaded] = useState(false)
@@ -89,12 +93,13 @@ const ConnectWallet = () => {
         )
     }
 
-    return isConnected && isSignedIn ?
-        <AccountDetails /> :
-            isConnected ?
-                <SignIn /> :
-                connectors?.length > 0 ?
-                    <WalletMenu /> : <div>No connectors available</div>
+    if (isConnected && isSignedIn && hiro !== NULL_ADDRESS) return <AccountDetails />
+
+    if (isConnected && isSignedIn && hiro === NULL_ADDRESS) return <CreateAHiro />
+
+    if (isConnected) return <SignIn />
+
+    return <WalletMenu />
 }
 
 export default ConnectWallet

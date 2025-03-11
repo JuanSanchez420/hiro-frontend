@@ -12,6 +12,7 @@ import DrawerRight from "./components/DrawerRight";
 import RainingIcons from "./components/RainingIcons";
 import { GlobalContextProvider } from "./context/GlobalContext";
 import { PromptsProvider } from "./context/PromptsContext";
+import { PortfolioProvider } from "./context/PortfolioContext";
 
 export const metadata: Metadata = {
   title: "Hiro",
@@ -28,6 +29,7 @@ export default function RootLayout({
     <Providers>
       <PromptsProvider>
         <GlobalContextProvider>
+          <PortfolioProvider>
           <html lang="en" className="h-full">
             <body className={`h-full bg-white`}>
               <div className="flex flex-col min-h-full h-full">
@@ -60,6 +62,7 @@ export default function RootLayout({
               <RainingIcons />
             </body>
           </html>
+          </PortfolioProvider>
         </GlobalContextProvider>
       </PromptsProvider>
     </Providers>

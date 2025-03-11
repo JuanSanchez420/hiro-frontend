@@ -1,9 +1,10 @@
-import { getContract } from 'viem';
+import { getContract, parseEther } from 'viem';
 import HIRO_FACTORY_ABI from '../abi/HiroFactory.json';
 import { useAccount, useSimulateContract, useWalletClient } from 'wagmi';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { waitForTransactionReceipt } from 'viem/actions';
 import { NULL_ADDRESS } from '../utils/constants';
+import doConfettiBurst from '../utils/doConfettiBurst';
 
 enum HiroWalletStatus {
     NOT_CREATED = 'NOT_CREATED',
@@ -34,15 +35,17 @@ const useHiroFactory = () => {
         })
     }, [client])
 
-    const signUp = useCallback(async () => {
+    const signUp = useCallback(async (extraEth: string) => {
         if (!factory || !client || !estimatedAmountOut?.data) return null;
         setStatus(HiroWalletStatus.CREATING);
 
         try {
             const raw = estimatedAmountOut.data.result as unknown as bigint
             const withSlippage = raw * 98n / 100n;
+            
+            const value = depositAmount + parseEther(extraEth).valueOf()
 
-            const hash = await factory.write.createHiroWallet([withSlippage], { value: depositAmount });
+            const hash = await factory.write.createHiroWallet([withSlippage], { value });
 
             await waitForTransactionReceipt(client, { hash });
 
@@ -56,6 +59,7 @@ const useHiroFactory = () => {
             const data: { success: boolean; wallet: string } = await response.json();
             setStatus(HiroWalletStatus.CREATED);
             setHiro(data.wallet as `0x${string}`);
+            doConfettiBurst()
 
             return data.wallet;
         } catch (error) {
