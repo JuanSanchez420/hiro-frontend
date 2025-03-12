@@ -7,34 +7,43 @@ import useHiro from "@/app/hooks/useHiro";
 import { parseEther } from "viem";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
+import { Spinner } from "../Spinner";
 
 const DepositWidget = () => {
   const { setWidget } = useGlobalContext()
   const [amount, setAmount] = useState("");
   const [depositToken, setDepositToken] = useState("ETH");
   const { depositETH } = useHiro()
+  const [isDepositing, setIsDepositing] = useState(false)
 
   const { portfolio, fetchPortfolio } = usePortfolioContext()
 
   const handleDeposit = async () => {
+    setIsDepositing(true);
     if (!amount || !depositToken) {
-      alert("Please fill in all fields")
-      return
+      alert("Please fill in all fields");
+      setIsDepositing(false);
+      return;
     }
 
-    if (depositToken === "ETH") {
-      await depositETH(parseEther(amount))
-      fetchPortfolio()
-      setWidget(null)
-    } else {
-      // TODO
+    try {
+      if (depositToken === "ETH") {
+        await depositETH(parseEther(amount));
+      } else {
+        // TODO: handle other tokens
+      }
+      await fetchPortfolio();
+      setWidget(null);
+    } catch (error: unknown) {
+      console.error(error);
+    } finally {
+      setIsDepositing(false);
     }
-
-  };
+  }
 
   const balance0 = useMemo(() => {
     if (!portfolio) return "0"
-    if(depositToken === "ETH") return portfolio.balance
+    if (depositToken === "ETH") return portfolio.balance
     return portfolio.tokens.find(b => b.symbol === depositToken)?.balance || "0"
   }, [depositToken, portfolio])
 
@@ -114,9 +123,10 @@ const DepositWidget = () => {
       <button
         type="button"
         onClick={handleDeposit}
-        className="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+        disabled={isDepositing}
+        className="flex justify-center w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
       >
-        Deposit
+        {isDepositing && <Spinner />}<span>Deposit</span>
       </button>
     </div>
   );

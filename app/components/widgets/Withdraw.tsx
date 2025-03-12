@@ -7,29 +7,39 @@ import useHiro from "@/app/hooks/useHiro";
 import { parseEther, parseUnits } from "viem";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
 import { useGlobalContext } from "@/app/context/GlobalContext";
+import { Spinner } from "../Spinner";
 
 const WithdrawWidget = () => {
   const [amount, setAmount] = useState("");
   const [withdrawToken, setWithdrawToken] = useState("ETH");
   const { withdraw, withdrawETH } = useHiro();
   const { setWidget } = useGlobalContext()
+  const [isWithdrawing, setIsWithdrawing] = useState(false)
 
   const { portfolio, fetchPortfolio } = usePortfolioContext()
 
   const handleWithdraw = async () => {
-    if (!amount || !withdrawToken) {
-      alert("Please fill in all fields")
-      return
-    }
-    if (withdrawToken === "ETH") {
-      await withdrawETH(parseEther(amount))
+    try {
+      setIsWithdrawing(true)
+      if (!amount || !withdrawToken) {
+        alert("Please fill in all fields")
+        return
+      }
+      if (withdrawToken === "ETH") {
+        await withdrawETH(parseEther(amount))
 
-    } else {
-      const t = TOKENS[withdrawToken as keyof typeof TOKENS]
-      await withdraw(t, parseUnits(amount, t.decimals))
+      } else {
+        const t = TOKENS[withdrawToken as keyof typeof TOKENS]
+        await withdraw(t, parseUnits(amount, t.decimals))
+      }
+      fetchPortfolio()
+      setWidget(null)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsWithdrawing(false)
     }
-    fetchPortfolio()
-    setWidget(null)
+
   };
 
   const balance0 = useMemo(() => {
@@ -113,9 +123,9 @@ const WithdrawWidget = () => {
       <button
         type="button"
         onClick={handleWithdraw}
-        className="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+        className="flex justify-center w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
       >
-        Withdraw
+        {isWithdrawing && <Spinner />}<span>Withdraw</span>
       </button>
     </div>
   );

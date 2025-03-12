@@ -1,5 +1,5 @@
 'use client'
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { Portfolio } from "../types";
 import { NULL_ADDRESS } from "../utils/constants";
 import { useAccount } from "wagmi";
@@ -30,6 +30,7 @@ export const PortfolioProvider = ({
     const account = useAccount()
     const [portfolio, setPortfolio] = useState<Portfolio>(emptyPortfolio);
     const [loading, setLoading] = useState(false);
+    const firstLoad = useRef(true);
 
     const fetchPortfolio = useCallback(async () => {
         setLoading(true);
@@ -44,10 +45,11 @@ export const PortfolioProvider = ({
     },[])
 
     useEffect(() => {
-        if(portfolio.address === NULL_ADDRESS && account?.address !== NULL_ADDRESS && !loading) {
+        if(portfolio.address === NULL_ADDRESS && account?.address !== NULL_ADDRESS && firstLoad.current) {
+            firstLoad.current = false;
             fetchPortfolio();
         }
-    }, [account?.address, portfolio, loading, fetchPortfolio]);
+    }, [account?.address, portfolio.address, fetchPortfolio]);
 
 
 

@@ -10,6 +10,7 @@ import { useGlobalContext } from "../../context/GlobalContext"
 import { NULL_ADDRESS } from "@/app/utils/constants"
 import useHiro from "@/app/hooks/useHiro"
 import CreateAHiro from "./CreateAHiro"
+import { Spinner } from "../Spinner"
 
 const ConnectWallet = () => {
     const { isSignedIn } = useGlobalContext()
@@ -42,7 +43,11 @@ const ConnectWallet = () => {
         }
     }, [isLoaded, connect, connectors, isConnected])
 
-    if (!isLoaded) return <div>Loading...</div>
+    if (!isLoaded) return <Menu as="div" className="relative ml-3">
+        <MenuButton className={`${styles.button} max-w-40 flex justify-center`}>
+            <Spinner /><span>Loading...</span>
+        </MenuButton>
+    </Menu>
 
     const WalletMenu = () => {
         return (<Menu as="div" className="relative ml-3">

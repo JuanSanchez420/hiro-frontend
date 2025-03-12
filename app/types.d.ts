@@ -56,6 +56,8 @@ type SimpleLiquidityPosition = {
   tickLower: number;
   tickUpper: number;
   liquidity: bigint;
+  tokensOwed0: string;
+  tokensOwed1: string;
 };
 
 export interface Portfolio {

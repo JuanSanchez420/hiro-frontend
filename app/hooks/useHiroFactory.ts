@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { waitForTransactionReceipt } from 'viem/actions';
 import { NULL_ADDRESS } from '../utils/constants';
 import doConfettiBurst from '../utils/doConfettiBurst';
+import { usePortfolioContext } from '../context/PortfolioContext';
 
 enum HiroWalletStatus {
     NOT_CREATED = 'NOT_CREATED',
@@ -16,6 +17,7 @@ const useHiroFactory = () => {
     const account = useAccount();
     const [hiro, setHiro] = useState<`0x${string}` | null>(null);
     const { data: client } = useWalletClient();
+    const { fetchPortfolio } = usePortfolioContext();
     const [status, setStatus] = useState<HiroWalletStatus>(HiroWalletStatus.NOT_CREATED);
     const depositAmount = 10000000000000000n; // 0.01 ETH
     const estimatedAmountOut = useSimulateContract({
@@ -59,6 +61,7 @@ const useHiroFactory = () => {
             const data: { success: boolean; wallet: string } = await response.json();
             setStatus(HiroWalletStatus.CREATED);
             setHiro(data.wallet as `0x${string}`);
+            await fetchPortfolio();
             doConfettiBurst()
 
             return data.wallet;

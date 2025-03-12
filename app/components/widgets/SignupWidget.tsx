@@ -5,9 +5,10 @@ import SearchableSelect from "../SearchableSelect";
 import useHiroFactory from "@/app/hooks/useHiroFactory";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
+import { Spinner } from "../Spinner";
 
 const SignupWidget = () => {
-  const { signUp } = useHiroFactory()
+  const { signUp, status } = useHiroFactory()
   const { setWidget } = useGlobalContext()
   const [amount, setAmount] = useState("0");
   const signupToken = "ETH"
@@ -90,9 +91,10 @@ const SignupWidget = () => {
       <button
         type="button"
         onClick={handleSignup}
-        className="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+        disabled={status === "CREATING"}
+        className={`flex justify-center w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1`}
       >
-        CREATE YOUR HIRO
+        {status === "CREATING" && <Spinner />}<span>CREATE YOUR HIRO</span>
       </button>
     </div>
   );

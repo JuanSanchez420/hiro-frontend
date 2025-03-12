@@ -13,9 +13,10 @@ import { useGlobalContext } from '../context/GlobalContext';
 import useHiro from '../hooks/useHiro';
 import { NULL_ADDRESS } from '../utils/constants';
 import { usePortfolioContext } from '../context/PortfolioContext';
+import { formatEther } from 'viem';
 
 export default function DrawerRight() {
-  const { drawerRightOpen, setDrawerRightOpen } = useGlobalContext();
+  const { drawerRightOpen, setDrawerRightOpen, setWidget } = useGlobalContext();
   const [token, setToken] = useState<Token | null>(null);
 
   const { market } = useMarketData();
@@ -102,6 +103,36 @@ export default function DrawerRight() {
                       })}
                     </div>
                   </div>}
+                  {/* fill in simple liquidity position */}
+                  {!token && portfolio && portfolio.positions && portfolio.positions.length > 0 && (
+                    <div className="flex flex-col mt-3">
+                      <div className='border-b mb-3'>Liquidity Positions</div>
+                      <div className="flex-1">
+                        <div>
+                          <a className="grid grid-cols-4 gap-2 p-2 text-gray-700 group rounded-md text-sm/6 font-semibold">
+                            <div>POSITION</div>
+                            <div>PAIR</div>
+                            <div>LIQUIDITY</div>
+                          </a>
+                        </div>
+                        {portfolio.positions.map((position) => {
+                          return (
+                            <div key={position.index}>
+                              <a onClick={(e) => {
+                                e.preventDefault()
+                                setWidget('Earn')
+                                setDrawerRightOpen(false)
+                              }} className="grid grid-cols-4 gap-2 p-2 text-gray-700 hover:bg-gray-50 group rounded-md text-sm/6 font-semibold cursor-pointer">
+                                <div>{position.index}</div>
+                                <div>{position.token0}/{position.token1}</div>
+                                <div>{`${formatEther(position.liquidity)}`}</div>
+                              </a>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                   {!token && market.length > 0 &&
                     <div className="flex flex-col mt-3">
                       <div className='border-b mb-3'>Market Data</div>
