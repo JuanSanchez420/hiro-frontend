@@ -3,10 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   try {
     const headersObject = Object.fromEntries(req.headers);
-    const { searchParams } = new URL(req.url);
-    const account = searchParams.get('account')
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/api/instructions?account=${account}`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_EXPRESS_URL}:${process.env.NEXT_PUBLIC_EXPRESS_PORT}/api/instructions`;
 
     // Forward the request to the server
     const response = await fetch(apiUrl, {
@@ -22,7 +20,6 @@ export async function GET(req: NextRequest) {
         cookie: req.headers.get('cookie') || '',
       },
       credentials: 'include',
-      body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
     });
 
     const headers = new Headers(response.headers);

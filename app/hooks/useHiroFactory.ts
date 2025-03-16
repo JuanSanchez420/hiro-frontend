@@ -1,7 +1,7 @@
 import { getContract, parseEther } from 'viem';
 import HIRO_FACTORY_ABI from '../abi/HiroFactory.json';
-import { useAccount, useSimulateContract, useWalletClient } from 'wagmi';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSimulateContract, useWalletClient } from 'wagmi';
+import { useCallback, useMemo, useState } from 'react';
 import { waitForTransactionReceipt } from 'viem/actions';
 import { NULL_ADDRESS } from '../utils/constants';
 import doConfettiBurst from '../utils/doConfettiBurst';
@@ -14,8 +14,6 @@ enum HiroWalletStatus {
 }
 
 const useHiroFactory = () => {
-    const account = useAccount();
-    const [hiro, setHiro] = useState<`0x${string}` | null>(null);
     const { data: client } = useWalletClient();
     const { fetchPortfolio } = usePortfolioContext();
     const [status, setStatus] = useState<HiroWalletStatus>(HiroWalletStatus.NOT_CREATED);
@@ -44,7 +42,7 @@ const useHiroFactory = () => {
         try {
             const raw = estimatedAmountOut.data.result as unknown as bigint
             const withSlippage = raw * 98n / 100n;
-            
+
             const value = depositAmount + parseEther(extraEth).valueOf()
 
             const hash = await factory.write.createHiroWallet([withSlippage], { value });
@@ -59,39 +57,19 @@ const useHiroFactory = () => {
                 },
             })
             const data: { success: boolean; wallet: string } = await response.json();
-            setStatus(HiroWalletStatus.CREATED);
-            setHiro(data.wallet as `0x${string}`);
+
             await fetchPortfolio();
             doConfettiBurst()
+            setStatus(HiroWalletStatus.CREATED);
 
             return data.wallet;
         } catch (error) {
             setStatus(HiroWalletStatus.NOT_CREATED);
             console.error("Error creating HiroWallet:", error);
         }
-    }, [factory, client, estimatedAmountOut, depositAmount])
+    }, [factory, client, estimatedAmountOut, depositAmount, fetchPortfolio])
 
-    const getHiroWallet = useCallback(async (address: `0x${string}`) => {
-        if (!factory || !client) return NULL_ADDRESS;
-
-        const wallet: unknown = await factory.read.getWallet([address]);
-        if (wallet && wallet !== NULL_ADDRESS) {
-            setStatus(HiroWalletStatus.CREATED);
-        }
-
-        return wallet as `0x${string}` || NULL_ADDRESS;
-    }, [factory, client])
-
-    useEffect(() => {
-        const f = async () => {
-            if (!client || !account?.address) return;
-            const hiro = await getHiroWallet(account.address);
-            setHiro(hiro);
-        }
-        f()
-    }, [client, account, getHiroWallet])
-
-    return { factory, hiro, status, signUp, getHiroWallet }
+    return { factory, status, signUp }
 }
 
 export default useHiroFactory;

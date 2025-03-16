@@ -2,30 +2,29 @@ import { useGlobalContext } from "@/app/context/GlobalContext";
 import { usePromptsContext } from "@/app/context/PromptsContext";
 import { styles } from "@/app/utils/styles";
 import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
 
 
 const AutonomousInstructions = () => {
-  const account = useAccount()
   const { addPrompt } = usePromptsContext();
   const { setWidget } = useGlobalContext();
   const [value, setValue] = useState("");
   const [interval, setInterval] = useState('daily')
 
   const intervals = [
-    { id: 'hourly', title: 'Hour' },
-    { id: 'daily', title: 'Day' },
-    { id: 'weekly', title: 'Week' },
+    { id: 'once', title: 'Once' },
+    { id: 'hourly', title: 'Hourly' },
+    { id: 'daily', title: 'Daily' },
+    { id: 'weekly', title: 'Weekly' },
   ]
 
   useEffect(() => {
     const f = async () => {
-      const i = await fetch(`/api/instructions?account=${account.address}`, { credentials: 'include', });
+      const i = await fetch(`/api/instructions`, { credentials: 'include', });
       const j = await i.json();
       setValue(j.instructions)
     }
     f()
-  }, [account.address])
+  }, [])
 
   const doPrompt = () => {
     addPrompt(`Set autonomous instructions: ${value}. I want these to run ${interval}. Please ask if I was unclear on anything.`);
@@ -62,8 +61,8 @@ const AutonomousInstructions = () => {
       />
       <div className="flex w-full mb-3">
         <fieldset>
-          <legend className="text-sm/6 font-semibold text-gray-900">Run these instructions every:</legend>
-          <div className="space-y-6 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
+          <legend className="text-sm/6 font-semibold text-gray-900">Run these instructions:</legend>
+          <div className="space-y-0 sm:flex sm:items-center sm:space-x-4">
             {intervals.map((i) => (
               <div key={i.id} className="flex items-center">
                 <input

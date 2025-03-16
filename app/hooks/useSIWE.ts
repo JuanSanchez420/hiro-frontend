@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
 import { useGlobalContext } from '../context/GlobalContext';
+import { usePortfolioContext } from '../context/PortfolioContext';
 
 const useSIWE = () => {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { signMessageAsync } = useSignMessage();
   const { isSignedIn, setIsSignedIn } = useGlobalContext();
+  const { fetchPortfolio } = usePortfolioContext();
   const [status, setStatus] = useState<string>('');
 
   useEffect(() => {
@@ -21,12 +23,15 @@ const useSIWE = () => {
         const res = await fetch('/api/verified', { headers: { 'Content-Type': 'application/json' }, credentials: 'include' });
         const session = await res.json();
         setIsSignedIn(session.verified);
+        if (session.verified) {
+          fetchPortfolio();
+        }
       } catch (error) {
         console.error("Error checking session", error);
       }
     }
     checkSession();
-  }, [setIsSignedIn]);
+  }, [setIsSignedIn, fetchPortfolio]);
 
   const doSIWE = useCallback(async () => {
     if (!isConnected) {
@@ -56,11 +61,17 @@ const useSIWE = () => {
       });
       const verifyData = await verifyRes.json();
       setIsSignedIn(verifyData.success);
+      if (verifyData.success) {
+        fetchPortfolio();
+        setStatus('Signed in');
+      } else {
+        setStatus('Error signing in');
+      }
     } catch (error) {
       console.error(error);
       setStatus('Error signing in');
     }
-  }, [address, isConnected, connect, connectors, signMessageAsync, setIsSignedIn]);
+  }, [address, isConnected, connect, connectors, signMessageAsync, setIsSignedIn, fetchPortfolio]);
 
   return { doSIWE, status };
 };
