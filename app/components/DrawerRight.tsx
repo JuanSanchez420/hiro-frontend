@@ -5,18 +5,17 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import tokensData from "../utils/tokens.json";
 import { Token, TokensData } from "../types";
 import { useMemo, useState } from 'react';
-import formatNumber from '../utils/formatNumber';
 import TokenData from './TokenData';
-import { Spinner } from './Spinner';
 import useMarketData from '../hooks/useMarketData';
 import { useGlobalContext } from '../context/GlobalContext';
 import useHiro from '../hooks/useHiro';
-import { NULL_ADDRESS } from '../utils/constants';
 import { usePortfolioContext } from '../context/PortfolioContext';
-import { formatEther } from 'viem';
+import PortfolioSection from './PortfolioSection';
+import MarketDataSection from './MarketDataSection';
+import LiquidityPositionsSection from './LiquidityPositionSection';
 
 export default function DrawerRight() {
-  const { drawerRightOpen, setDrawerRightOpen, setWidget } = useGlobalContext();
+  const { drawerRightOpen, setDrawerRightOpen } = useGlobalContext();
   const [token, setToken] = useState<Token | null>(null);
 
   const { market } = useMarketData();
@@ -74,93 +73,18 @@ export default function DrawerRight() {
                 </div>
                 <div className="relative flex-1 px-4 sm:px-6 h-full">
                   {/* Portfolio */}
-                  {!token && loading && <Spinner />}
-                  {!token && hiro && hiro !== NULL_ADDRESS && <div className="flex flex-col">
-                    <div className="flex-1">
-                      <div className='border-b mb-3 truncate'>Portfolio (<span className='text-sm gray-500'>{hiro}</span>)</div>
-                      <div>
-                        <a className="grid grid-cols-4 gap-2 p-2 text-gray-700 group rounded-md text-sm/6 font-semibold">
-                          <div>ICON</div>
-                          <div>SYMBOL</div>
-                          <div>BALANCE</div>
-                          <div>USD</div>
-                        </a>
-                      </div>
-                      {balancesWithTokens.map((item) => {
-                        return (
-                          <div key={item.token.symbol}>
-                            <a
-                              className="grid grid-cols-4 gap-2 p-2 text-gray-700 hover:bg-gray-50 hover:text-emerald-600 group rounded-md text-sm/6 font-semibold hover:cursor-pointer"
-                              onClick={() => setToken(item.token)}
-                              href="#">
-                              <div><img src={item.token.logoURI} height={30} width={30} alt={item.token.symbol} className="rounded-full" /></div>
-                              <div>{item.token.symbol}</div>
-                              <div className='truncate'>{formatNumber(item.balance)}</div>
-                              <div className='truncate'>${formatNumber(Number(item.balance) * Number(item.usdPrice))}</div>
-                            </a>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>}
-                  {/* fill in simple liquidity position */}
+                  {!token && <PortfolioSection
+                    balancesWithTokens={balancesWithTokens}
+                    hiro={hiro}
+                    loading={loading}
+                    setToken={setToken}
+                  />}
                   {!token && portfolio && portfolio.positions && portfolio.positions.length > 0 && (
-                    <div className="flex flex-col mt-3">
-                      <div className='border-b mb-3'>Liquidity Positions</div>
-                      <div className="flex-1">
-                        <div>
-                          <a className="grid grid-cols-4 gap-2 p-2 text-gray-700 group rounded-md text-sm/6 font-semibold">
-                            <div>POSITION</div>
-                            <div>PAIR</div>
-                            <div>LIQUIDITY</div>
-                          </a>
-                        </div>
-                        {portfolio.positions.map((position) => {
-                          return (
-                            <div key={position.index}>
-                              <a onClick={(e) => {
-                                e.preventDefault()
-                                setWidget('Earn')
-                                setDrawerRightOpen(false)
-                              }} className="grid grid-cols-4 gap-2 p-2 text-gray-700 hover:bg-gray-50 group rounded-md text-sm/6 font-semibold cursor-pointer">
-                                <div>{position.index}</div>
-                                <div>{position.token0}/{position.token1}</div>
-                                <div className='truncate'>{`${formatNumber(formatEther(position.liquidity))}`}</div>
-                              </a>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    <LiquidityPositionsSection
+                      positions={portfolio.positions}
+                    />
                   )}
-                  {!token && market.length > 0 &&
-                    <div className="flex flex-col mt-3">
-                      <div className='border-b mb-3'>Market Data</div>
-                      <div className="flex-1">
-                        <div>
-                          <a className="grid grid-cols-4 gap-2 p-2 text-gray-700 group rounded-md text-sm/6 font-semibold">
-                            <div>ICON</div>
-                            <div>SYMBOL</div>
-                            <div>USD</div>
-                          </a>
-                        </div>
-                        {market.map((item) => {
-                          return (
-                            <div key={item.token.symbol}>
-                              <a
-                                className="grid grid-cols-4 gap-2 p-2 text-gray-700 hover:bg-gray-50 hover:text-emerald-600 group rounded-md text-sm/6 font-semibold hover:cursor-pointer"
-                                onClick={() => setToken(item.token)}
-                                href="#">
-                                <div><img src={item.token.logoURI} height={30} width={30} alt={item.token.symbol} className="rounded-full" /></div>
-                                <div>{item.token.symbol}</div>
-                                <div>${formatNumber(Number(item.usdPrice))}</div>
-                              </a>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  }
+                  {!token && <MarketDataSection market={market} setToken={setToken} />}
                   {/* Chart */}
                   {token && <TokenData token={token} hours={200} exit={() => setToken(null)} />}
                 </div>

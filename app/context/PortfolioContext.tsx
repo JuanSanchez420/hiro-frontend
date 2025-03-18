@@ -10,7 +10,8 @@ const emptyPortfolio = {
     balance: "0", 
     hiroBalance: "0", 
     tokens: [], 
-    positions: [], 
+    positions: [],
+    aave: [],
     timestamp: Date.now()
 }
 

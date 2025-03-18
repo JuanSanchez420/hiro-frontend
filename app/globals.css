@@ -207,19 +207,24 @@ body {
 
 /* raining end */
 
-.fade-in-text {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeIn 1.5s ease-out forwards;
+/* gradient text start */
+.gradient-text {
+  background: linear-gradient(
+    90deg, 
+    #000, 
+    #999, 
+    #000
+  );
+  background-size: 200% 100%;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: gradientFlow 2s infinite;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes gradientFlow {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
 }
+
+/* gradient text end */

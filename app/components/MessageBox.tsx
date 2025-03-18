@@ -4,7 +4,7 @@ import WandSpinner from "./WandSpinner";
 import Image from "next/image"
 import { Message } from "../context/PromptsContext";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import useChatEventStream from "../hooks/useChatEventStream";
 
 const friendlyNames = {
@@ -92,6 +92,12 @@ const UserMessage = ({ message }: { message: Message }) => {
 
 const FunctionResults = ({ calls, results }: { calls: Message[], results: Message[] }) => {
 
+    const [gradient, setGradient] = useState(true)
+
+    setTimeout(() => {
+        setGradient(false)
+    }, 10000)
+
     const inputs = useMemo(() => {
         return calls.flatMap((call, index) => {
             return Object.entries(call.functionCall?.arguments || {}).map(([key, value]) => (
@@ -153,7 +159,7 @@ const FunctionResults = ({ calls, results }: { calls: Message[], results: Messag
             <DisclosureButton className="group w-full text-left">
                 <div className="flex flex-1 items-center mb-3 w-full pl-3">
                     <WandSpinner />
-                    <div className={"flex flex-1 items-center italic"}>{names}</div>
+                    <div className={`flex flex-1 items-center italic ${gradient ? `gradient-text` : ``}`}>{names}</div>
                     <div className="flex flex-1 items-center italic justify-end">
                         <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex text-sm items-center">Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
                     </div>

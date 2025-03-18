@@ -11,7 +11,7 @@ interface LeaderboardPortfolio extends Portfolio {
 }
 
 export default function LeaderboardPage() {
-  const [portfolios, setPortfolios] = useState<LeaderboardPortfolio[]>([]);
+  const [portfolios, ] = useState<LeaderboardPortfolio[]>([]);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   
   // Sort portfolios by USD value, highest first
@@ -47,7 +47,7 @@ export default function LeaderboardPage() {
               className="grid grid-cols-4 p-4 cursor-pointer hover:bg-gray-750 items-center"
               onClick={() => toggleExpand(index)}
             >
-              <div className="font-bold text-xl text-indigo-400">{index + 1}</div>
+              <div className="font-bold text-xl text-emerald-400">{index + 1}</div>
               <div className="font-mono">{truncateAddress(portfolio.address)}</div>
               <div className="text-right font-medium text-green-400">
                 ${parseFloat(portfolio.totalUSDValue).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
@@ -66,7 +66,7 @@ export default function LeaderboardPage() {
               <div className="bg-gray-850 p-4 border-t border-gray-700">
                 {/* Tokens section */}
                 <div className="mb-4">
-                  <h3 className="text-lg font-medium mb-2 text-indigo-300">Tokens</h3>
+                  <h3 className="text-lg font-medium mb-2 text-emerald-300">Tokens</h3>
                   <div className="grid grid-cols-3 gap-2 text-sm font-medium text-gray-400 mb-1">
                     <div>Symbol</div>
                     <div className="text-right">Balance</div>
@@ -84,7 +84,7 @@ export default function LeaderboardPage() {
                 {/* Positions section */}
                 {portfolio.positions.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-medium mb-2 text-indigo-300">Liquidity Positions</h3>
+                    <h3 className="text-lg font-medium mb-2 text-emerald-300">Liquidity Positions</h3>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
