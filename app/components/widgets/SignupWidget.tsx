@@ -55,7 +55,7 @@ const SignupWidget = () => {
     <div className="bg-white w-full max-w-md mx-auto">
       <h2 className="text-lg font-semibold mb-4">Create your Hiro!</h2>
       <div className="text-sm">
-        Creating a Hiro costs 0.01 ETH, which will be converted to Hiro tokens to cover gas and inference fees. You can send additional ETH now for Hiro to trade with (this won&apos;t be converted to Hiro tokens), or you can send it later.
+        Creating a Hiro costs 0.01 ETH. You can send additional ETH now for Hiro to trade with, or you can send it later.
       </div>
       {/* From Token */}
       <div className="mb-6">

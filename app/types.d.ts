@@ -60,6 +60,11 @@ type SimpleLiquidityPosition = {
   tokensOwed1: string;
 };
 
+type AavePosition = {
+  token: string;
+  balance: string;
+};
+
 export interface Portfolio {
   address: `0x${string}`;
   hiro: `0x${string}`;
@@ -71,5 +76,6 @@ export interface Portfolio {
     usdPrice: number;
   }[],
   positions: SimpleLiquidityPosition[]
+  aave: AavePosition[]
   timestamp: number;
 }
