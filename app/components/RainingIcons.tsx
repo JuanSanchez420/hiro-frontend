@@ -9,7 +9,7 @@ const RainingIcon: React.FC = () => {
   const { rain, setRain } = useGlobalContext();
   const count = 30;
 
-  const token = tokens[rain as keyof typeof tokens];
+  const token = tokens[rain?.toUpperCase() as keyof typeof tokens];
 
   useEffect(() => {
     setLoaded(true);

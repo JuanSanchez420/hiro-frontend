@@ -28,7 +28,7 @@ export default function DrawerRight() {
     if (!portfolio || !portfolio.tokens) return [];
     return portfolio.tokens.map((t) => {
       return {
-        token: tokens[t.symbol],
+        token: tokens[t.symbol.toUpperCase()],
         balance: t.balance,
         usdPrice: t.usdPrice,
       };
@@ -95,8 +95,8 @@ export default function DrawerRight() {
                               href="#">
                               <div><img src={item.token.logoURI} height={30} width={30} alt={item.token.symbol} className="rounded-full" /></div>
                               <div>{item.token.symbol}</div>
-                              <div>{formatNumber(item.balance)}</div>
-                              <div>${formatNumber(Number(item.balance) * Number(item.usdPrice))}</div>
+                              <div className='truncate'>{formatNumber(item.balance)}</div>
+                              <div className='truncate'>${formatNumber(Number(item.balance) * Number(item.usdPrice))}</div>
                             </a>
                           </div>
                         );
@@ -125,7 +125,7 @@ export default function DrawerRight() {
                               }} className="grid grid-cols-4 gap-2 p-2 text-gray-700 hover:bg-gray-50 group rounded-md text-sm/6 font-semibold cursor-pointer">
                                 <div>{position.index}</div>
                                 <div>{position.token0}/{position.token1}</div>
-                                <div>{`${formatEther(position.liquidity)}`}</div>
+                                <div className='truncate'>{`${formatNumber(formatEther(position.liquidity))}`}</div>
                               </a>
                             </div>
                           );

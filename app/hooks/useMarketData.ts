@@ -19,7 +19,7 @@ export interface TokenHourData {
 const useMarketData = () => {
     const didFetch = useRef(false);
     const [market, setMarket] = useState<Price[]>([]);
-    const cbBTC = tokensData['cbBTC'];
+    const cbBTC = tokensData['CBBTC'];
     const WETH = tokensData['WETH'];
 
     const fetchMarket = useCallback(async () => {

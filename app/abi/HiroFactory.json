@@ -3,26 +3,6 @@
     "type": "constructor",
     "inputs": [
       {
-        "name": "_hiro",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "_pool",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "_weth",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "_swapRouter",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
         "name": "_transactionPrice",
         "type": "uint256",
         "internalType": "uint256"
@@ -46,6 +26,10 @@
     "stateMutability": "nonpayable"
   },
   {
+    "type": "receive",
+    "stateMutability": "payable"
+  },
+  {
     "type": "function",
     "name": "addToWhitelist",
     "inputs": [
@@ -61,13 +45,7 @@
   {
     "type": "function",
     "name": "createHiroWallet",
-    "inputs": [
-      {
-        "name": "amountOutMinimum",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
+    "inputs": [],
     "outputs": [
       {
         "name": "",
@@ -87,19 +65,6 @@
         "internalType": "address"
       }
     ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "hiro",
-    "inputs": [],
     "outputs": [
       {
         "name": "",
@@ -181,19 +146,6 @@
   },
   {
     "type": "function",
-    "name": "pool",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "purchasePrice",
     "inputs": [],
     "outputs": [
@@ -258,43 +210,6 @@
   },
   {
     "type": "function",
-    "name": "swapETHForHiro",
-    "inputs": [
-      {
-        "name": "amountOutMinimum",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "recipient",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "amountOut",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "payable"
-  },
-  {
-    "type": "function",
-    "name": "swapRouter",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "sweep",
     "inputs": [
       {
@@ -343,19 +258,6 @@
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "weth",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "stateMutability": "view"
   },
   {
     "type": "event",

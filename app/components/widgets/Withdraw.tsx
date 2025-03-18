@@ -107,7 +107,7 @@ const WithdrawWidget = () => {
               />
               <div className="grid shrink-0 grid-cols-1 focus-within:relative">
                 <SearchableSelect options={tokenList} value={{ label: withdrawToken, value: withdrawToken }} onChange={(e) => {
-                  setWithdrawToken(e.value)
+                  setWithdrawToken(e.value.toUpperCase())
                   setAmount("")
                 }} />
               </div>
