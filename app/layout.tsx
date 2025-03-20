@@ -13,6 +13,7 @@ import RainingIcons from "./components/RainingIcons";
 import { GlobalContextProvider } from "./context/GlobalContext";
 import { PromptsProvider } from "./context/PromptsContext";
 import { PortfolioProvider } from "./context/PortfolioContext";
+import ThemeProvider from "./components/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "Hiro",
@@ -31,7 +32,7 @@ export default function RootLayout({
         <GlobalContextProvider>
           <PortfolioProvider>
           <html lang="en" className="h-full">
-            <body className={`h-full bg-white`}>
+            <ThemeProvider>
               <div className="flex flex-col min-h-full h-full">
                 <Disclosure as="nav">
                   <div className="mx-auto w-full px-4">
@@ -60,7 +61,7 @@ export default function RootLayout({
                 </div>
               </div>
               <RainingIcons />
-            </body>
+            </ThemeProvider>
           </html>
           </PortfolioProvider>
         </GlobalContextProvider>

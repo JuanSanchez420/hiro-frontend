@@ -1,10 +1,12 @@
 import Link from "next/link"
-import { styles } from "../utils/styles"
+import { useGlobalContext } from "../context/GlobalContext"
 
 const BackButton = () => {
+    const { styles } = useGlobalContext()
+
     return (
         <Link href="/"><button
-            className={`absolute bg-white bottom-0 left-1/2 -translate-x-1/2 mb-4 ${styles.button}`}>
+            className={`absolute bottom-0 left-1/2 -translate-x-1/2 mb-4 ${styles.button}`}>
             Back
         </button></Link>
     )

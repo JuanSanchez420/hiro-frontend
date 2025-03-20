@@ -17,14 +17,15 @@ interface LiquidityPositionsSectionProps {
 const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
   positions,
 }) => {
-  const { setDrawerRightOpen, setWidget } = useGlobalContext()
+  const { setDrawerRightOpen, setWidget, styles } = useGlobalContext()
+
   if (!positions || positions.length === 0) return null;
 
   return (
     <div className="px-1 mb-8">
       <div className="flex items-center">
         <div className="flex-auto">
-          <h1 className="text-base font-semibold text-gray-900">Liquidity Positions</h1>
+          <h1 className="text-base font-semibold">Liquidity Positions</h1>
         </div>
         <div className="mt-4 ml-16 mt-0 flex-none hidden">
           <button
@@ -41,25 +42,25 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
             <table className="min-w-full divide-y divide-gray-300">
               <thead>
                 <tr>
-                  <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">
+                  <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold">
                     Position
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
                     Pair
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
                     Liquidity
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white">
+              <tbody className={`${styles.background} ${styles.text}`}>
                 {positions.map((position) => (
-                  <tr key={`position-${position.index}`} className="even:bg-gray-50 hover:cursor-pointer" onClick={(e) => {
+                  <tr key={`position-${position.index}`} className={`${styles.highlightRow} hover:cursor-pointer`} onClick={(e) => {
                     e.preventDefault()
                     setWidget('Earn')
                     setDrawerRightOpen(false)
                   }} >
-                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
                       {position.index}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{position.token0}/{position.token1}</td>

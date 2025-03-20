@@ -139,7 +139,7 @@ const CandlestickChart: React.FC<CandlestickChartProps> = ({
     <div
       className='relative w-full h-[400px]'>
       <div
-        className='absolute top-0 left-0 z-10 bg-white bg-opacity-80 p-2 rounded font-bold text-black'
+        className='absolute top-0 left-0 z-10 bg-opacity-80 p-2 rounded font-bold text-black'
       >
         {label}
       </div>

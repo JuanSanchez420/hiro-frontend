@@ -15,7 +15,7 @@ import MarketDataSection from './MarketDataSection';
 import LiquidityPositionsSection from './LiquidityPositionSection';
 
 export default function DrawerRight() {
-  const { drawerRightOpen, setDrawerRightOpen } = useGlobalContext();
+  const { drawerRightOpen, setDrawerRightOpen, styles } = useGlobalContext();
   const [token, setToken] = useState<Token | null>(null);
 
   const { market } = useMarketData();
@@ -67,9 +67,9 @@ export default function DrawerRight() {
                   </button>
                 </div>
               </TransitionChild>
-              <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
+              <div className={`flex h-full flex-col overflow-y-scroll py-6 shadow-xl ${styles.background} ${styles.text}`}>
                 <div className="px-4 sm:px-6">
-                  <DialogTitle className="text-base font-semibold text-gray-900">{/* title area */}</DialogTitle>
+                  <DialogTitle className="text-base font-semibold">{/* title area */}</DialogTitle>
                 </div>
                 <div className="relative flex-1 px-4 sm:px-6 h-full">
                   {/* Portfolio */}

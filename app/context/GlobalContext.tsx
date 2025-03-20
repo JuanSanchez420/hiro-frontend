@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState } from "react"
 import { WidgetOption } from "../types"
+import { getStyles } from "../utils/styles"
 
 interface GlobalContextType {
     drawerLeftOpen: boolean
@@ -16,6 +17,9 @@ interface GlobalContextType {
     setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>
     rain: string | undefined
     setRain: React.Dispatch<React.SetStateAction<string | undefined>>
+    theme: "light" | "dark"
+    setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>
+    styles: ReturnType<typeof getStyles> 
 }
 
 export const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -27,8 +31,12 @@ export const GlobalContextProvider = ({ children }: { children: React.ReactNode 
     const [widget, setWidget] = useState<WidgetOption>(null);
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [rain, setRain] = useState<string | undefined>();
+    const [theme, setTheme] = useState<"light" | "dark">("light");
+    const styles = getStyles(theme)
+
     return (
         <GlobalContext.Provider value={{
+            theme, setTheme, styles,
             drawerLeftOpen, setDrawerLeftOpen,
             drawerRightOpen, setDrawerRightOpen,
             widget, setWidget,

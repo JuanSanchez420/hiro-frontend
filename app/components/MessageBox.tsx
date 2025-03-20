@@ -59,11 +59,10 @@ const parseMessage = (message: string) => {
 };
 
 const UserMessage = ({ message }: { message: Message }) => {
-
     const segments = parseMessage(message.message);
     return (
         <div className="flex w-full justify-end my-3">
-            <div className="rounded-3xl bg-gray-100 px-4 py-2">
+            <div className={`rounded-3xl bg-gray-100 px-4 py-2 text-gray-900`}>
                 {segments.map((segment, index) => {
                     switch (segment.type) {
                         case "bold":

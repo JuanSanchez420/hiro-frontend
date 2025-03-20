@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import formatNumber from "@/app/utils/formatNumber";
-import { styles } from "@/app/utils/styles";
 import SearchableSelect from "../SearchableSelect";
 import TOKENS from "@/app/utils/tokens.json";
 import useHiro from "@/app/hooks/useHiro";
@@ -13,7 +12,7 @@ const WithdrawWidget = () => {
   const [amount, setAmount] = useState("");
   const [withdrawToken, setWithdrawToken] = useState("ETH");
   const { withdraw, withdrawETH } = useHiro();
-  const { setWidget } = useGlobalContext()
+  const { setWidget, styles } = useGlobalContext()
   const [isWithdrawing, setIsWithdrawing] = useState(false)
 
   const { portfolio, fetchPortfolio } = usePortfolioContext()
@@ -84,7 +83,7 @@ const WithdrawWidget = () => {
   }
 
   return (
-    <div className="bg-white w-full max-w-md mx-auto">
+    <div className="w-full max-w-md mx-auto">
       <h2 className="text-lg font-semibold mb-4">Withdraw</h2>
       {/* From Token */}
       <div className="mb-6">
@@ -94,7 +93,7 @@ const WithdrawWidget = () => {
             <div className="text-sm italic">Balance: {formatNumber(balance0)}</div>
           </div>
           <div className="mt-2">
-            <div className="flex items-center rounded-md bg-white pl-3 outline outline-1 -outline-offset-1 outline-gray-300 has-[input:focus-within]:outline has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-2 has-[input:focus-within]:outline-emerald-600">
+            <div className="flex items-center rounded-md pl-3 outline outline-1 -outline-offset-1 outline-gray-300 has-[input:focus-within]:outline has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-2 has-[input:focus-within]:outline-emerald-600">
               <input
                 id="price"
                 name="price"
@@ -103,7 +102,7 @@ const WithdrawWidget = () => {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 autoComplete="off"
-                className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
+                className={`block min-w-0 grow py-1.5 pl-1 pr-3 text-base placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6 ${styles.background} ${styles.text}`}
               />
               <div className="grid shrink-0 grid-cols-1 focus-within:relative">
                 <SearchableSelect options={tokenList} value={{ label: withdrawToken, value: withdrawToken }} onChange={(e) => {

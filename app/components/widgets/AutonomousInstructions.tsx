@@ -1,12 +1,11 @@
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { usePromptsContext } from "@/app/context/PromptsContext";
-import { styles } from "@/app/utils/styles";
 import { useEffect, useState } from "react";
 
 
 const AutonomousInstructions = () => {
   const { addPrompt } = usePromptsContext();
-  const { setWidget } = useGlobalContext();
+  const { setWidget, styles } = useGlobalContext();
   const [value, setValue] = useState("");
   const [interval, setInterval] = useState('daily')
 
@@ -57,11 +56,11 @@ const AutonomousInstructions = () => {
         rows={2}
         placeholder="Give instructions for Hiro."
         autoComplete="off"
-        className="block w-full my-3 border resize-none bg-transparent px-1 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
+        className="block w-full my-3 border resize-none bg-transparent px-1 py-1.5 text-base placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
       />
       <div className="flex w-full mb-3">
         <fieldset>
-          <legend className="text-sm/6 font-semibold text-gray-900">Run these instructions:</legend>
+          <legend className="text-sm/6 font-semibold">Run these instructions:</legend>
           <div className="space-y-0 sm:flex sm:items-center sm:space-x-4">
             {intervals.map((i) => (
               <div key={i.id} className="flex items-center">
@@ -71,7 +70,7 @@ const AutonomousInstructions = () => {
                   name="notification-method"
                   type="radio"
                   onChange={() => setInterval(i.id)}
-                  className="relative size-4 appearance-none rounded-full border border-gray-300 bg-white before:absolute before:inset-1 before:rounded-full before:bg-white checked:border-emerald-600 checked:bg-emerald-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:before:bg-gray-400 forced-colors:appearance-auto forced-colors:before:hidden [&:not(:checked)]:before:hidden"
+                  className="relative size-4 appearance-none rounded-full border border-gray-300 before:absolute before:inset-1 before:rounded-full before:bg-white checked:border-emerald-600 checked:bg-emerald-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:before:bg-gray-400 forced-colors:appearance-auto forced-colors:before:hidden [&:not(:checked)]:before:hidden"
                 />
                 <label htmlFor={i.id} className="ml-3 block text-sm/6">
                   {i.title}

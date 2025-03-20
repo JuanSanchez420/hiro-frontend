@@ -3,7 +3,6 @@ import CandlestickChart from './CandlestickChart';
 import { OHLC, PricesResponse, Token } from '../types';
 import { calculateATR, calculateDonchianChannel, calculateEMA, calculateRSI, interpretATR, interpretDonchianChannel, interpretEMA } from '../utils/indicators';
 import formatNumber from '../utils/formatNumber';
-import { styles } from '../utils/styles';
 import tokens from "../utils/tokens.json";
 import MarketStats from './MarketStats';
 import { Spinner } from './Spinner';
@@ -21,7 +20,7 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
   const account = useAccount();
   const didFetch = useRef(false);
   const { addPrompt, } = usePromptsContext();
-  const { setWidget, setDrawerRightOpen } = useGlobalContext();
+  const { setWidget, setDrawerRightOpen, styles } = useGlobalContext();
   const [ohlcData, setOhlcData] = useState<OHLC[]>([]);
   const [emaData, setEmaData] = useState<{ periodStartUnix: number; value: number }[]>([]);
   const [rsiData, setRsiData] = useState<{ periodStartUnix: number, value: number }[]>([]);

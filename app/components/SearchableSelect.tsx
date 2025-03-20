@@ -1,5 +1,6 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import React, { useState, useRef, useEffect } from 'react';
+import { useGlobalContext } from '../context/GlobalContext';
 
 interface Option {
     label: string;
@@ -16,6 +17,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, value, onC
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
+    const { styles } = useGlobalContext()
 
     const filteredOptions = options.filter(option =>
         option.label.toLowerCase().includes(searchTerm.toLowerCase())
@@ -50,10 +52,10 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, value, onC
                 />
             </div>
             {isOpen && (
-                <div className="absolute -ml-10 mt-1 bg-white text-sm border border-gray-300 rounded shadow-lg z-10">
+                <div className={`absolute -ml-10 mt-1 text-sm border border-gray-300 rounded shadow-lg z-10 ${styles.background}`}>
                     <input
                         type="text"
-                        className="w-full px-3 py-2 border-b border-gray-300 focus:outline-none"
+                        className={`w-full px-3 py-2 border-b border-gray-300 focus:outline-none ${styles.background} ${styles.text}`}
                         placeholder="Search..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}

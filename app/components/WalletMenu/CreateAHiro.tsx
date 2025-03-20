@@ -1,11 +1,10 @@
 import { Menu, MenuButton} from "@headlessui/react"
 import { useGlobalContext } from "../../context/GlobalContext"
 import useHiroFactory from "../../hooks/useHiroFactory"
-import { styles } from "../../utils/styles"
 
 const CreateAHiro = () => {
     const { status } = useHiroFactory()
-    const { setWidget } = useGlobalContext()
+    const { setWidget, styles } = useGlobalContext()
 
     return (
         <Menu as="div" className="relative ml-3">

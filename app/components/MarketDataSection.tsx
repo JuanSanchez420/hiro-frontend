@@ -1,6 +1,7 @@
 import React from 'react';
 import { Token } from '../types';
 import formatNumber from '../utils/formatNumber';
+import { useGlobalContext } from '../context/GlobalContext';
 
 interface MarketDataSectionProps {
     market: {
@@ -14,13 +15,14 @@ const MarketDataSection: React.FC<MarketDataSectionProps> = ({
     market,
     setToken,
 }) => {
+    const { styles } = useGlobalContext()
     if (market.length === 0) return null;
 
     return (
         <div className="px-1 mb-8">
             <div className="flex items-center">
                 <div className="flex-auto">
-                    <h1 className="text-base font-semibold text-gray-900">Market Data</h1>
+                    <h1 className="text-base font-semibold">Market Data</h1>
                 </div>
                 <div className="mt-4 ml-16 mt-0 flex-none hidden">
                     <button
@@ -37,18 +39,18 @@ const MarketDataSection: React.FC<MarketDataSectionProps> = ({
                         <table className="min-w-full divide-y divide-gray-300">
                             <thead>
                                 <tr>
-                                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">
+                                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold">
                                         Token
                                     </th>
-                                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
                                         USD
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white">
+                            <tbody className={`${styles.background} ${styles.text}`}>
                                 {market.map((item) => (
-                                    <tr key={item.token.symbol} className="even:bg-gray-50 hover:cursor-pointer" onClick={() => setToken(item.token)}>
-                                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                    <tr key={item.token.symbol} className={`${styles.highlightRow} hover:cursor-pointer`} onClick={() => setToken(item.token)}>
+                                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
                                             <div className='flex items-center'>
                                                 <img
                                                     src={item.token.logoURI}

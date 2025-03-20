@@ -1,7 +1,6 @@
 'use client'
 
 import { useAccount, useDisconnect } from 'wagmi'
-import { styles } from '../../utils/styles'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import useHiro from '@/app/hooks/useHiro'
 import { NULL_ADDRESS } from '@/app/utils/constants'
@@ -10,9 +9,10 @@ import { useGlobalContext } from '@/app/context/GlobalContext'
 const AccountDetails = () => {
   const { hiro } = useHiro()
   const account = useAccount()
-  const { setWidget } = useGlobalContext();
+  const { setWidget, styles, theme } = useGlobalContext();
   const { disconnect } = useDisconnect()
-  const itemClass = "block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
+  const itemClass = theme === 'light' ? "block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none" :
+    "block px-4 py-2 text-sm text-gray-300 data-[focus]:bg-gray-800 data-[focus]:outline-none"
 
   return (<Menu as="div" className="relative ml-3">
     <div>
@@ -22,7 +22,7 @@ const AccountDetails = () => {
     </div>
     <MenuItems
       transition
-      className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+      className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md py-1 shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
     >
       <MenuItem>
         <a

@@ -4,11 +4,11 @@ import { useCallback } from "react";
 import { PromptAndResponse } from "./components/MessageBox";
 import Image from 'next/image'
 import { GlobeAltIcon } from "@heroicons/react/24/outline";
-import { styles } from "./utils/styles";
 import Confirm from "./components/Confirm";
 import InterestingButton from "./components/InterestingButton";
 import { usePromptsContext } from "./context/PromptsContext";
 import React from "react";
+import { useGlobalContext } from "./context/GlobalContext";
 
 interface ContentProps { prompts: string[]; }
 
@@ -18,6 +18,7 @@ const Content = React.memo(function Content({ prompts }: ContentProps) {
 });
 
 export default function Home() {
+  const { styles } = useGlobalContext()
   const { prompts, addPrompt } = usePromptsContext();
 
   const Intro = useCallback(() => {
@@ -33,7 +34,7 @@ export default function Home() {
         <div><InterestingButton /></div>
       </div>
     </div>)
-  }, [addPrompt])
+  }, [addPrompt, styles])
 
   return (<div className={`flex flex-col h-full`}>
     {prompts.length === 0 ? <Intro /> : <Content prompts={prompts} />}

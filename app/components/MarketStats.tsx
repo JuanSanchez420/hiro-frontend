@@ -1,11 +1,13 @@
+import { useGlobalContext } from "../context/GlobalContext"
 import { MarketData } from "../types"
 
 const Item = ({ name, stat, extraCss }: { name: string, stat: string, extraCss?: string }) => {
-    const base = `font-semibold tracking-tight text-gray-900`
+    const { styles } = useGlobalContext()
+    const base = `font-semibold tracking-tight ${styles.text}`
     const css = extraCss ? `${base} ${extraCss}` : base;
 
-    return <div key={name} className="overflow-hidden rounded-lg bg-white p-2">
-        <dt className="truncate text-sm font-medium text-gray-500">{name}</dt>
+    return <div key={name} className="overflow-hidden rounded-lg p-2">
+        <dt className={`truncate text-sm font-medium ${styles.text}`}>{name}</dt>
         <dd className={css}>{stat}</dd>
     </div>
 }

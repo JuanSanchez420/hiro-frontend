@@ -1,10 +1,9 @@
 import { useGlobalContext } from "../context/GlobalContext"
 import { usePromptsContext } from "../context/PromptsContext"
-import { styles } from "../utils/styles"
 
 const Confirm = () => {
     const { addPrompt } = usePromptsContext()
-    const { showConfirm, setShowConfirm } = useGlobalContext()
+    const { showConfirm, setShowConfirm, styles } = useGlobalContext()
 
     const handleClick = (confirm: boolean) => {
         addPrompt(confirm ? "Yes" : "No")

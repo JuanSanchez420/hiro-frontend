@@ -2,7 +2,6 @@ import { useAccount } from 'wagmi';
 import { WidgetOption } from '../types';
 import { useEffect, useState } from 'react';
 import { useGlobalContext } from '../context/GlobalContext';
-import { styles } from '../utils/styles';
 import { ArrowDownTrayIcon, ArrowsRightLeftIcon, ArrowUpTrayIcon, ChartBarIcon, CpuChipIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 
 const tabs = [
@@ -16,7 +15,7 @@ const tabs = [
 export default function Tabs() {
     const [loaded, setLoaded] = useState(false)
     const account = useAccount()
-    const { setWidget, setDrawerRightOpen } = useGlobalContext();
+    const { setWidget, setDrawerRightOpen, styles } = useGlobalContext();
 
     useEffect(() => {
         setLoaded(true)

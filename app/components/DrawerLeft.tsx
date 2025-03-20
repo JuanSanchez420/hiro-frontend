@@ -3,11 +3,11 @@
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useGlobalContext } from '../context/GlobalContext';
-import {styles} from "../utils/styles"
 import History from "./History"
+import ThemeToggle from './ThemeToggle';
 
 export default function Drawer() {
-  const { drawerLeftOpen, setDrawerLeftOpen } = useGlobalContext();
+  const { drawerLeftOpen, setDrawerLeftOpen, styles } = useGlobalContext();
 
   return (
     <Dialog open={drawerLeftOpen} onClose={setDrawerLeftOpen} className="relative z-10">
@@ -36,19 +36,20 @@ export default function Drawer() {
                   </button>
                 </div>
               </TransitionChild>
-              <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
+              <div className={`flex h-full flex-col overflow-y-scroll py-6 shadow-xl ${styles.background} ${styles.text}`}>
                 <div className="px-4 sm:px-6">
-                  <DialogTitle className="text-base font-semibold text-gray-900">{/* title area */}</DialogTitle>
+                  <DialogTitle className="text-base font-semibold">{/* title area */}</DialogTitle>
                 </div>
-                <div className="relative mt-6 flex-1 px-4 sm:px-6">
+                <div className="relative mt-6 px-4 sm:px-6 flex flex-col h-full">
                   {/* Your content */}
-                  <nav className="flex flex-1 flex-col">
+                  <nav className="flex flex-col flex-grow">
                     <div className='flex justify-between mb-2'>
                       <div className='bold'>History</div>
-                      <div><button className={styles.buttonSm} onClick={()=>confirm('Are you sure?')}>Clear</button></div>
+                      <div><button className={styles.buttonSm} onClick={() => confirm('Are you sure?')}>Clear</button></div>
                     </div>
                     <History />
                   </nav>
+                  <div className='mt-auto pt-4'><ThemeToggle /></div>
                 </div>
               </div>
             </DialogPanel>
