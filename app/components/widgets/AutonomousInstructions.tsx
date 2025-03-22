@@ -10,7 +10,6 @@ const AutonomousInstructions = () => {
   const [interval, setInterval] = useState('daily')
 
   const intervals = [
-    { id: 'once', title: 'Once' },
     { id: 'hourly', title: 'Hourly' },
     { id: 'daily', title: 'Daily' },
     { id: 'weekly', title: 'Weekly' },
