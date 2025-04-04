@@ -93,7 +93,8 @@ const SignupWidget = () => {
         disabled={status === "CREATING"}
         className={`flex justify-center w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1`}
       >
-        {status === "CREATING" && <Spinner />}<span>CREATE YOUR HIRO</span>
+        {status === "NOT_CREATED" && <span>CREATE YOUR HIRO</span>}
+        {status === "CREATING" && <div className="flex"><Spinner /><span>TRAINING YOUR HIRO</span></div>}
       </button>
     </div>
   );

@@ -88,7 +88,7 @@ export default function LiquidityWidget() {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="flex items-center space-x-4 mb-4">
+      <div className="flex justify-between items-center space-x-4 mb-4">
         <button
           onClick={() => setAction("add")}
           className={`px-4 py-2 rounded-md font-medium ${action === "add"
