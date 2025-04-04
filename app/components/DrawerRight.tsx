@@ -13,6 +13,8 @@ import { usePortfolioContext } from '../context/PortfolioContext';
 import PortfolioSection from './PortfolioSection';
 import MarketDataSection from './MarketDataSection';
 import LiquidityPositionsSection from './LiquidityPositionSection';
+import AaveLendingSection from './AaveLendingSection';
+import AaveBorrowSection from './AaveBorrowSection';
 
 export default function DrawerRight() {
   const { drawerRightOpen, setDrawerRightOpen, styles } = useGlobalContext();
@@ -84,7 +86,15 @@ export default function DrawerRight() {
                       positions={portfolio.positions}
                     />
                   )}
-                  {!token && <MarketDataSection market={market} setToken={setToken} />}
+                  {!token && portfolio && portfolio.aave && portfolio.aave.length > 0 && (
+                    <AaveLendingSection aave={portfolio.aave} />
+                  )}
+                  {
+                    !token && portfolio && portfolio.aave && portfolio.aave.length > 0 && (
+                      <AaveBorrowSection aave={portfolio.aave} />
+                    )
+                  }
+                  {!token && !portfolio && <MarketDataSection market={market} setToken={setToken} />}
                   {/* Chart */}
                   {token && <TokenData token={token} hours={200} exit={() => setToken(null)} />}
                 </div>

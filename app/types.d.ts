@@ -60,10 +60,16 @@ type SimpleLiquidityPosition = {
   tokensOwed1: string;
 };
 
-type AavePosition = {
+type AaveUserPosition = {
   token: string;
   balance: string;
-};
+  variableDebt: string;
+  stableDebt: string;
+  depositAPY: string;
+  variableBorrowAPY: string;
+  stableBorrowAPY: string;
+  usageAsCollateral: boolean;
+}
 
 export interface Portfolio {
   address: `0x${string}`;
@@ -76,6 +82,6 @@ export interface Portfolio {
     usdPrice: number;
   }[],
   positions: SimpleLiquidityPosition[]
-  aave: AavePosition[]
+  aave: AaveUserPosition[]
   timestamp: number;
 }

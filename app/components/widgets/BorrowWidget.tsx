@@ -27,16 +27,19 @@ const LendWidget = () => {
     }
   };
 
-  const handleRepay = () => {
-    if (confirm(`Withdraw ${fromToken} from Aave?`)) {
-      addPrompt(`Withdraw ${fromToken} from Aave`)
+  const handleRepay = (t: string) => {
+    if (confirm(`Repay full ${t} debt from Aave?`)) {
+      addPrompt(`Repay full ${t} debt from Aave`)
       setWidget(null)
     }
   };
 
-  const aavePositions = useMemo(() => {
+  const aavePositionsWithTokens = useMemo(() => {
     if (!portfolio) return [];
-    return portfolio.aave
+    return portfolio.aave.map((item) => ({
+      ...item,
+      token: TOKENS[item.token as keyof typeof TOKENS],
+    })).filter((item) => item.usageAsCollateral)
   }, [portfolio])
 
   const balance0 = useMemo(() => {
@@ -110,8 +113,7 @@ const LendWidget = () => {
           Repay
         </button>
       </div>
-      
-      {/* From Token */}
+
       {action === "add" && <div>
         <h3 className="text-lg font-semibold mb-4">Borrow</h3>
         <div className="mb-6">
@@ -160,15 +162,15 @@ const LendWidget = () => {
         <div id="remove-liquidity">
           <h3 className="text-lg font-semibold mb-4">Repay</h3>
           <div className="space-y-4">
-            {aavePositions.map((item, index) => (
+            {aavePositionsWithTokens.map((item, index) => (
               <div key={index} className="flex tems-center justify-between">
                 <div className="text-sm">
-                  <div>{`${item.token}`}</div>
-                  <div className="italic text-sm">{`Balance: ${item.balance}`}</div>
+                  <div>{`${item.token.symbol}`}</div>
+                  <div className="italic text-sm">{`Balance: ${item.variableDebt}`}</div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleRepay()}
+                  onClick={() => handleRepay(item.token.symbol)}
                   className={styles.buttonSm}
                 >
                   Remove
