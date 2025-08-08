@@ -47,7 +47,7 @@ const PortfolioSection: React.FC<PortfolioSectionProps> = ({
             <table className="min-w-full divide-y divide-gray-300">
               <thead>
                 <tr>
-                  <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold">
+                  <th scope="col" className="py-3.5 pl-4 text-left text-sm font-semibold">
                     Token
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">

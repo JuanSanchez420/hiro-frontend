@@ -11,7 +11,7 @@ import BorrowWidget from "./BorrowWidget";
 
 const Widget = () => {
     const { widget, setWidget, styles } = useGlobalContext();
-    
+
     const widgetComponents = {
         Swap: TokenSwap,
         Earn: AddLiquidityWidget,
@@ -22,10 +22,10 @@ const Widget = () => {
         Lend: LendWidget,
         Borrow: BorrowWidget,
     };
-    
+
     const WidgetComponent = widget && widgetComponents[widget] ? widgetComponents[widget] : null;
 
-    return (widget &&
+    return (
         <Dialog open={widget !== null} onClose={() => setWidget(null)} className="relative z-10">
             <DialogBackdrop
                 transition

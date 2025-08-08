@@ -1,10 +1,11 @@
 import { getContract, parseEther } from 'viem';
 import HIRO_FACTORY_ABI from '../abi/HiroFactory.json';
 import { useWalletClient } from 'wagmi';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import { waitForTransactionReceipt } from 'viem/actions';
 import doConfettiBurst from '../utils/doConfettiBurst';
 import { usePortfolioContext } from '../context/PortfolioContext';
+import { NULL_ADDRESS } from '../utils/constants';
 
 enum HiroWalletStatus {
     NOT_CREATED = 'NOT_CREATED',
@@ -14,7 +15,7 @@ enum HiroWalletStatus {
 
 const useHiroFactory = () => {
     const { data: client } = useWalletClient();
-    const { fetchPortfolio } = usePortfolioContext();
+    const { fetchPortfolio, portfolio } = usePortfolioContext();
     const [status, setStatus] = useState<HiroWalletStatus>(HiroWalletStatus.NOT_CREATED);
     const depositAmount = 10000000000000000n; // 0.01 ETH
 
@@ -57,6 +58,14 @@ const useHiroFactory = () => {
             console.error("Error creating HiroWallet:", error);
         }
     }, [factory, client, depositAmount, fetchPortfolio])
+
+    // Keep local status in sync with portfolio.hiro if it already exists (e.g., page refresh after creation)
+    useEffect(() => {
+        if (!portfolio) return;
+        if (portfolio.hiro && portfolio.hiro !== NULL_ADDRESS && status !== HiroWalletStatus.CREATED) {
+            setStatus(HiroWalletStatus.CREATED);
+        }
+    }, [portfolio, status]);
 
     return { factory, status, signUp }
 }

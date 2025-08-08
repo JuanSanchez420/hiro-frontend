@@ -2,6 +2,7 @@ import React from 'react';
 import { formatEther } from 'viem';
 import formatNumber from '../utils/formatNumber';
 import { useGlobalContext } from '../context/GlobalContext';
+import { usePromptsContext } from '../context/PromptsContext';
 
 interface Position {
   index: number;
@@ -17,9 +18,17 @@ interface LiquidityPositionsSectionProps {
 const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
   positions,
 }) => {
-  const { setDrawerRightOpen, setWidget, styles } = useGlobalContext()
+  const { styles, setDrawerRightOpen } = useGlobalContext()
+  const { addPrompt } = usePromptsContext()
 
   if (!positions || positions.length === 0) return null;
+
+  const handleRemove = (position: Position) => {
+    if (confirm(`Are you sure you want to remove liquidity position ${position.token0}/${position.token1}?`)) {
+      setDrawerRightOpen(false)
+      addPrompt(`Remove liquidity with position index ${position.index}`)
+    }
+  }
 
   return (
     <div className="px-1 mb-8">
@@ -42,29 +51,23 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
             <table className="min-w-full divide-y divide-gray-300">
               <thead>
                 <tr>
-                  <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold">
-                    Position
-                  </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
+                  <th scope="col" className="px-3 py-3.5 pl-4 text-left text-sm font-semibold">
                     Pair
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
                     Liquidity
                   </th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className={`${styles.background} ${styles.text}`}>
                 {positions.map((position) => (
-                  <tr key={`position-${position.index}`} className={`${styles.highlightRow} hover:cursor-pointer`} onClick={(e) => {
-                    e.preventDefault()
-                    setWidget('Earn')
-                    setDrawerRightOpen(false)
-                  }} >
-                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
-                      {position.index}
-                    </td>
+                  <tr key={`position-${position.index}`} className={`${styles.highlightRow}`}>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{position.token0}/{position.token1}</td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{`${formatNumber(formatEther(position.liquidity))}`}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate"><button className={styles.buttonSm} onClick={() => handleRemove(position)}>Remove</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -74,39 +77,6 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
       </div>
     </div>
   )
-
-  return (
-    <div className="flex flex-col mt-3">
-      <div className='border-b mb-3'>Liquidity Positions</div>
-      <div className="flex-1">
-        <div>
-          <a className="grid grid-cols-4 gap-2 p-2 text-gray-700 group rounded-md text-sm/6 font-semibold">
-            <div>POSITION</div>
-            <div>PAIR</div>
-            <div>LIQUIDITY</div>
-          </a>
-        </div>
-        {positions.map((position) => {
-          return (
-            <div key={position.index}>
-              <a
-                onClick={(e) => {
-                  e.preventDefault()
-                  setWidget('Earn')
-                  setDrawerRightOpen(false)
-                }}
-                className="grid grid-cols-4 gap-2 p-2 text-gray-700 hover:bg-gray-50 group rounded-md text-sm/6 font-semibold cursor-pointer"
-              >
-                <div>{position.index}</div>
-                <div>{position.token0}/{position.token1}</div>
-                <div className='truncate'>{`${formatNumber(formatEther(position.liquidity))}`}</div>
-              </a>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
 };
 
 export default LiquidityPositionsSection;

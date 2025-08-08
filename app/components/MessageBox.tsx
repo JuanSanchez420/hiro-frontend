@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Message } from "../context/PromptsContext";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { prettyValue } from "../utils/prettyValue";
 import useChatEventStream from "../hooks/useChatEventStream";
 
 const friendlyNames = {
@@ -113,25 +114,33 @@ const FunctionResults = ({ calls, results }: { calls: Message[], results: Messag
 
     const outputs = useMemo(() => {
         return results.flatMap((result, index) => {
-            return Object.entries(result.functionCall || {}).map(([key, value]) => (
-                <div
-                    key={`result-${key}-${index}`}
-                    className="flex items-center justify-between gap-1"
-                >
-                    <div className="w-1/3 text-right text-sm">{key}</div>
-                    <div className="w-2/3 flex items-center justify-end gap-2">
-                        <span className="overflow-hidden text-ellipsis text-sm">{value?.toString()}</span>
-                        {key === "transactionHash" && (
-                            <button
-                                onClick={() => navigator.clipboard.writeText(value?.toString() || "")}
-                                className="ml-2 rounded bg-gray-200 px-2 py-1 text-xs hover:bg-gray-400"
-                            >
-                                Copy
-                            </button>
-                        )}
+            return Object.entries(result.functionCall || {}).map(([key, value]) => {
+                const formatted = prettyValue(value)
+                const isMultiLine = formatted.includes('\n')
+                return (
+                    <div
+                        key={`result-${key}-${index}`}
+                        className="flex items-start justify-between gap-1"
+                    >
+                        <div className="w-1/3 text-right text-sm pt-1">{key}</div>
+                        <div className="w-2/3 flex flex-col items-end gap-1">
+                            {isMultiLine ? (
+                                <pre className="w-full overflow-auto rounded p-2 text-xs whitespace-pre-wrap break-words">{formatted}</pre>
+                            ) : (
+                                <span className="overflow-hidden text-ellipsis text-sm max-w-full break-words">{formatted}</span>
+                            )}
+                            {key === "transactionHash" && typeof value === 'string' && (
+                                <button
+                                    onClick={() => navigator.clipboard.writeText(value || "")}
+                                    className="self-end rounded bg-gray-200 px-2 py-1 text-xs hover:bg-gray-400"
+                                >
+                                    Copy
+                                </button>
+                            )}
+                        </div>
                     </div>
-                </div>
-            ))
+                )
+            })
         })
     }, [results])
 
