@@ -1,18 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import useDoABarrelRoll from "./useDoABarrelRoll";
 import doConfettiBurst from "../utils/doConfettiBurst";
 import { useGlobalContext } from "../context/GlobalContext";
-import { Message } from "../context/PromptsContext";
 import { useAccount } from "wagmi";
 import { usePortfolioContext } from "../context/PortfolioContext";
+import { Message } from "../types";
 
 const useChatEventStream = (prompt: string) => {
     const account = useAccount()
     const isStreaming = useRef(false)
     const [streamedContent, setStreamedContent] = useState("");
-    const { setShowConfirm, setRain } = useGlobalContext();
+    const { setShowConfirm } = useGlobalContext();
     const { fetchPortfolio } = usePortfolioContext();
-    const doABarrelRoll = useDoABarrelRoll();
     const [functionCalls, setFunctionCalls] = useState<Message[]>([]);
     const [functionResults, setFunctionResults] = useState<Message[]>([]);
 
@@ -28,14 +26,6 @@ const useChatEventStream = (prompt: string) => {
             if (obj.name === "confettiBurst") {
                 doConfettiBurst();
                 return;
-            }
-            if (obj.name === "doABarrelRoll") {
-                doABarrelRoll();
-                return;
-            }
-            if (obj.name === "makeItRain") {
-                setRain(obj.arguments.symbol);
-                return
             }
             if (obj.name === "confirm") {
                 setShowConfirm(true);
@@ -81,9 +71,7 @@ const useChatEventStream = (prompt: string) => {
             eventSource.close();
         };
     }, [
-        doABarrelRoll,
         fetchPortfolio,
-        setRain,
         setShowConfirm,
         setStreamedContent,
     ]);

@@ -90,7 +90,7 @@ const WithdrawWidget = () => {
         <div>
           <div className="flex justify-between">
             <div className="">Token</div>
-            <div className="text-sm italic">Balance: {formatNumber(balance0)}</div>
+            <div className="text-xs italic">Balance: {formatNumber(balance0)}</div>
           </div>
           <div className="mt-2">
             <div className="flex items-center rounded-md pl-3 outline outline-1 -outline-offset-1 outline-gray-300 has-[input:focus-within]:outline has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-2 has-[input:focus-within]:outline-emerald-600">

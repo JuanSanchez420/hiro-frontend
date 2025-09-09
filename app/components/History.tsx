@@ -1,26 +1,28 @@
 import Link from "next/link"
-
-type HistoryObj = {
-    prompt: string
-    functionCall: string | null
-}
+import { useMessagesContext } from "../context/MessagesContext"
+import { useEffect } from "react"
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
   }
 
 const History = () => {
+    const { messages, loadMessages, loading } = useMessagesContext();
 
-    const histories: HistoryObj[] = [
-        {prompt: "prompt would be here", functionCall: null},
-        {prompt: "prompt would be here", functionCall: null},
-        {prompt: "prompt would be here", functionCall: "params obj"}
-    ]
+    useEffect(() => {
+        loadMessages();
+    }, [loadMessages]);
+
+    const userMessages = Array.isArray(messages) ? messages.filter(msg => msg.type === "user") : [];
+
+    if (loading) {
+        return <div className="flex justify-center p-4">Loading...</div>
+    }
 
     return <ul role="list" className="flex flex-1 flex-col gap-y-7">
         <li>
             <ul role="list" className="-mx-2 space-y-1">
-                {histories.map((item, i) => (
+                {userMessages.map((message, i) => (
                     <li key={`history-${i}`}>
                         <Link
                             href="#"
@@ -30,7 +32,9 @@ const History = () => {
                                 'truncate'
                             )}
                         >
-                            {item.prompt}
+                            {message.message.length > 50 
+                                ? message.message.substring(0, 50) + "..." 
+                                : message.message}
                         </Link>
                     </li>
                 ))}

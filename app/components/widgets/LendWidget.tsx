@@ -7,10 +7,23 @@ import { usePromptsContext } from "@/app/context/PromptsContext";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
 import { pools as AAVE_POOLS } from "@/app/utils/aavePools";
 
+interface AavePool {
+  token: string;
+  depositAPY: string;
+  variableBorrowAPY: string;
+  stableBorrowAPY: string;
+  utilizationRate: string;
+  totalSupplied: string;
+  totalBorrowed: string;
+  availableLiquidity: string;
+}
+
 const LendWidget = () => {
   const [fromAmount, setFromAmount] = useState("");
   const [fromToken, setFromToken] = useState("WETH");
   const [action, setAction] = useState<"add" | "remove">("add");
+  const [aavePools, setAavePools] = useState<AavePool[]>([]);
+  const [loadingAprs, setLoadingAprs] = useState(false);
 
   const { addPrompt, } = usePromptsContext()
   const { setWidget, styles } = useGlobalContext();
@@ -49,6 +62,27 @@ const LendWidget = () => {
     setFromToken(portfolio?.tokens[0]?.symbol || "WETH")
   }, [portfolio])
 
+  useEffect(() => {
+    const fetchAavePools = async () => {
+      setLoadingAprs(true);
+      try {
+        const response = await fetch('/api/aave-aprs');
+        if (response.ok) {
+          const data = await response.json();
+          setAavePools(data.pools || []);
+        } else {
+          console.error('Failed to fetch Aave APRs:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching Aave APRs:', error);
+      } finally {
+        setLoadingAprs(false);
+      }
+    };
+
+    fetchAavePools();
+  }, []);
+
   const tokenList = useMemo(() => {
 
     const portfolioTokens = new Set(portfolio?.tokens.map(t => t.symbol) || []);
@@ -70,26 +104,9 @@ const LendWidget = () => {
       });
   }, [portfolio]);
 
-  const ButtonRow = ({ handler }: { handler: React.Dispatch<React.SetStateAction<string>> }) => {
-    const percents = [25, 50, 75, 100]
-    return (
-      <div className="flex justify-between my-5">
-        {percents.map((percent, index) => (
-          <button
-            key={index}
-            type="button"
-            onClick={() => handler((Number(balance0) * percent / 100).toString())}
-            className={styles.button}
-          >
-            {percent}%
-          </button>
-        ))}
-      </div>
-    )
-  }
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-4xl mx-auto">
       <div className="flex justify-between items-center space-x-4 mb-4">
         <button
           onClick={() => setAction("add")}
@@ -110,6 +127,35 @@ const LendWidget = () => {
           Withdraw
         </button>
       </div>
+
+      {/* Aave APRs Table */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-4">Aave Pool APRs</h3>
+        {loadingAprs ? (
+          <div className="flex justify-center p-4">Loading APRs...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className={`border-b ${styles.text}`}>
+                  <th className="text-left p-2">Token</th>
+                  <th className="text-left p-2">Deposit APY</th>
+                  <th className="text-left p-2">Borrow APY</th>
+                </tr>
+              </thead>
+              <tbody>
+                {aavePools.map((pool, index) => (
+                  <tr key={index} className={`border-b ${styles.text}`}>
+                    <td className="p-2 font-medium">{pool.token}</td>
+                    <td className="p-2 text-green-600">{pool.depositAPY}</td>
+                    <td className="p-2 text-red-500">{pool.variableBorrowAPY}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
       
       {/* From Token */}
       {action === "add" && <div>
@@ -118,30 +164,41 @@ const LendWidget = () => {
           <div>
             <div className="flex justify-between">
               <div className="">Amount</div>
-              <div className="text-sm italic">Balance: {formatNumber(balance0)}</div>
+              <div className="text-xs italic">Balance: {formatNumber(balance0)}</div>
             </div>
             <div className="mt-2">
-              <div className="flex items-center rounded-md pl-3 outline outline-1 -outline-offset-1 outline-gray-300 has-[input:focus-within]:outline has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-2 has-[input:focus-within]:outline-emerald-600">
-                <input
-                  id="price"
-                  name="price"
-                  type="text"
-                  placeholder="0.00"
-                  value={fromAmount}
-                  onChange={(e) => setFromAmount(e.target.value)}
-                  autoComplete="off"
-                  className={`block min-w-0 grow py-1.5 pl-1 pr-3 text-base placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6 ${styles.background} ${styles.text}`}
-                />
-                <div className="grid shrink-0 grid-cols-1 focus-within:relative">
-                  <SearchableSelect options={tokenList} value={{ label: fromToken, value: fromToken }} onChange={(e) => {
-                    setFromToken(e.value)
-                    setFromAmount("")
-                  }} />
+              <div className="rounded-md outline outline-1 -outline-offset-1 outline-gray-300 has-[input:focus-within]:outline has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-2 has-[input:focus-within]:outline-emerald-600">
+                <div className="flex items-center pl-3 py-3">
+                  <input
+                    id="price"
+                    name="price"
+                    type="text"
+                    placeholder="0.00"
+                    value={fromAmount}
+                    onChange={(e) => setFromAmount(e.target.value)}
+                    autoComplete="off"
+                    className={`block min-w-0 grow py-1.5 pl-1 pr-3 text-lg placeholder:text-gray-400 focus:outline focus:outline-0 ${styles.background} ${styles.text}`}
+                  />
+                  <div className="grid shrink-0 grid-cols-1 focus-within:relative">
+                    <SearchableSelect options={tokenList} value={{ label: fromToken, value: fromToken }} onChange={(e) => {
+                      setFromToken(e.value)
+                      setFromAmount("")
+                    }} />
+                  </div>
+                </div>
+                <div className="flex justify-between px-3 pb-2">
+                  {[25, 50, 75, 100].map((percent, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => setFromAmount((Number(balance0) * percent / 100).toString())}
+                      className={styles.button}
+                    >
+                      {percent}%
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
-            <div className="my-1">
-              <ButtonRow handler={setFromAmount} />
             </div>
           </div>
         </div>
@@ -164,7 +221,7 @@ const LendWidget = () => {
               <div key={index} className="flex tems-center justify-between">
                 <div className="text-sm">
                   <div>{`${item.token}`}</div>
-                  <div className="italic text-sm">{`Balance: ${item.balance}`}</div>
+                  <div className="italic text-xs">{`Balance: ${item.balance}`}</div>
                 </div>
                 <button
                   type="button"

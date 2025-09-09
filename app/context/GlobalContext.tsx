@@ -15,8 +15,6 @@ interface GlobalContextType {
     setShowConfirm: React.Dispatch<React.SetStateAction<boolean>>
     isSignedIn: boolean
     setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>
-    rain: string | undefined
-    setRain: React.Dispatch<React.SetStateAction<string | undefined>>
     theme: "light" | "dark"
     setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>
     styles: ReturnType<typeof getStyles> 
@@ -30,7 +28,6 @@ export const GlobalContextProvider = ({ children }: { children: React.ReactNode 
     const [showConfirm, setShowConfirm] = useState(false);
     const [widget, setWidget] = useState<WidgetOption>(null);
     const [isSignedIn, setIsSignedIn] = useState(false);
-    const [rain, setRain] = useState<string | undefined>();
     const [theme, setTheme] = useState<"light" | "dark">("light");
     const styles = getStyles(theme)
 
@@ -42,7 +39,6 @@ export const GlobalContextProvider = ({ children }: { children: React.ReactNode 
             widget, setWidget,
             showConfirm, setShowConfirm,
             isSignedIn, setIsSignedIn,
-            rain, setRain
         }}>
             {children}
         </GlobalContext.Provider>

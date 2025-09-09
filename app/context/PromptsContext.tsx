@@ -1,13 +1,6 @@
 'use client'
 import { createContext, useContext, useState } from "react";
 
-export interface Message {
-    message: string
-    type: "user" | "assistant" | "function"
-    functionCall?: Record<string, unknown>
-    completed: boolean
-}
-
 interface PromptsContextType {
     prompts: string[]
     addPrompt: (prompt: string) => void

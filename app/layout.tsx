@@ -9,9 +9,9 @@ import DrawerLeft from "./components/DrawerLeft";
 import Link from "next/link";
 import NewChat from "./components/NewChat";
 import DrawerRight from "./components/DrawerRight";
-import RainingIcons from "./components/RainingIcons";
 import { GlobalContextProvider } from "./context/GlobalContext";
 import { PromptsProvider } from "./context/PromptsContext";
+import { MessagesProvider } from "./context/MessagesContext";
 import { PortfolioProvider } from "./context/PortfolioContext";
 import ThemeProvider from "./components/ThemeProvider";
 import PortfolioButton from "./components/PortfolioButton";
@@ -30,8 +30,9 @@ export default function RootLayout({
   return (
     <Providers>
       <PromptsProvider>
-        <GlobalContextProvider>
-          <PortfolioProvider>
+        <MessagesProvider>
+          <GlobalContextProvider>
+            <PortfolioProvider>
           <html lang="en" className="h-full">
             <ThemeProvider>
               <div className="flex flex-col min-h-full h-full">
@@ -62,11 +63,11 @@ export default function RootLayout({
                   <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8"><PromptInput /></div>
                 </div>
               </div>
-              <RainingIcons />
             </ThemeProvider>
           </html>
-          </PortfolioProvider>
-        </GlobalContextProvider>
+            </PortfolioProvider>
+          </GlobalContextProvider>
+        </MessagesProvider>
       </PromptsProvider>
     </Providers>
   );

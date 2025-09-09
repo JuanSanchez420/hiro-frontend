@@ -2,11 +2,11 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import WandSpinner from "./WandSpinner";
 import Image from "next/image"
-import { Message } from "../context/PromptsContext";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { prettyValue } from "../utils/prettyValue";
 import useChatEventStream from "../hooks/useChatEventStream";
+import { Message } from "../types";
 
 const friendlyNames = {
     "getETHBalance": "Get ETH Balance",

@@ -30,6 +30,13 @@ export interface OHLC {
 
 export type WidgetOption = "Swap" | "Earn" | "Autonomous" | "Deposit" | "Withdraw" | "Signup" | "Lend" | "Borrow" | null
 
+export interface Message {
+    message: string
+    type: "user" | "assistant" | "function"
+    functionCall?: Record<string, unknown>
+    completed: boolean
+}
+
 export type MarketData = {
   symbol: string;
   price: string;
