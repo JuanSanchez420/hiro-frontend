@@ -13,7 +13,6 @@ import { PromptsProvider } from "./context/PromptsContext";
 import { MessagesProvider } from "./context/MessagesContext";
 import { PortfolioProvider } from "./context/PortfolioContext";
 import ThemeProvider from "./components/ThemeProvider";
-import PortfolioButton from "./components/PortfolioButton";
 
 export const metadata: Metadata = {
   title: "Hiro",
@@ -43,7 +42,6 @@ export default function RootLayout({
                         <div className="pl-5 text-2xl"><Link href="/">HIRO</Link></div>
                       </div>
                       <div className="ml-6 flex items-center">
-                        <PortfolioButton />
                         <NewChat />
                         <ConnectWallet />
                       </div>
