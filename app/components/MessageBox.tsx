@@ -4,7 +4,6 @@ import WandSpinner from "./WandSpinner";
 import Image from "next/image"
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useGlobalContext } from "../context/GlobalContext";
 import { prettyValue } from "../utils/prettyValue";
 import useChatEventStream from "../hooks/useChatEventStream";
 import { Message } from "../types";
@@ -244,15 +243,12 @@ const StreamedContent = ({ streamedContent }: { streamedContent: string }) => {
 
 export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
     const bottomRef = useRef<HTMLDivElement>(null)
-    const { drawerLeftOpen, drawerRightOpen, widget } = useGlobalContext()
 
     const { streamedContent, functionCalls, functionResults, isThinking } = useChatEventStream(prompt)
 
     useEffect(() => {
-        if (!drawerLeftOpen && !drawerRightOpen && !widget) {
-            bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }
-    }, [streamedContent, functionCalls, functionResults, drawerLeftOpen, drawerRightOpen, widget]);
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, [streamedContent, functionCalls, functionResults]);
 
     const message = { type: "user", message: prompt, completed: true } as Message
 
