@@ -8,7 +8,6 @@ import DrawerButton from "./components/DrawerButton";
 import DrawerLeft from "./components/DrawerLeft";
 import Link from "next/link";
 import NewChat from "./components/NewChat";
-import DrawerRight from "./components/DrawerRight";
 import { GlobalContextProvider } from "./context/GlobalContext";
 import { PromptsProvider } from "./context/PromptsContext";
 import { MessagesProvider } from "./context/MessagesContext";
@@ -57,7 +56,6 @@ export default function RootLayout({
                     <div className="flex flex-col mx-auto w-full h-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
                       {children}
                       <DrawerLeft />
-                      <DrawerRight />
                     </div>
                   </main>
                   <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8"><PromptInput /></div>

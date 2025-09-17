@@ -11,12 +11,12 @@ interface AaveBorrowSectionProps {
 const AaveBorrowSection: React.FC<AaveBorrowSectionProps> = ({
   aave,
 }) => {
-  const { styles, setWidget, setDrawerRightOpen } = useGlobalContext()
+  const { styles, setWidget, setDrawerLeftOpen } = useGlobalContext()
   // const token = tokens[rain?.toUpperCase() as keyof typeof tokens];
 
   const handleRowClick = () => {
     setWidget('Borrow')
-    setDrawerRightOpen(false)
+    setDrawerLeftOpen(false)
   }
 
   const aavePositionsWithTokens = useMemo(() => {

@@ -7,8 +7,6 @@ import { getStyles } from "../utils/styles"
 interface GlobalContextType {
     drawerLeftOpen: boolean
     setDrawerLeftOpen: React.Dispatch<React.SetStateAction<boolean>>
-    drawerRightOpen: boolean
-    setDrawerRightOpen: React.Dispatch<React.SetStateAction<boolean>>
     widget: WidgetOption
     setWidget: React.Dispatch<React.SetStateAction<WidgetOption>>
     showConfirm: boolean
@@ -17,14 +15,13 @@ interface GlobalContextType {
     setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>
     theme: "light" | "dark"
     setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>
-    styles: ReturnType<typeof getStyles> 
+    styles: ReturnType<typeof getStyles>
 }
 
 export const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
 export const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
     const [drawerLeftOpen, setDrawerLeftOpen] = useState(false);
-    const [drawerRightOpen, setDrawerRightOpen] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [widget, setWidget] = useState<WidgetOption>(null);
     const [isSignedIn, setIsSignedIn] = useState(false);
@@ -35,7 +32,6 @@ export const GlobalContextProvider = ({ children }: { children: React.ReactNode 
         <GlobalContext.Provider value={{
             theme, setTheme, styles,
             drawerLeftOpen, setDrawerLeftOpen,
-            drawerRightOpen, setDrawerRightOpen,
             widget, setWidget,
             showConfirm, setShowConfirm,
             isSignedIn, setIsSignedIn,

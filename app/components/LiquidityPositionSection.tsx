@@ -18,14 +18,14 @@ interface LiquidityPositionsSectionProps {
 const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
   positions,
 }) => {
-  const { styles, setDrawerRightOpen } = useGlobalContext()
+  const { styles, setDrawerLeftOpen } = useGlobalContext()
   const { addPrompt } = usePromptsContext()
 
   if (!positions || positions.length === 0) return null;
 
   const handleRemove = (position: Position) => {
     if (confirm(`Are you sure you want to remove liquidity position ${position.token0}/${position.token1}?`)) {
-      setDrawerRightOpen(false)
+      setDrawerLeftOpen(false)
       addPrompt(`Remove liquidity with position index ${position.index}`)
     }
   }

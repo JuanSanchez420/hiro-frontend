@@ -20,7 +20,7 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
   const account = useAccount();
   const didFetch = useRef(false);
   const { addPrompt, } = usePromptsContext();
-  const { setWidget, setDrawerRightOpen, styles } = useGlobalContext();
+  const { setWidget, setDrawerLeftOpen, styles } = useGlobalContext();
   const [ohlcData, setOhlcData] = useState<OHLC[]>([]);
   const [emaData, setEmaData] = useState<{ periodStartUnix: number; value: number }[]>([]);
   const [rsiData, setRsiData] = useState<{ periodStartUnix: number, value: number }[]>([]);
@@ -63,7 +63,7 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
 
   const handleHirosTake = () => {
     setWidget(null);
-    setDrawerRightOpen(false);
+    setDrawerLeftOpen(false);
     addPrompt(`I'm looking for advice on: ${token.symbol}
 
       EMA (200): ${market.trend}

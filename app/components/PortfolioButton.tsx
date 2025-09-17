@@ -6,10 +6,10 @@ import Tooltip from "./Tooltip";
 import { useGlobalContext } from "../context/GlobalContext";
 
 const NewChat = () => {
-    const { setDrawerRightOpen } = useGlobalContext()
+    const { setDrawerLeftOpen } = useGlobalContext()
 
     const handleNewChat = () => {
-        setDrawerRightOpen(true)
+        setDrawerLeftOpen(true)
     }
 
     return (<div className="pr-6">

@@ -12,7 +12,7 @@ const SwapWidget = () => {
   const [toToken, setToToken] = useState("USDC");
 
   const { addPrompt, } = usePromptsContext()
-  const { setWidget, setDrawerRightOpen, styles } = useGlobalContext();
+  const { setWidget, setDrawerLeftOpen, styles } = useGlobalContext();
   const { portfolio } = usePortfolioContext();
 
   const handleSwap = () => {
@@ -23,7 +23,7 @@ const SwapWidget = () => {
     if (confirm(`Swap ${fromAmount} of ${fromToken} to ${toToken}?`)) {
       addPrompt(`Swap ${fromAmount} of ${fromToken} to ${toToken}`)
       setWidget(null)
-      setDrawerRightOpen(false)
+      setDrawerLeftOpen(false)
     }
   };
 
