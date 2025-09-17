@@ -5,16 +5,18 @@ import { useAccount } from "wagmi";
 import { usePortfolioContext } from "../context/PortfolioContext";
 import { Message } from "../types";
 
-const useChatEventStream = (prompt: string) => {
+const   useChatEventStream = (prompt: string) => {
     const account = useAccount()
     const isStreaming = useRef(false)
     const [streamedContent, setStreamedContent] = useState("");
+    const [isThinking, setIsThinking] = useState(false);
     const { setShowConfirm } = useGlobalContext();
     const { fetchPortfolio } = usePortfolioContext();
     const [functionCalls, setFunctionCalls] = useState<Message[]>([]);
     const [functionResults, setFunctionResults] = useState<Message[]>([]);
 
     const doPrompt = useCallback((p: string, isDemo: boolean) => {
+        setIsThinking(true);
         const eventSource = new EventSource(
             `/api/stream?content=${p}${isDemo ? `&demo=true` : ""}`
         );
@@ -51,6 +53,7 @@ const useChatEventStream = (prompt: string) => {
 
         eventSource.onmessage = (event) => {
             const chunk: string = JSON.parse(event.data);
+            setIsThinking(false);
             setStreamedContent((prev) => {
                 const newContent = prev + chunk;
                 return newContent;
@@ -58,11 +61,13 @@ const useChatEventStream = (prompt: string) => {
         };
 
         eventSource.addEventListener("end", () => {
+            setIsThinking(false);
             eventSource.close();
         });
 
         eventSource.onerror = (err: Event) => {
             console.error("EventSource error:", err);
+            setIsThinking(false);
             eventSource.close();
         };
 
@@ -82,7 +87,7 @@ const useChatEventStream = (prompt: string) => {
         doPrompt(prompt, !account?.isConnected)
     }, [doPrompt, prompt, account])
 
-    return { streamedContent, functionCalls, functionResults };
+    return { streamedContent, functionCalls, functionResults, isThinking };
 };
 
 export default useChatEventStream;

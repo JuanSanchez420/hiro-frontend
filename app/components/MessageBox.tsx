@@ -4,6 +4,7 @@ import WandSpinner from "./WandSpinner";
 import Image from "next/image"
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useGlobalContext } from "../context/GlobalContext";
 import { prettyValue } from "../utils/prettyValue";
 import useChatEventStream from "../hooks/useChatEventStream";
 import { Message } from "../types";
@@ -31,7 +32,7 @@ const friendlyNames = {
 
 const parseMessage = (message: string) => {
     const segments = [];
-    const regex = /(\*\*.*?\*\*|```[\s\S]*?```|\n)/g; // Updated regex to include newline characters
+    const regex = /(###.*?(?=\n|$)|\*\*.*?\*\*|```[\s\S]*?```|\n)/g; // Updated regex to include headers and newline characters
     let lastIndex = 0;
 
     message.replace(regex, (match, _, offset) => {
@@ -41,7 +42,9 @@ const parseMessage = (message: string) => {
         }
 
         // Handle special cases
-        if (match.startsWith("**")) {
+        if (match.startsWith("###")) {
+            segments.push({ type: "header", content: match.slice(3).trim() }); // Remove ### and trim spaces
+        } else if (match.startsWith("**")) {
             segments.push({ type: "bold", content: match.slice(2, -2) });
         } else if (match.startsWith("```")) {
             segments.push({ type: "quote", content: match.slice(3, -3).trim() }); // Trim extra spaces
@@ -68,6 +71,12 @@ const UserMessage = ({ message }: { message: Message }) => {
             <div className={`rounded-3xl bg-gray-100 px-4 py-2 text-gray-900`}>
                 {segments.map((segment, index) => {
                     switch (segment.type) {
+                        case "header":
+                            return (
+                                <h3 key={index} className="text-lg font-bold my-1 block">
+                                    {segment.content}
+                                </h3>
+                            );
                         case "bold":
                             return (
                                 <span key={index} className="inline-block font-bold">
@@ -191,8 +200,8 @@ const FunctionResults = ({ calls, results }: { calls: Message[], results: Messag
     );
 }
 
-const Avatar = () => {
-    return (<div className="shrink-0 mr-2">
+const Avatar = ({ isAnimated = false }: { isAnimated?: boolean }) => {
+    return (<div className={`shrink-0 mr-2 ${isAnimated ? 'animate-bounce' : ''}`}>
         <Image src="/images/hiro.png" height={32} width={32} alt="hiro" />
     </div>)
 }
@@ -203,6 +212,12 @@ const StreamedContent = ({ streamedContent }: { streamedContent: string }) => {
 
     const s = useMemo(() => segments.map((segment, index) => {
         switch (segment.type) {
+            case "header":
+                return (
+                    <h3 key={index} className="text-lg font-bold my-1 block">
+                        {segment.content}
+                    </h3>
+                );
             case "bold":
                 return (
                     <span key={index} className="inline-block font-bold">
@@ -229,12 +244,15 @@ const StreamedContent = ({ streamedContent }: { streamedContent: string }) => {
 
 export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
     const bottomRef = useRef<HTMLDivElement>(null)
+    const { drawerLeftOpen, drawerRightOpen, widget } = useGlobalContext()
 
-    const { streamedContent, functionCalls, functionResults } = useChatEventStream(prompt)
+    const { streamedContent, functionCalls, functionResults, isThinking } = useChatEventStream(prompt)
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, [streamedContent, functionCalls, functionResults]);
+        if (!drawerLeftOpen && !drawerRightOpen && !widget) {
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    }, [streamedContent, functionCalls, functionResults, drawerLeftOpen, drawerRightOpen, widget]);
 
     const message = { type: "user", message: prompt, completed: true } as Message
 
@@ -242,9 +260,11 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
         <div>
             <UserMessage message={message} />
             <FunctionResults calls={functionCalls} results={functionResults} />
-            {streamedContent && <div className="flex w-full py-5 my-2">
-                <Avatar />
-                <div><StreamedContent streamedContent={streamedContent} /></div>
+            {(isThinking || streamedContent) && <div className="flex w-full py-5 my-2">
+                <Avatar isAnimated={isThinking} />
+                <div>
+                    {streamedContent ? <StreamedContent streamedContent={streamedContent} /> : null}
+                </div>
             </div>}
             <div ref={bottomRef} />
         </div>

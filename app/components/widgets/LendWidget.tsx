@@ -40,9 +40,9 @@ const LendWidget = () => {
     }
   };
 
-  const handleWithdraw = () => {
-    if (confirm(`Withdraw ${fromToken} from Aave?`)) {
-      addPrompt(`Withdraw ${fromToken} from Aave`)
+  const handleWithdraw = (token: string) => {
+    if (confirm(`Withdraw ${token} from Aave?`)) {
+      addPrompt(`Withdraw ${token} from Aave`)
       setWidget(null)
     }
   };
@@ -225,7 +225,7 @@ const LendWidget = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleWithdraw()}
+                  onClick={() => handleWithdraw(item.token)}
                   className={styles.buttonSm}
                 >
                   Remove
