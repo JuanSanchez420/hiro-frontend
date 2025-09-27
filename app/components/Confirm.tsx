@@ -1,23 +1,30 @@
+import { useState } from "react"
 import { useGlobalContext } from "../context/GlobalContext"
-import { usePromptsContext } from "../context/PromptsContext"
 
-const Confirm = () => {
-    const { addPrompt } = usePromptsContext()
-    const { showConfirm, setShowConfirm, styles } = useGlobalContext()
+interface ConfirmProps {
+    show?: boolean;
+    transactionId?: string;
+    message?: string;
+    onConfirm?: (transactionId: string, confirmed: boolean) => void;
+}
+
+const Confirm = ({ show = true, transactionId, message, onConfirm }: ConfirmProps) => {
+    const { styles } = useGlobalContext()
+    const [localShow, setLocalShow] = useState(true)
 
     const handleClick = (confirm: boolean) => {
-        addPrompt(confirm ? "Yes" : "No")
-        setShowConfirm(false)
+        if (transactionId && onConfirm) {
+            onConfirm(transactionId, confirm)
+        }
+        setLocalShow(false)
     }
 
-    return (
-        showConfirm &&
-        <div className="flex justify-center mt-4">
-            <div className="flex flex-col">
-                <div className="flex justify-center">
-                    <button className={`${styles.button} mr-10`} onClick={() => handleClick(true)}>Yes</button>
-                    <button className={styles.button} onClick={() => handleClick(false)}>No</button>
-                </div>
+    return (show && localShow &&
+        <div className="text-center mt-4">
+            {message && <p className="text-sm mb-4">{message}</p>}
+            <div className="flex justify-center">
+                <button className={`${styles.button} mr-10`} onClick={() => handleClick(true)}>Yes</button>
+                <button className={styles.button} onClick={() => handleClick(false)}>No</button>
             </div>
         </div>)
 }

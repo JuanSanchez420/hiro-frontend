@@ -34,6 +34,8 @@ export interface Message {
     message: string
     type: "user" | "assistant" | "function"
     functionCall?: Record<string, unknown>
+    waitingForConfirmation?: boolean
+    transactionId?: string
     completed: boolean
 }
 

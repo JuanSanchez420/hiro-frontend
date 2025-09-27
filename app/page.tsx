@@ -3,7 +3,6 @@
 import { useCallback } from "react";
 import { PromptAndResponse } from "./components/MessageBox";
 import Image from 'next/image'
-import Confirm from "./components/Confirm";
 import { usePromptsContext } from "./context/PromptsContext";
 import React from "react";
 
@@ -11,7 +10,7 @@ interface ContentProps { prompts: string[]; }
 
 const Content = React.memo(function Content({ prompts }: ContentProps) {
 
-  return (<section className="message-list"> {prompts.map((p: string, index: number) => (<PromptAndResponse key={index} prompt={p} />))} <Confirm /> </section>);
+  return (<section className="message-list"> {prompts.map((p: string, index: number) => (<PromptAndResponse key={index} prompt={p} />))} </section>);
 });
 
 export default function Home() {

@@ -9,6 +9,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint with Next.js TypeScript configuration
 
+## Environment Setup
+
+**Required Dependencies:**
+1. **Local Blockchain**: Ethereum node running on chain ID 31338 at `http://localhost:8545`
+2. **Backend Server**: Express server running on `http://localhost:4000`
+3. **Environment Variables**: Copy `.env` and adjust if needed:
+   - `NEXT_PUBLIC_EXPRESS_URL=http://localhost`
+   - `NEXT_PUBLIC_EXPRESS_PORT=4000`
+   - `NEXT_PUBLIC_RPC_URL=http://localhost:8545`
+   - `NEXT_PUBLIC_HIRO_FACTORY=<deployed_contract_address>`
+
+**Startup Sequence:**
+1. Start local blockchain (e.g., Foundry Anvil on chain 31338)
+2. Deploy contracts and update `NEXT_PUBLIC_HIRO_FACTORY` in `.env`
+3. Start backend Express server on port 4000
+4. Run `npm run dev` to start frontend
+
 ## Architecture Overview
 
 This is a crypto DeFi frontend application called "Hiro" built with Next.js 15 App Router and React 19. It's designed as an AI agent interface for simplifying crypto interactions.
@@ -93,6 +110,7 @@ interface Portfolio {
 - ESLint configured with Next.js core-web-vitals and TypeScript rules
 - All components follow React 19 patterns with proper memo usage
 - Web3 interactions use Wagmi v2 with Viem for type safety
+- TypeScript path alias: `@/*` maps to project root (e.g., `@/app/components/Widget`)
 
 ### API Routes
 

@@ -7,6 +7,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { prettyValue } from "../utils/prettyValue";
 import useChatEventStream from "../hooks/useChatEventStream";
 import { Message } from "../types";
+import Confirm from "./Confirm";
 
 const friendlyNames = {
     "getETHBalance": "Get ETH Balance",
@@ -100,13 +101,22 @@ const UserMessage = ({ message }: { message: Message }) => {
 }
 
 
-const FunctionResults = ({ calls, results }: { calls: Message[], results: Message[] }) => {
+const FunctionResults = ({ calls, results, sendConfirmation }: {
+    calls: Message[],
+    results: Message[],
+    sendConfirmation?: (transactionId: string, confirmed: boolean) => void
+}) => {
 
     const [gradient, setGradient] = useState(true)
 
     setTimeout(() => {
         setGradient(false)
     }, 10000)
+
+    const hasConfirmation = useMemo(() => calls.some(call => call.waitingForConfirmation), [calls])
+    const confirmationMessage = useMemo(() => calls.find(call => call.waitingForConfirmation)?.message, [calls])
+    const confirmationCall = useMemo(() => calls.find(call => call.waitingForConfirmation), [calls])
+    const transactionId = useMemo(() => confirmationCall?.transactionId, [confirmationCall])
 
     const inputs = useMemo(() => {
         return calls.flatMap((call, index) => {
@@ -170,7 +180,7 @@ const FunctionResults = ({ calls, results }: { calls: Message[], results: Messag
         return n.join(", ")
     }, [calls])
 
-    if (inputs.length === 0 && outputs.length === 0) return null
+    if (inputs.length === 0 && outputs.length === 0 && !hasConfirmation) return null
 
     return (
         <Disclosure as="div" className="w-full py-5">
@@ -195,6 +205,14 @@ const FunctionResults = ({ calls, results }: { calls: Message[], results: Messag
                     <div>{outputs}</div>
                 </DisclosurePanel>
             </div>
+            {hasConfirmation && (
+                <Confirm
+                    show={hasConfirmation}
+                    transactionId={transactionId}
+                    message={confirmationMessage}
+                    onConfirm={sendConfirmation}
+                />
+            )}
         </Disclosure>
     );
 }
@@ -244,10 +262,10 @@ const StreamedContent = ({ streamedContent }: { streamedContent: string }) => {
 export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
     const bottomRef = useRef<HTMLDivElement>(null)
 
-    const { streamedContent, functionCalls, functionResults, isThinking } = useChatEventStream(prompt)
+    const { streamedContent, functionCalls, functionResults, isThinking, sendConfirmation } = useChatEventStream(prompt)
 
     useEffect(() => {
-            bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, [streamedContent, functionCalls, functionResults]);
 
     const message = { type: "user", message: prompt, completed: true } as Message
@@ -255,7 +273,7 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
     return (
         <div>
             <UserMessage message={message} />
-            <FunctionResults calls={functionCalls} results={functionResults} />
+            <FunctionResults calls={functionCalls} results={functionResults} sendConfirmation={sendConfirmation} />
             {(isThinking || streamedContent) && <div className="flex w-full py-5 my-2">
                 <Avatar isAnimated={isThinking} />
                 <div>

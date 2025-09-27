@@ -9,8 +9,6 @@ interface GlobalContextType {
     setDrawerLeftOpen: React.Dispatch<React.SetStateAction<boolean>>
     widget: WidgetOption
     setWidget: React.Dispatch<React.SetStateAction<WidgetOption>>
-    showConfirm: boolean
-    setShowConfirm: React.Dispatch<React.SetStateAction<boolean>>
     isSignedIn: boolean
     setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>
     theme: "light" | "dark"
@@ -22,7 +20,6 @@ export const GlobalContext = createContext<GlobalContextType | undefined>(undefi
 
 export const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
     const [drawerLeftOpen, setDrawerLeftOpen] = useState(false);
-    const [showConfirm, setShowConfirm] = useState(false);
     const [widget, setWidget] = useState<WidgetOption>(null);
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -33,7 +30,6 @@ export const GlobalContextProvider = ({ children }: { children: React.ReactNode 
             theme, setTheme, styles,
             drawerLeftOpen, setDrawerLeftOpen,
             widget, setWidget,
-            showConfirm, setShowConfirm,
             isSignedIn, setIsSignedIn,
         }}>
             {children}

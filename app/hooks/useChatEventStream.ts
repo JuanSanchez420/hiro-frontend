@@ -1,19 +1,35 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import doConfettiBurst from "../utils/doConfettiBurst";
-import { useGlobalContext } from "../context/GlobalContext";
 import { useAccount } from "wagmi";
 import { usePortfolioContext } from "../context/PortfolioContext";
 import { Message } from "../types";
 
-const   useChatEventStream = (prompt: string) => {
+const useChatEventStream = (prompt: string) => {
     const account = useAccount()
     const isStreaming = useRef(false)
     const [streamedContent, setStreamedContent] = useState("");
     const [isThinking, setIsThinking] = useState(false);
-    const { setShowConfirm } = useGlobalContext();
     const { fetchPortfolio } = usePortfolioContext();
     const [functionCalls, setFunctionCalls] = useState<Message[]>([]);
     const [functionResults, setFunctionResults] = useState<Message[]>([]);
+
+    const sendConfirmation = useCallback(async (transactionId: string, confirmed: boolean) => {
+        try {
+            const response = await fetch('/api/confirm', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ transactionId, confirmed }),
+            });
+
+            if (!response.ok) {
+                console.error('Failed to send confirmation:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error sending confirmation:', error);
+        }
+    }, []);
 
     const doPrompt = useCallback((p: string, isDemo: boolean) => {
         setIsThinking(true);
@@ -29,22 +45,31 @@ const   useChatEventStream = (prompt: string) => {
                 doConfettiBurst();
                 return;
             }
-            if (obj.name === "confirm") {
-                setShowConfirm(true);
-                return;
-            }
             setFunctionCalls((prev) => [...prev, { message: "", type: "assistant", completed: true, functionCall: obj }])
         });
 
         eventSource.addEventListener("functionCallResult", (event: MessageEvent) => {
             const obj = JSON.parse(event.data);
             console.log("functionCallResult:", obj);
-            if (obj.section || obj.confettiBurst || obj.barrelRoll || obj.madeItRain) return;
+            if (obj.section || obj.confettiBurst) return;
             if (obj.transactionHash) {
                 fetchPortfolio()
             }
 
             setFunctionResults((prev) => [...prev, { message: "", type: "function", completed: true, functionCall: obj }])
+        });
+
+        eventSource.addEventListener("confirmation", (event: MessageEvent) => {
+            const obj = JSON.parse(event.data);
+            console.log("confirmation:", obj);
+            setFunctionCalls((prev) => [...prev, {
+                message: obj.message,
+                type: "assistant",
+                completed: false,
+                functionCall: obj.functionCall,
+                waitingForConfirmation: true,
+                transactionId: obj.transactionId
+            }]);
         });
 
         eventSource.addEventListener("open", () => {
@@ -77,7 +102,6 @@ const   useChatEventStream = (prompt: string) => {
         };
     }, [
         fetchPortfolio,
-        setShowConfirm,
         setStreamedContent,
     ]);
 
@@ -87,7 +111,7 @@ const   useChatEventStream = (prompt: string) => {
         doPrompt(prompt, !account?.isConnected)
     }, [doPrompt, prompt, account])
 
-    return { streamedContent, functionCalls, functionResults, isThinking };
+    return { streamedContent, functionCalls, functionResults, isThinking, sendConfirmation };
 };
 
 export default useChatEventStream;
