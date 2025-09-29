@@ -36,7 +36,7 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
                 const data = await response.json();
                 if (data && Array.isArray(data.messages)) {
                     // Transform API format {role, content} to our Message interface {type, message}
-                    const transformedMessages: Message[] = data.messages.map((msg: any) => ({
+                    const transformedMessages: Message[] = data.messages.map((msg: { role: string; content: string; functionCall?: object }) => ({
                         message: msg.content,
                         type: msg.role === 'user' ? 'user' : msg.role === 'assistant' ? 'assistant' : 'function',
                         completed: true,

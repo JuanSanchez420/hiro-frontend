@@ -101,9 +101,9 @@ const UserMessage = ({ message }: { message: Message }) => {
 }
 
 
-const FunctionResults = ({ calls, results, sendConfirmation }: {
-    calls: Message[],
-    results: Message[],
+const FunctionResults = ({ call, result, sendConfirmation }: {
+    call: Message,
+    result?: Message,
     sendConfirmation?: (transactionId: string, confirmed: boolean) => void
 }) => {
 
@@ -113,58 +113,73 @@ const FunctionResults = ({ calls, results, sendConfirmation }: {
         setGradient(false)
     }, 10000)
 
-    const hasConfirmation = useMemo(() => calls.some(call => call.waitingForConfirmation), [calls])
-    const confirmationMessage = useMemo(() => calls.find(call => call.waitingForConfirmation)?.message, [calls])
-    const confirmationCall = useMemo(() => calls.find(call => call.waitingForConfirmation), [calls])
-    const transactionId = useMemo(() => confirmationCall?.transactionId, [confirmationCall])
+    const hasConfirmation = call.waitingForConfirmation
+    const confirmationMessage = call.message
+    const transactionId = call.transactionId
 
     const inputs = useMemo(() => {
-        return calls.flatMap((call, index) => {
-            return Object.entries(call.functionCall?.arguments || {}).map(([key, value]) => (
-                <div key={`call-${key}-${index}`} className="flex items-center justify-between gap-1">
+        // Validate function call and arguments
+        if (!call.functionCall || !call.functionCall.arguments || typeof call.functionCall.arguments !== 'object') {
+            return [];
+        }
+
+        return Object.entries(call.functionCall.arguments).map(([key, value]) => {
+            // Safely convert value to string and handle potential streaming content corruption
+            let displayValue = value;
+            if (typeof value === 'object') {
+                try {
+                    displayValue = JSON.stringify(value);
+                } catch {
+                    displayValue = '[Invalid Object]';
+                }
+            } else if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
+                displayValue = String(value);
+            }
+
+            return (
+                <div key={`call-${key}`} className="flex items-center justify-between gap-1">
                     <div className="w-1/3 text-right text-sm">{key}</div>
-                    <div className="w-2/3 text-right text-sm">{value}</div>
+                    <div className="w-2/3 text-right text-sm">{displayValue}</div>
                 </div>
             )
-            )
         })
-    }, [calls])
+    }, [call])
 
     const outputs = useMemo(() => {
-        return results.flatMap((result, index) => {
-            return Object.entries(result.functionCall || {}).map(([key, value]) => {
-                const formatted = prettyValue(value)
-                const isMultiLine = formatted.includes('\n')
-                return (
-                    <div
-                        key={`result-${key}-${index}`}
-                        className="flex items-start justify-between gap-1"
-                    >
-                        <div className="w-1/3 text-right text-sm pt-1">{key}</div>
-                        <div className="w-2/3 flex flex-col items-end gap-1">
-                            {isMultiLine ? (
-                                <pre className="w-full overflow-auto rounded p-2 text-xs whitespace-pre-wrap break-words">{formatted}</pre>
-                            ) : (
-                                <span className="overflow-hidden text-ellipsis text-sm max-w-full break-words">{formatted}</span>
-                            )}
-                            {key === "transactionHash" && typeof value === 'string' && (
-                                <button
-                                    onClick={() => navigator.clipboard.writeText(value || "")}
-                                    className="self-end rounded bg-gray-200 px-2 py-1 text-xs hover:bg-gray-400"
-                                >
-                                    Copy
-                                </button>
-                            )}
-                        </div>
+        if (!result?.functionCall) return [];
+        
+        return Object.entries(result.functionCall).map(([key, value]) => {
+            const formatted = prettyValue(value)
+            const isMultiLine = formatted.includes('\n')
+            return (
+                <div
+                    key={`result-${key}`}
+                    className="flex items-start justify-between gap-1"
+                >
+                    <div className="w-1/3 text-right text-sm pt-1">{key}</div>
+                    <div className="w-2/3 flex flex-col items-end gap-1">
+                        {isMultiLine ? (
+                            <pre className="w-full overflow-auto rounded p-2 text-xs whitespace-pre-wrap break-words">{formatted}</pre>
+                        ) : (
+                            <span className="overflow-hidden text-ellipsis text-sm max-w-full break-words">{formatted}</span>
+                        )}
+                        {key === "transactionHash" && typeof value === 'string' && (
+                            <button
+                                onClick={() => navigator.clipboard.writeText(value || "")}
+                                className="self-end rounded bg-gray-200 px-2 py-1 text-xs hover:bg-gray-400"
+                            >
+                                Copy
+                            </button>
+                        )}
                     </div>
-                )
-            })
+                </div>
+            )
         })
-    }, [results])
+    }, [result])
 
     const txHash = useMemo(() => {
-        return results[0]?.functionCall?.transactionHash || ""
-    }, [results])
+        return result?.functionCall?.transactionHash || ""
+    }, [result])
 
     const isDemo = txHash === '0xdummytxhash'
 
@@ -175,10 +190,9 @@ const FunctionResults = ({ calls, results, sendConfirmation }: {
         }
     };
 
-    const names = useMemo(() => {
-        const n = calls.map(call => friendlyNames[call.functionCall?.name as keyof typeof friendlyNames || ""])
-        return n.join(", ")
-    }, [calls])
+    const name = useMemo(() => {
+        return friendlyNames[call.functionCall?.name as keyof typeof friendlyNames || ""]
+    }, [call])
 
     if (inputs.length === 0 && outputs.length === 0 && !hasConfirmation) return null
 
@@ -187,7 +201,7 @@ const FunctionResults = ({ calls, results, sendConfirmation }: {
             <DisclosureButton className="group w-full text-left">
                 <div className="flex flex-1 items-center mb-3 w-full pl-3">
                     <WandSpinner />
-                    <div className={`flex flex-1 items-center italic ${gradient ? `gradient-text` : ``}`}>{names}</div>
+                    <div className={`flex flex-1 items-center italic ${gradient ? `gradient-text` : ``}`}>{name}</div>
                     <div className="flex flex-1 items-center italic justify-end">
                         <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex text-sm items-center">Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
                     </div>
@@ -270,10 +284,60 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
 
     const message = { type: "user", message: prompt, completed: true } as Message
 
+    // Group function calls and results by transactionId
+    const groupedTransactions = useMemo(() => {
+        const groups: { [key: string]: { call: Message, result?: Message } } = {}
+        
+        // Add function calls
+        functionCalls.forEach((call, index) => {
+            const key = call.transactionId || `call-${index}`
+            groups[key] = { call }
+        })
+        
+        // Match results to calls by transactionId or order
+        functionResults.forEach((result, index) => {
+            // Try to find a matching call by transactionId first
+            let matchingKey: string | undefined
+            
+            if (result.functionCall?.transactionId && typeof result.functionCall.transactionId === 'string') {
+                matchingKey = result.functionCall.transactionId
+            } else {
+                // Fall back to matching by order for results without transactionId
+                const keys = Object.keys(groups)
+                matchingKey = keys[index]
+            }
+            
+            if (matchingKey && groups[matchingKey]) {
+                groups[matchingKey].result = result
+            } else {
+                // If no matching call found, create a new group for the result
+                const fallbackKey = `result-${index}`
+                groups[fallbackKey] = {
+                    call: { 
+                        message: "", 
+                        type: "assistant", 
+                        completed: true, 
+                        functionCall: result.functionCall 
+                    } as Message,
+                    result
+                }
+            }
+        })
+        
+        return Object.entries(groups).map(([key, transaction]) => ({ ...transaction, key }))
+    }, [functionCalls, functionResults])
+
     return (
         <div>
             <UserMessage message={message} />
-            <FunctionResults calls={functionCalls} results={functionResults} sendConfirmation={sendConfirmation} />
+            {groupedTransactions.map((transaction) => (
+                <FunctionResults 
+                    key={transaction.key}
+                    call={transaction.call} 
+                    result={transaction.result} 
+                    sendConfirmation={sendConfirmation} 
+                />
+            ))}
             {(isThinking || streamedContent) && <div className="flex w-full py-5 my-2">
                 <Avatar isAnimated={isThinking} />
                 <div>

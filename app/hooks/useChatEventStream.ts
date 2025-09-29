@@ -25,51 +25,150 @@ const useChatEventStream = (prompt: string) => {
 
             if (!response.ok) {
                 console.error('Failed to send confirmation:', response.statusText);
+                return;
+            }
+
+            const responseData = await response.json();
+            console.log('Confirmation response:', responseData);
+
+            // Update the function call message to mark it as completed
+            setFunctionCalls((prev) =>
+                prev.map((call) =>
+                    call.transactionId === transactionId
+                        ? { ...call, completed: true, waitingForConfirmation: false }
+                        : call
+                )
+            );
+
+            // If confirmation was successful and we have a result, add it to function results
+            if (confirmed && responseData.success && responseData.result) {
+                try {
+                    const parsedResult = JSON.parse(responseData.result);
+                    const functionResult: Message = {
+                        message: "",
+                        type: "function",
+                        completed: true,
+                        functionCall: {
+                            ...parsedResult,
+                            transactionId: responseData.transactionId || transactionId
+                        }
+                    }
+                    
+                    setFunctionResults((prev) => [...prev, functionResult]);
+                    
+                    // Fetch updated portfolio if we have a transaction hash
+                    if (parsedResult.transactionHash) {
+                        fetchPortfolio();
+                    }
+                } catch (parseError) {
+                    console.error('Failed to parse confirmation result:', parseError, responseData.result);
+                }
+            } else if (confirmed) {
+                // Fallback: fetch portfolio even without parsed result
+                fetchPortfolio();
             }
         } catch (error) {
             console.error('Error sending confirmation:', error);
         }
-    }, []);
+    }, [fetchPortfolio]);
 
     const doPrompt = useCallback((p: string, isDemo: boolean) => {
         setIsThinking(true);
+        // Clear previous state to prevent stale data from being displayed
+        setStreamedContent("");
+        setFunctionCalls([]);
+        setFunctionResults([]);
+
         const eventSource = new EventSource(
             `/api/stream?content=${p}${isDemo ? `&demo=true` : ""}`
         );
 
         eventSource.addEventListener("functionCall", (event: MessageEvent) => {
-            const obj = JSON.parse(event.data);
-            obj.arguments = obj.arguments ? JSON.parse(obj.arguments) : {};
-            console.log("functionCall:", obj);
-            if (obj.name === "confettiBurst") {
-                doConfettiBurst();
-                return;
+            try {
+                const obj = JSON.parse(event.data);
+
+                // Validate that this is actually a function call
+                if (!obj || typeof obj !== 'object' || !obj.name) {
+                    console.warn("Invalid functionCall event data:", obj);
+                    return;
+                }
+
+                // Safely parse arguments
+                try {
+                    obj.arguments = obj.arguments ? JSON.parse(obj.arguments) : {};
+                } catch (argError) {
+                    console.error("Failed to parse function call arguments:", argError, obj.arguments);
+                    obj.arguments = {};
+                }
+
+                console.log("functionCall:", obj);
+                if (obj.name === "confettiBurst") {
+                    doConfettiBurst();
+                    return;
+                }
+                setFunctionCalls((prev) => [...prev, { message: "", type: "assistant", completed: true, functionCall: obj }])
+            } catch (error) {
+                console.error("Failed to parse functionCall event:", error, event.data);
             }
-            setFunctionCalls((prev) => [...prev, { message: "", type: "assistant", completed: true, functionCall: obj }])
         });
 
         eventSource.addEventListener("functionCallResult", (event: MessageEvent) => {
-            const obj = JSON.parse(event.data);
-            console.log("functionCallResult:", obj);
-            if (obj.section || obj.confettiBurst) return;
-            if (obj.transactionHash) {
-                fetchPortfolio()
-            }
+            try {
+                const obj = JSON.parse(event.data);
+                console.log("functionCallResult:", obj);
 
-            setFunctionResults((prev) => [...prev, { message: "", type: "function", completed: true, functionCall: obj }])
+                // Skip certain result types
+                if (obj.section || obj.confettiBurst) return;
+
+                if (obj.transactionHash) {
+                    fetchPortfolio()
+                }
+
+                // Create the function result with proper structure
+                const functionResult: Message = {
+                    message: "",
+                    type: "function",
+                    completed: true,
+                    functionCall: {
+                        ...obj,
+                        // Preserve transactionId if available
+                        transactionId: obj.transactionId
+                    }
+                }
+
+                setFunctionResults((prev) => [...prev, functionResult])
+            } catch (error) {
+                console.error("Failed to parse functionCallResult event:", error, event.data);
+            }
         });
 
         eventSource.addEventListener("confirmation", (event: MessageEvent) => {
-            const obj = JSON.parse(event.data);
-            console.log("confirmation:", obj);
-            setFunctionCalls((prev) => [...prev, {
-                message: obj.message,
-                type: "assistant",
-                completed: false,
-                functionCall: obj.functionCall,
-                waitingForConfirmation: true,
-                transactionId: obj.transactionId
-            }]);
+            try {
+                const obj = JSON.parse(event.data);
+                console.log("confirmation:", obj);
+                
+                // Parse function call arguments if they're still a string
+                const functionCall = { ...obj.functionCall };
+                if (functionCall && typeof functionCall.arguments === 'string') {
+                    try {
+                        functionCall.arguments = JSON.parse(functionCall.arguments);
+                    } catch (parseError) {
+                        console.error("Failed to parse function call arguments:", parseError);
+                        functionCall.arguments = {};
+                    }
+                }
+                
+                setFunctionCalls((prev) => [...prev, {
+                    message: obj.message,
+                    type: "assistant",
+                    completed: false,
+                    functionCall: functionCall,
+                    waitingForConfirmation: true,
+                    transactionId: obj.transactionId
+                }]);
+            } catch (error) {
+                console.error("Failed to parse confirmation event:", error, event.data);
+            }
         });
 
         eventSource.addEventListener("open", () => {
@@ -77,12 +176,23 @@ const useChatEventStream = (prompt: string) => {
         });
 
         eventSource.onmessage = (event) => {
-            const chunk: string = JSON.parse(event.data);
-            setIsThinking(false);
-            setStreamedContent((prev) => {
-                const newContent = prev + chunk;
-                return newContent;
-            });
+            try {
+                const chunk: string = JSON.parse(event.data);
+
+                // Validate that this is actually a string chunk for streaming content
+                if (typeof chunk !== 'string') {
+                    console.warn("Invalid streaming content chunk (not a string):", chunk);
+                    return;
+                }
+
+                setIsThinking(false);
+                setStreamedContent((prev) => {
+                    const newContent = prev + chunk;
+                    return newContent;
+                });
+            } catch (error) {
+                console.error("Failed to parse streaming content:", error, event.data);
+            }
         };
 
         eventSource.addEventListener("end", () => {
