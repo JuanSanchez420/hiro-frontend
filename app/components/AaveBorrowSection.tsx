@@ -23,7 +23,7 @@ const AaveBorrowSection: React.FC<AaveBorrowSectionProps> = ({
     return aave.map((item) => ({
       ...item,
       token: tokens[item.token as keyof typeof tokens],
-    })).filter((item) => item.usageAsCollateral)
+    })).filter((item) => parseFloat(item.variableDebt) > 0)
   }, [aave])
 
   return (

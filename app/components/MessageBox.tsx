@@ -21,7 +21,6 @@ const friendlyNames = {
     'swapDemo': 'Swap Demo',
     'addLiquidityDemo': 'Add Liquidity Demo',
     'setAutonomousInstructionsDemo': 'Set Autonomous Instructions Demo',
-    "makeItRain": "Make it Rain",
     "depositAave": "Deposit Aave",
     "withdrawAave": "Withdraw Aave",
     "getPortfolioTool": "Get Portfolio",
@@ -69,6 +68,43 @@ const UserMessage = ({ message }: { message: Message }) => {
     return (
         <div className="flex w-full justify-end my-3">
             <div className={`rounded-3xl bg-gray-100 px-4 py-2 text-gray-900`}>
+                {segments.map((segment, index) => {
+                    switch (segment.type) {
+                        case "header":
+                            return (
+                                <h3 key={index} className="text-lg font-bold my-1 block">
+                                    {segment.content}
+                                </h3>
+                            );
+                        case "bold":
+                            return (
+                                <span key={index} className="inline-block font-bold">
+                                    {segment.content}
+                                </span>
+                            );
+                        case "quote":
+                            return (
+                                <span key={index} className="inline-block bg-gray-200 p-1 rounded italic">
+                                    {segment.content}
+                                </span>
+                            );
+                        case "newline":
+                            return <br key={index} />;
+                        default:
+                            return <span key={index}>{segment.content}</span>;
+                    }
+                })}
+            </div>
+        </div>
+    )
+}
+
+const AssistantMessage = ({ message }: { message: Message }) => {
+    const segments = parseMessage(message.message);
+    return (
+        <div className="flex w-full py-5 my-2">
+            <Avatar />
+            <div>
                 {segments.map((segment, index) => {
                     switch (segment.type) {
                         case "header":
@@ -276,11 +312,11 @@ const StreamedContent = ({ streamedContent }: { streamedContent: string }) => {
 export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
     const bottomRef = useRef<HTMLDivElement>(null)
 
-    const { streamedContent, functionCalls, functionResults, isThinking, sendConfirmation } = useChatEventStream(prompt)
+    const { streamedContent, functionCalls, functionResults, assistantMessages, isThinking, confirmationLoading, sendConfirmation } = useChatEventStream(prompt)
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, [streamedContent, functionCalls, functionResults]);
+    }, [streamedContent, functionCalls, functionResults, assistantMessages]);
 
     const message = { type: "user", message: prompt, completed: true } as Message
 
@@ -338,10 +374,14 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
                     sendConfirmation={sendConfirmation} 
                 />
             ))}
-            {(isThinking || streamedContent) && <div className="flex w-full py-5 my-2">
-                <Avatar isAnimated={isThinking} />
+            {assistantMessages.map((assistantMessage, index) => (
+                <AssistantMessage key={`assistant-${index}`} message={assistantMessage} />
+            ))}
+            {(isThinking || streamedContent || confirmationLoading) && <div className="flex w-full py-5 my-2">
+                <Avatar isAnimated={isThinking || confirmationLoading} />
                 <div>
                     {streamedContent ? <StreamedContent streamedContent={streamedContent} /> : null}
+                    {confirmationLoading && !streamedContent ? <span className="font-xl gradient-text">...</span> : null}
                 </div>
             </div>}
             <div ref={bottomRef} />

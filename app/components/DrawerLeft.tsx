@@ -91,7 +91,7 @@ export default function Drawer() {
                   {!token && portfolio && portfolio.aave && portfolio.aave.length > 0 && (
                     <AaveLendingSection aave={portfolio.aave} />
                   )}
-                  {!token && portfolio && portfolio.aave && portfolio.aave.length > 0 && (
+                  {!token && portfolio && portfolio.aave && portfolio.aave.some(item => parseFloat(item.variableDebt) > 0) && (
                     <AaveBorrowSection aave={portfolio.aave} />
                   )}
                   {!token && !portfolio && <MarketDataSection market={market} setToken={setToken} />}

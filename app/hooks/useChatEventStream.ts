@@ -12,8 +12,11 @@ const useChatEventStream = (prompt: string) => {
     const { fetchPortfolio } = usePortfolioContext();
     const [functionCalls, setFunctionCalls] = useState<Message[]>([]);
     const [functionResults, setFunctionResults] = useState<Message[]>([]);
+    const [assistantMessages, setAssistantMessages] = useState<Message[]>([]);
+    const [confirmationLoading, setConfirmationLoading] = useState(false);
 
     const sendConfirmation = useCallback(async (transactionId: string, confirmed: boolean) => {
+        setConfirmationLoading(true);
         try {
             const response = await fetch('/api/confirm', {
                 method: 'POST',
@@ -30,6 +33,16 @@ const useChatEventStream = (prompt: string) => {
 
             const responseData = await response.json();
             console.log('Confirmation response:', responseData);
+
+            // Add the response message as an assistant message if it exists
+            if (responseData.message) {
+                const assistantMessage: Message = {
+                    message: responseData.message,
+                    type: "assistant",
+                    completed: true
+                };
+                setAssistantMessages((prev) => [...prev, assistantMessage]);
+            }
 
             // Update the function call message to mark it as completed
             setFunctionCalls((prev) =>
@@ -66,9 +79,25 @@ const useChatEventStream = (prompt: string) => {
             } else if (confirmed) {
                 // Fallback: fetch portfolio even without parsed result
                 fetchPortfolio();
+            } else if (responseData.cancelled) {
+                // User cancelled the transaction - add cancellation result
+                const cancelledResult: Message = {
+                    message: "",
+                    type: "function",
+                    completed: true,
+                    functionCall: {
+                        status: "cancelled",
+                        message: "Transaction cancelled by user",
+                        transactionId: responseData.transactionId || transactionId
+                    }
+                }
+                
+                setFunctionResults((prev) => [...prev, cancelledResult]);
             }
         } catch (error) {
             console.error('Error sending confirmation:', error);
+        } finally {
+            setConfirmationLoading(false);
         }
     }, [fetchPortfolio]);
 
@@ -78,6 +107,8 @@ const useChatEventStream = (prompt: string) => {
         setStreamedContent("");
         setFunctionCalls([]);
         setFunctionResults([]);
+        setAssistantMessages([]);
+        setConfirmationLoading(false);
 
         const eventSource = new EventSource(
             `/api/stream?content=${p}${isDemo ? `&demo=true` : ""}`
@@ -221,7 +252,7 @@ const useChatEventStream = (prompt: string) => {
         doPrompt(prompt, !account?.isConnected)
     }, [doPrompt, prompt, account])
 
-    return { streamedContent, functionCalls, functionResults, isThinking, sendConfirmation };
+    return { streamedContent, functionCalls, functionResults, assistantMessages, isThinking, confirmationLoading, sendConfirmation };
 };
 
 export default useChatEventStream;
