@@ -173,9 +173,11 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
             }
 
             return (
-                <div key={`call-${key}`} className="flex items-center justify-between gap-1">
-                    <div className="w-1/3 text-right text-sm">{key}</div>
-                    <div className="w-2/3 text-right text-sm">{displayValue}</div>
+                <div key={`call-${key}`} className="mb-2 p-2 rounded-lg">
+                    <div className="text-xs font-medium text-gray-600 mb-1">{key}</div>
+                    <div className="text-sm text-gray-900 break-all bg-white p-2 rounded border">
+                        {displayValue}
+                    </div>
                 </div>
             )
         })
@@ -188,24 +190,23 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
             const formatted = prettyValue(value)
             const isMultiLine = formatted.includes('\n')
             return (
-                <div
-                    key={`result-${key}`}
-                    className="flex items-start justify-between gap-1"
-                >
-                    <div className="w-1/3 text-right text-sm pt-1">{key}</div>
-                    <div className="w-2/3 flex flex-col items-end gap-1">
-                        {isMultiLine ? (
-                            <pre className="w-full overflow-auto rounded p-2 text-xs whitespace-pre-wrap break-words">{formatted}</pre>
-                        ) : (
-                            <span className="overflow-hidden text-ellipsis text-sm max-w-full break-words">{formatted}</span>
-                        )}
+                <div key={`result-${key}`} className="mb-2 p-2 rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                        <div className="text-xs font-medium text-gray-600">{key}</div>
                         {key === "transactionHash" && typeof value === 'string' && (
                             <button
                                 onClick={() => navigator.clipboard.writeText(value || "")}
-                                className="self-end rounded bg-gray-200 px-2 py-1 text-xs hover:bg-gray-400"
+                                className="rounded px-2 py-1 text-xs hover:bg-gray-300 transition-colors"
                             >
                                 Copy
                             </button>
+                        )}
+                    </div>
+                    <div className="text-sm text-gray-900 bg-white p-2 rounded border">
+                        {isMultiLine ? (
+                            <pre className="whitespace-pre-wrap break-all text-xs">{formatted}</pre>
+                        ) : (
+                            <span className="break-all">{formatted}</span>
                         )}
                     </div>
                 </div>
