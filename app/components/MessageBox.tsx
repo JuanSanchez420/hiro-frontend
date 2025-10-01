@@ -144,6 +144,7 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
 }) => {
 
     const [gradient, setGradient] = useState(true)
+    const [isOpen, setIsOpen] = useState(true)
 
     setTimeout(() => {
         setGradient(false)
@@ -152,6 +153,13 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
     const hasConfirmation = call.waitingForConfirmation
     const confirmationMessage = call.message
     const transactionId = call.transactionId
+
+    const handleConfirm = (transactionId: string, confirmed: boolean) => {
+        if (confirmed) {
+            setIsOpen(false)
+        }
+        sendConfirmation?.(transactionId, confirmed)
+    }
 
     const inputs = useMemo(() => {
         // Validate function call and arguments
@@ -173,11 +181,9 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
             }
 
             return (
-                <div key={`call-${key}`} className="mb-2 p-2 rounded-lg">
-                    <div className="text-xs font-medium text-gray-600 mb-1">{key}</div>
-                    <div className="text-sm text-gray-900 break-all bg-white p-2 rounded border">
-                        {displayValue}
-                    </div>
+                <div key={`call-${key}`} className="flex items-center justify-between py-1.5 text-sm">
+                    <span className="text-gray-500 font-medium">{key}</span>
+                    <span className="text-gray-900 ml-4">{displayValue}</span>
                 </div>
             )
         })
@@ -185,28 +191,26 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
 
     const outputs = useMemo(() => {
         if (!result?.functionCall) return [];
-        
+
         return Object.entries(result.functionCall).map(([key, value]) => {
             const formatted = prettyValue(value)
             const isMultiLine = formatted.includes('\n')
             return (
-                <div key={`result-${key}`} className="mb-2 p-2 rounded-lg">
-                    <div className="flex items-center justify-between mb-1">
-                        <div className="text-xs font-medium text-gray-600">{key}</div>
+                <div key={`result-${key}`} className="flex items-center justify-between py-1.5 text-sm">
+                    <span className="text-gray-500 font-medium">{key}</span>
+                    <div className="flex items-center ml-4">
+                        {isMultiLine ? (
+                            <pre className="text-gray-900 text-xs whitespace-pre-wrap">{formatted}</pre>
+                        ) : (
+                            <span className="text-gray-900">{formatted}</span>
+                        )}
                         {key === "transactionHash" && typeof value === 'string' && (
                             <button
                                 onClick={() => navigator.clipboard.writeText(value || "")}
-                                className="rounded px-2 py-1 text-xs hover:bg-gray-300 transition-colors"
+                                className="ml-2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
                             >
                                 Copy
                             </button>
-                        )}
-                    </div>
-                    <div className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {isMultiLine ? (
-                            <pre className="whitespace-pre-wrap break-all text-xs">{formatted}</pre>
-                        ) : (
-                            <span className="break-all">{formatted}</span>
                         )}
                     </div>
                 </div>
@@ -234,35 +238,50 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
     if (inputs.length === 0 && outputs.length === 0 && !hasConfirmation) return null
 
     return (
-        <Disclosure as="div" className="w-full py-5">
-            <DisclosureButton className="group w-full text-left">
-                <div className="flex flex-1 items-center mb-3 w-full pl-3">
-                    <WandSpinner />
-                    <div className={`flex flex-1 items-center italic ${gradient ? `gradient-text` : ``}`}>{name}</div>
-                    <div className="flex flex-1 items-center italic justify-end">
-                        <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex text-sm items-center">Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
-                    </div>
-                    <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
-                </div>
-            </DisclosureButton>
-            <div className="overflow-hidden py-2">
-                <DisclosurePanel
-                    transition
-                    className="origin-top transition duration-200 ease-out data-[closed]:-translate-y-6 data-[closed]:opacity-0"
-                >
-                    <div className="flex justify-center border-b mb-1">INPUTS</div>
-                    <div>{inputs}</div>
-                    <div className="flex justify-center border-b mb-1">OUTPUTS</div>
-                    <div>{outputs}</div>
-                </DisclosurePanel>
-            </div>
-            {hasConfirmation && (
-                <Confirm
-                    show={hasConfirmation}
-                    transactionId={transactionId}
-                    message={confirmationMessage}
-                    onConfirm={sendConfirmation}
-                />
+        <Disclosure as="div" className="w-full py-5" defaultOpen={true}>
+            {({ }) => (
+                <>
+                    <DisclosureButton className="group w-full text-left" onClick={() => setIsOpen(!isOpen)}>
+                        <div className="flex flex-1 items-center mb-3 w-full pl-3">
+                            <WandSpinner />
+                            <div className={`flex flex-1 items-center italic ${gradient ? `gradient-text` : ``}`}>{name}</div>
+                            <div className="flex flex-1 items-center italic justify-end">
+                                <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex text-sm items-center">Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
+                            </div>
+                            <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
+                        </div>
+                    </DisclosureButton>
+                    {isOpen && (
+                        <div className="overflow-hidden py-2">
+                            <DisclosurePanel
+                                static
+                                transition
+                                className="origin-top transition duration-200 ease-out data-[closed]:-translate-y-6 data-[closed]:opacity-0"
+                            >
+                                {inputs.length > 0 && (
+                                    <>
+                                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-2 px-3">Inputs</div>
+                                        <div className="px-3 space-y-1">{inputs}</div>
+                                    </>
+                                )}
+                                {outputs.length > 0 && (
+                                    <>
+                                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-2 mt-4 px-3">Outputs</div>
+                                        <div className="px-3 space-y-1">{outputs}</div>
+                                    </>
+                                )}
+                            </DisclosurePanel>
+                        </div>
+                    )}
+                    {hasConfirmation && (
+                        <Confirm
+                            show={hasConfirmation}
+                            transactionId={transactionId}
+                            message={confirmationMessage}
+                            onConfirm={handleConfirm}
+                        />
+                    )}
+                </>
             )}
         </Disclosure>
     );
@@ -382,7 +401,7 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
                 <Avatar isAnimated={isThinking || confirmationLoading} />
                 <div>
                     {streamedContent ? <StreamedContent streamedContent={streamedContent} /> : null}
-                    {confirmationLoading && !streamedContent ? <span className="font-xl gradient-text">...</span> : null}
+                    {confirmationLoading && !streamedContent ? <span className="text-2xl gradient-text">...</span> : null}
                 </div>
             </div>}
             <div ref={bottomRef} />
