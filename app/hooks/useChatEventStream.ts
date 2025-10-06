@@ -53,6 +53,31 @@ const useChatEventStream = (prompt: string) => {
                 )
             );
 
+            // If there's a nested confirmation, add it to function calls
+            if (confirmed && responseData.confirmation) {
+                const nestedConfirmation = responseData.confirmation;
+
+                // Parse function call arguments if they're a string
+                const functionCall = { ...nestedConfirmation.functionCall };
+                if (functionCall && typeof functionCall.arguments === 'string') {
+                    try {
+                        functionCall.arguments = JSON.parse(functionCall.arguments);
+                    } catch (parseError) {
+                        console.error("Failed to parse nested confirmation arguments:", parseError);
+                        functionCall.arguments = {};
+                    }
+                }
+
+                setFunctionCalls((prev) => [...prev, {
+                    message: nestedConfirmation.message,
+                    type: "assistant",
+                    completed: false,
+                    functionCall: functionCall,
+                    waitingForConfirmation: true,
+                    transactionId: nestedConfirmation.transactionId
+                }]);
+            }
+
             // If confirmation was successful and we have a result, add it to function results
             if (confirmed && responseData.success && responseData.result) {
                 try {

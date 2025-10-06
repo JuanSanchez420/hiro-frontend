@@ -358,27 +358,38 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
         return map
     }, [functionResults])
 
+    // Merge function calls and assistant messages in order of arrival
+    const orderedMessages = useMemo(() => {
+        const messages: Array<{ type: 'function' | 'assistant', index: number }> = []
+        functionCalls.forEach((_, i) => messages.push({ type: 'function', index: i }))
+        assistantMessages.forEach((_, i) => messages.push({ type: 'assistant', index: i }))
+        return messages
+    }, [functionCalls, assistantMessages])
+
     return (
         <div>
             <UserMessage message={message} />
-            {functionCalls.map((call, index) => {
-                const result = call.transactionId ? resultsByTransactionId.get(call.transactionId) : undefined
-                return (
-                    <FunctionResults
-                        key={`call-${index}`}
-                        call={call}
-                        result={result}
-                        sendConfirmation={sendConfirmation}
-                    />
-                )
+            {orderedMessages.map((item, idx) => {
+                if (item.type === 'function') {
+                    const call = functionCalls[item.index]
+                    const result = call.transactionId ? resultsByTransactionId.get(call.transactionId) : undefined
+                    return (
+                        <FunctionResults
+                            key={`call-${item.index}`}
+                            call={call}
+                            result={result}
+                            sendConfirmation={sendConfirmation}
+                        />
+                    )
+                } else {
+                    const assistantMessage = assistantMessages[item.index]
+                    return <AssistantMessage key={`assistant-${item.index}`} message={assistantMessage} />
+                }
             })}
-            {assistantMessages.map((assistantMessage, index) => (
-                <AssistantMessage key={`assistant-${index}`} message={assistantMessage} />
-            ))}
-            {(isThinking || streamedContent || confirmationLoading) && <div className="flex w-full py-5 my-2">
+            {(isThinking || (streamedContent && streamedContent.length > 0) || confirmationLoading) && <div className="flex w-full py-5 my-2">
                 <Avatar isAnimated={isThinking || confirmationLoading} />
                 <div>
-                    {streamedContent ? <StreamedContent streamedContent={streamedContent} /> : null}
+                    {streamedContent && streamedContent.length > 0 ? <StreamedContent streamedContent={streamedContent} /> : null}
                     {confirmationLoading && !streamedContent ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div> : null}
                 </div>
             </div>}
