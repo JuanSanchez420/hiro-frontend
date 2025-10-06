@@ -144,20 +144,20 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
 }) => {
 
     const [gradient, setGradient] = useState(true)
-    const [isOpen, setIsOpen] = useState(true)
 
-    setTimeout(() => {
-        setGradient(false)
-    }, 10000)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setGradient(false)
+        }, 10000)
+
+        return () => clearTimeout(timer)
+    }, [])
 
     const hasConfirmation = call.waitingForConfirmation
     const confirmationMessage = call.message
     const transactionId = call.transactionId
 
     const handleConfirm = (transactionId: string, confirmed: boolean) => {
-        if (confirmed) {
-            setIsOpen(false)
-        }
         sendConfirmation?.(transactionId, confirmed)
     }
 
@@ -192,30 +192,37 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
     const outputs = useMemo(() => {
         if (!result?.functionCall) return [];
 
-        return Object.entries(result.functionCall).map(([key, value]) => {
-            const formatted = prettyValue(value)
-            const isMultiLine = formatted.includes('\n')
-            return (
-                <div key={`result-${key}`} className="flex items-center justify-between py-1.5 text-sm">
-                    <span className="text-gray-500 font-medium">{key}</span>
-                    <div className="flex items-center ml-4">
-                        {isMultiLine ? (
-                            <pre className="text-gray-900 text-xs whitespace-pre-wrap">{formatted}</pre>
-                        ) : (
-                            <span className="text-gray-900">{formatted}</span>
-                        )}
-                        {key === "transactionHash" && typeof value === 'string' && (
-                            <button
-                                onClick={() => navigator.clipboard.writeText(value || "")}
-                                className="ml-2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
-                            >
-                                Copy
-                            </button>
-                        )}
+        return Object.entries(result.functionCall)
+            .filter(([key]) => key !== 'transactionId')
+            .map(([key, value]) => {
+                const formatted = prettyValue(value)
+                const isMultiLine = formatted.includes('\n')
+                const isTxHash = key === "transactionHash" && typeof value === 'string'
+                const displayValue = isTxHash && value.length > 16
+                    ? `${value.slice(0, 10)}...${value.slice(-6)}`
+                    : formatted
+
+                return (
+                    <div key={`result-${key}`} className="flex items-center justify-between py-1.5 text-sm">
+                        <span className="text-gray-500 font-medium">{key}</span>
+                        <div className="flex items-center ml-4">
+                            {isMultiLine ? (
+                                <pre className="text-gray-900 text-xs whitespace-pre-wrap">{formatted}</pre>
+                            ) : (
+                                <span className="text-gray-900">{displayValue}</span>
+                            )}
+                            {isTxHash && (
+                                <button
+                                    onClick={() => navigator.clipboard.writeText(value || "")}
+                                    className="ml-2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                                >
+                                    Copy
+                                </button>
+                            )}
+                        </div>
                     </div>
-                </div>
-            )
-        })
+                )
+            })
     }, [result])
 
     const txHash = useMemo(() => {
@@ -238,25 +245,24 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
     if (inputs.length === 0 && outputs.length === 0 && !hasConfirmation) return null
 
     return (
-        <Disclosure as="div" className="w-full py-5" defaultOpen={true}>
-            {({ }) => (
-                <>
-                    <DisclosureButton className="group w-full text-left" onClick={() => setIsOpen(!isOpen)}>
-                        <div className="flex flex-1 items-center mb-3 w-full pl-3">
-                            <WandSpinner />
-                            <div className={`flex flex-1 items-center italic ${gradient ? `gradient-text` : ``}`}>{name}</div>
-                            <div className="flex flex-1 items-center italic justify-end">
-                                <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex text-sm items-center">Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
-                            </div>
-                            <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
-                        </div>
-                    </DisclosureButton>
-                    {isOpen && (
-                        <div className="overflow-hidden py-2">
+        <div className="w-full py-5">
+            {(inputs.length > 0 || outputs.length > 0) && (
+                <Disclosure as="div" defaultOpen={false}>
+                    {({ }) => (
+                        <>
+                            <DisclosureButton className="group w-full text-left">
+                                <div className="flex flex-1 items-center mb-3 w-full pl-3">
+                                    <WandSpinner />
+                                    <div className={`flex flex-1 items-center italic ${gradient ? `gradient-text` : ``}`}>{name}</div>
+                                    <div className="flex flex-1 items-center italic justify-end">
+                                        <a href="https://basescan.org/tx/" target="_blank" onClick={handleTxLinkClick} className="flex text-sm items-center">Basescan <ArrowTopRightOnSquareIcon className="size-5 ml-1 mr-5" /></a>
+                                    </div>
+                                    <ChevronDownIcon className="size-6 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
+                                </div>
+                            </DisclosureButton>
                             <DisclosurePanel
-                                static
                                 transition
-                                className="origin-top transition duration-200 ease-out data-[closed]:-translate-y-6 data-[closed]:opacity-0"
+                                className="overflow-hidden py-2 origin-top transition duration-200 ease-out data-[closed]:-translate-y-6 data-[closed]:opacity-0"
                             >
                                 {inputs.length > 0 && (
                                     <>
@@ -271,19 +277,19 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
                                     </>
                                 )}
                             </DisclosurePanel>
-                        </div>
+                        </>
                     )}
-                    {hasConfirmation && (
-                        <Confirm
-                            show={hasConfirmation}
-                            transactionId={transactionId}
-                            message={confirmationMessage}
-                            onConfirm={handleConfirm}
-                        />
-                    )}
-                </>
+                </Disclosure>
             )}
-        </Disclosure>
+            {hasConfirmation && (
+                <Confirm
+                    show={hasConfirmation}
+                    transactionId={transactionId}
+                    message={confirmationMessage}
+                    onConfirm={handleConfirm}
+                />
+            )}
+        </div>
     );
 }
 
@@ -340,60 +346,32 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
 
     const message = { type: "user", message: prompt, completed: true } as Message
 
-    // Group function calls and results by transactionId
-    const groupedTransactions = useMemo(() => {
-        const groups: { [key: string]: { call: Message, result?: Message } } = {}
-        
-        // Add function calls
-        functionCalls.forEach((call, index) => {
-            const key = call.transactionId || `call-${index}`
-            groups[key] = { call }
-        })
-        
-        // Match results to calls by transactionId or order
-        functionResults.forEach((result, index) => {
-            // Try to find a matching call by transactionId first
-            let matchingKey: string | undefined
-            
-            if (result.functionCall?.transactionId && typeof result.functionCall.transactionId === 'string') {
-                matchingKey = result.functionCall.transactionId
-            } else {
-                // Fall back to matching by order for results without transactionId
-                const keys = Object.keys(groups)
-                matchingKey = keys[index]
-            }
-            
-            if (matchingKey && groups[matchingKey]) {
-                groups[matchingKey].result = result
-            } else {
-                // If no matching call found, create a new group for the result
-                const fallbackKey = `result-${index}`
-                groups[fallbackKey] = {
-                    call: { 
-                        message: "", 
-                        type: "assistant", 
-                        completed: true, 
-                        functionCall: result.functionCall 
-                    } as Message,
-                    result
-                }
+    // Create a map of results by transactionId for quick lookup
+    const resultsByTransactionId = useMemo(() => {
+        const map = new Map<string, Message>()
+        functionResults.forEach(result => {
+            const txId = result.functionCall?.transactionId
+            if (txId && typeof txId === 'string') {
+                map.set(txId, result)
             }
         })
-        
-        return Object.entries(groups).map(([key, transaction]) => ({ ...transaction, key }))
-    }, [functionCalls, functionResults])
+        return map
+    }, [functionResults])
 
     return (
         <div>
             <UserMessage message={message} />
-            {groupedTransactions.map((transaction) => (
-                <FunctionResults 
-                    key={transaction.key}
-                    call={transaction.call} 
-                    result={transaction.result} 
-                    sendConfirmation={sendConfirmation} 
-                />
-            ))}
+            {functionCalls.map((call, index) => {
+                const result = call.transactionId ? resultsByTransactionId.get(call.transactionId) : undefined
+                return (
+                    <FunctionResults
+                        key={`call-${index}`}
+                        call={call}
+                        result={result}
+                        sendConfirmation={sendConfirmation}
+                    />
+                )
+            })}
             {assistantMessages.map((assistantMessage, index) => (
                 <AssistantMessage key={`assistant-${index}`} message={assistantMessage} />
             ))}
@@ -401,7 +379,7 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
                 <Avatar isAnimated={isThinking || confirmationLoading} />
                 <div>
                     {streamedContent ? <StreamedContent streamedContent={streamedContent} /> : null}
-                    {confirmationLoading && !streamedContent ? <span className="text-2xl gradient-text">...</span> : null}
+                    {confirmationLoading && !streamedContent ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div> : null}
                 </div>
             </div>}
             <div ref={bottomRef} />

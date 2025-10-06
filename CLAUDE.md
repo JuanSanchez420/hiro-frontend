@@ -48,7 +48,8 @@ This is a crypto DeFi frontend application called "Hiro" built with Next.js 15 A
 **Context Management:**
 - `app/context/GlobalContext.tsx` - Global UI state (drawers, widgets, themes, auth)
 - `app/context/PromptsContext.tsx` - Chat prompts and conversation state
-- `app/context/PortfolioContext.tsx` - Portfolio and DeFi position data
+- `app/context/MessagesContext.tsx` - Message history management
+- `app/context/PortfolioContext.tsx` - Portfolio and DeFi position data (fetches from `/api/portfolio`)
 
 **Widget System:**
 The application uses a widget-based architecture for DeFi interactions:
@@ -83,6 +84,18 @@ interface Portfolio {
 }
 ```
 
+**Message Structure:**
+```typescript
+interface Message {
+  message: string
+  type: "user" | "assistant" | "function"
+  functionCall?: Record<string, unknown>
+  waitingForConfirmation?: boolean
+  transactionId?: string
+  completed: boolean
+}
+```
+
 **Widget Types:**
 - `WidgetOption` includes: "Swap", "Earn", "Autonomous", "Deposit", "Withdraw", "Signup", "Lend", "Borrow"
 
@@ -99,9 +112,12 @@ interface Portfolio {
 - CSS variables for background/foreground colors
 
 **Chat Interface:**
-- Main conversation via `MessageBox` component
-- Prompt input with streaming responses
-- Event-driven architecture for real-time updates
+- Main conversation via `MessageBox` component (`app/components/MessageBox.tsx`)
+- `PromptAndResponse` component handles rendering prompts and streaming responses
+- `useChatEventStream` hook manages SSE connection for real-time AI responses
+- Event-driven architecture with support for function calls, confirmations, and streaming
+- Function results are displayed in collapsible `Disclosure` panels (closed by default)
+- Transaction confirmations handled via `Confirm` component
 
 ### Development Notes
 
@@ -115,11 +131,12 @@ interface Portfolio {
 ### API Routes
 
 Located in `app/api/` with various endpoints for:
-- Portfolio data (`/api/portfolio`)
-- Price data (`/api/prices`)
+- Portfolio data (`/api/portfolio`) - Fetches user portfolio including tokens, positions, and Aave data
+- Price data (`/api/prices`) - Market data and OHLC charts
 - User account management (`/api/account`)
 - Session handling (`/api/session`)
 - Wallet updates (`/api/update-wallet`)
+- Transaction confirmations (`/api/confirm`) - Handles user confirmations for transactions
 
 ### Testing Environment
 
@@ -127,3 +144,14 @@ The application is configured for local blockchain development with:
 - Local chain ID: 31338
 - RPC URL: `http://localhost:8545` (configurable via `NEXT_PUBLIC_RPC_URL`)
 - Test mode with demo functionality enabled
+- Demo transactions show `transactionHash: '0xdummytxhash'`
+
+### Important Implementation Details
+
+**Event Stream Flow:**
+1. User submits prompt via `PromptInput`
+2. `useChatEventStream` hook establishes SSE connection
+3. Backend streams function calls, confirmations, and assistant messages
+4. Function calls may require user confirmation via `Confirm` component
+5. Confirmed transactions trigger portfolio refresh via `fetchPortfolio()`
+6. Confetti animation on successful transactions
