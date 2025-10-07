@@ -7,7 +7,7 @@ import History from "./History"
 import ThemeToggle from './ThemeToggle';
 import tokensData from "../utils/tokens.json";
 import { Token, TokensData } from "../types";
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import TokenData from './TokenData';
 import useMarketData from '../hooks/useMarketData';
 import useHiro from '../hooks/useHiro';
@@ -20,12 +20,16 @@ import AaveBorrowSection from './AaveBorrowSection';
 
 export default function Drawer() {
   const { drawerLeftOpen, setDrawerLeftOpen, styles } = useGlobalContext();
-  const [token, setToken] = useState<Token | null>(null);
+  const [token, setTokenState] = useState<Token | null>(null);
 
   const { market } = useMarketData();
   const { hiro } = useHiro();
   const { portfolio, loading } = usePortfolioContext();
   const tokens: TokensData = tokensData;
+
+  const setToken = useCallback((token: Token | null) => {
+    setTokenState(token);
+  }, []);
 
   const balancesWithTokens = useMemo(() => {
     if (!portfolio || !portfolio.tokens) return [];

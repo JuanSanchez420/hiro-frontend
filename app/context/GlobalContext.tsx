@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useMemo, useState } from "react"
 import { WidgetOption } from "../types"
 import { getStyles } from "../utils/styles"
 
@@ -23,15 +23,18 @@ export const GlobalContextProvider = ({ children }: { children: React.ReactNode 
     const [widget, setWidget] = useState<WidgetOption>(null);
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [theme, setTheme] = useState<"light" | "dark">("light");
-    const styles = getStyles(theme)
+
+    const styles = useMemo(() => getStyles(theme), [theme]);
+
+    const value = useMemo(() => ({
+        theme, setTheme, styles,
+        drawerLeftOpen, setDrawerLeftOpen,
+        widget, setWidget,
+        isSignedIn, setIsSignedIn,
+    }), [theme, styles, drawerLeftOpen, widget, isSignedIn]);
 
     return (
-        <GlobalContext.Provider value={{
-            theme, setTheme, styles,
-            drawerLeftOpen, setDrawerLeftOpen,
-            widget, setWidget,
-            isSignedIn, setIsSignedIn,
-        }}>
+        <GlobalContext.Provider value={value}>
             {children}
         </GlobalContext.Provider>
     );

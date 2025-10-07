@@ -16,7 +16,7 @@ interface PortfolioSectionProps {
   setToken: (token: Token) => void;
 }
 
-const PortfolioSection: React.FC<PortfolioSectionProps> = ({
+const PortfolioSection: React.FC<PortfolioSectionProps> = React.memo(({
   balancesWithTokens,
   hiro,
   loading,
@@ -84,6 +84,8 @@ const PortfolioSection: React.FC<PortfolioSectionProps> = ({
       </div>
     </div>
   )
-};
+});
+
+PortfolioSection.displayName = 'PortfolioSection';
 
 export default PortfolioSection;
