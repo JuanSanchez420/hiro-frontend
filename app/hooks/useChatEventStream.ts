@@ -7,6 +7,7 @@ import { Message } from "../types";
 const useChatEventStream = (prompt: string) => {
     const account = useAccount()
     const isStreaming = useRef(false)
+    const messageIdCounter = useRef(0)
     const [streamedContent, setStreamedContent] = useState("");
     const [isThinking, setIsThinking] = useState(false);
     const { fetchPortfolio } = usePortfolioContext();
@@ -36,7 +37,9 @@ const useChatEventStream = (prompt: string) => {
 
             // Add the response message as an assistant message if it exists
             if (responseData.message) {
+                const id = messageIdCounter.current++;
                 const assistantMessage: Message = {
+                    id,
                     message: responseData.message,
                     type: "assistant",
                     completed: true
@@ -68,7 +71,9 @@ const useChatEventStream = (prompt: string) => {
                     }
                 }
 
+                const id = messageIdCounter.current++;
                 setFunctionCalls((prev) => [...prev, {
+                    id,
                     message: nestedConfirmation.message,
                     type: "assistant",
                     completed: false,
@@ -82,7 +87,9 @@ const useChatEventStream = (prompt: string) => {
             if (confirmed && responseData.success && responseData.result) {
                 try {
                     const parsedResult = JSON.parse(responseData.result);
+                    const id = messageIdCounter.current++;
                     const functionResult: Message = {
+                        id,
                         message: "",
                         type: "function",
                         completed: true,
@@ -91,7 +98,7 @@ const useChatEventStream = (prompt: string) => {
                             transactionId: responseData.transactionId || transactionId
                         }
                     }
-                    
+
                     setFunctionResults((prev) => [...prev, functionResult]);
                     
                     // Fetch updated portfolio if we have a transaction hash
@@ -106,7 +113,9 @@ const useChatEventStream = (prompt: string) => {
                 fetchPortfolio();
             } else if (responseData.cancelled) {
                 // User cancelled the transaction - add cancellation result
+                const id = messageIdCounter.current++;
                 const cancelledResult: Message = {
+                    id,
                     message: "",
                     type: "function",
                     completed: true,
@@ -116,7 +125,7 @@ const useChatEventStream = (prompt: string) => {
                         transactionId: responseData.transactionId || transactionId
                     }
                 }
-                
+
                 setFunctionResults((prev) => [...prev, cancelledResult]);
             }
         } catch (error) {
@@ -129,6 +138,7 @@ const useChatEventStream = (prompt: string) => {
     const doPrompt = useCallback((p: string, isDemo: boolean) => {
         setIsThinking(true);
         // Clear previous state to prevent stale data from being displayed
+        messageIdCounter.current = 0;
         setStreamedContent("");
         setFunctionCalls([]);
         setFunctionResults([]);
@@ -162,7 +172,8 @@ const useChatEventStream = (prompt: string) => {
                     doConfettiBurst();
                     return;
                 }
-                setFunctionCalls((prev) => [...prev, { message: "", type: "assistant", completed: true, functionCall: obj }])
+                const id = messageIdCounter.current++;
+                setFunctionCalls((prev) => [...prev, { id, message: "", type: "assistant", completed: true, functionCall: obj }])
             } catch (error) {
                 console.error("Failed to parse functionCall event:", error, event.data);
             }
@@ -181,7 +192,9 @@ const useChatEventStream = (prompt: string) => {
                 }
 
                 // Create the function result with proper structure
+                const id = messageIdCounter.current++;
                 const functionResult: Message = {
+                    id,
                     message: "",
                     type: "function",
                     completed: true,
@@ -214,7 +227,9 @@ const useChatEventStream = (prompt: string) => {
                     }
                 }
                 
+                const id = messageIdCounter.current++;
                 setFunctionCalls((prev) => [...prev, {
+                    id,
                     message: obj.message,
                     type: "assistant",
                     completed: false,

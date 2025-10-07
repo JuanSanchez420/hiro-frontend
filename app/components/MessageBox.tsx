@@ -344,7 +344,7 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, [streamedContent, functionCalls, functionResults, assistantMessages]);
 
-    const message = { type: "user", message: prompt, completed: true } as Message
+    const message = { id: -1, type: "user", message: prompt, completed: true } as Message
 
     // Create a map of results by transactionId for quick lookup
     const resultsByTransactionId = useMemo(() => {
@@ -369,7 +369,7 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
     return (
         <div>
             <UserMessage message={message} />
-            {orderedMessages.map((item, idx) => {
+            {orderedMessages.map((item) => {
                 if (item.type === 'function') {
                     const call = functionCalls[item.index]
                     const result = call.transactionId ? resultsByTransactionId.get(call.transactionId) : undefined

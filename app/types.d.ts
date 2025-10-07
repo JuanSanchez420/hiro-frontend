@@ -31,6 +31,7 @@ export interface OHLC {
 export type WidgetOption = "Swap" | "Earn" | "Autonomous" | "Deposit" | "Withdraw" | "Signup" | "Lend" | "Borrow" | null
 
 export interface Message {
+    id: number
     message: string
     type: "user" | "assistant" | "function"
     functionCall?: Record<string, unknown>
