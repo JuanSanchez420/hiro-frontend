@@ -27,12 +27,32 @@ const useChatEventStream = (prompt: string) => {
                 body: JSON.stringify({ transactionId, confirmed }),
             });
 
+            const responseData = await response.json();
+
             if (!response.ok) {
-                console.error('Failed to send confirmation:', response.statusText);
+
+                // Display error message from backend
+                if (responseData.error || responseData.message) {
+                    const id = messageIdCounter.current++;
+                    const errorMessage: Message = {
+                        id,
+                        message: responseData.message || `Error: ${responseData.error}`,
+                        type: "assistant",
+                        completed: true
+                    };
+                    setAssistantMessages((prev) => [...prev, errorMessage]);
+                }
+
+                // Mark the function call as completed (failed)
+                setFunctionCalls((prev) =>
+                    prev.map((call) =>
+                        call.transactionId === transactionId
+                            ? { ...call, completed: true, waitingForConfirmation: false }
+                            : call
+                    )
+                );
                 return;
             }
-
-            const responseData = await response.json();
             console.log('Confirmation response:', responseData);
 
             // Add the response message as an assistant message if it exists
