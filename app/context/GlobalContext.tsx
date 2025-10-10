@@ -7,6 +7,8 @@ import { getStyles } from "../utils/styles"
 interface GlobalContextType {
     drawerLeftOpen: boolean
     setDrawerLeftOpen: React.Dispatch<React.SetStateAction<boolean>>
+    showRecommendations: boolean
+    setShowRecommendations: React.Dispatch<React.SetStateAction<boolean>>
     widget: WidgetOption
     setWidget: React.Dispatch<React.SetStateAction<WidgetOption>>
     isSignedIn: boolean
@@ -20,6 +22,7 @@ export const GlobalContext = createContext<GlobalContextType | undefined>(undefi
 
 export const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
     const [drawerLeftOpen, setDrawerLeftOpen] = useState(false);
+    const [showRecommendations, setShowRecommendations] = useState(false);
     const [widget, setWidget] = useState<WidgetOption>(null);
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -29,9 +32,10 @@ export const GlobalContextProvider = ({ children }: { children: React.ReactNode 
     const value = useMemo(() => ({
         theme, setTheme, styles,
         drawerLeftOpen, setDrawerLeftOpen,
+        showRecommendations, setShowRecommendations,
         widget, setWidget,
         isSignedIn, setIsSignedIn,
-    }), [theme, styles, drawerLeftOpen, widget, isSignedIn]);
+    }), [theme, styles, drawerLeftOpen, showRecommendations, widget, isSignedIn]);
 
     return (
         <GlobalContext.Provider value={value}>

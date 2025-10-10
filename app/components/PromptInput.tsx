@@ -4,7 +4,7 @@ import { usePromptsContext } from "../context/PromptsContext";
 import { usePathname } from "next/navigation";
 import Widget from "./widgets/Widget";
 import ArrowUpCircleIcon from "@heroicons/react/24/outline/ArrowUpCircleIcon";
-import { ArrowDownTrayIcon, ArrowsRightLeftIcon, ArrowUpTrayIcon, CpuChipIcon, CurrencyDollarIcon, PlusIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, ArrowsRightLeftIcon, ArrowUpTrayIcon, CpuChipIcon, CurrencyDollarIcon, PlusIcon, ChartBarIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { useGlobalContext } from "../context/GlobalContext";
 import { WidgetOption } from '../types';
 
@@ -20,7 +20,7 @@ const PromptInput = (
 
 ) => {
   const { addPrompt } = usePromptsContext();
-  const { styles, setWidget, setDrawerLeftOpen } = useGlobalContext()
+  const { styles, setWidget, setDrawerLeftOpen, setShowRecommendations } = useGlobalContext()
   const [value, setValue] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -113,9 +113,23 @@ const PromptInput = (
                 {/* Portfolio button */}
                 <button
                   className="rounded-full p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                  onClick={() => setDrawerLeftOpen(true)}
+                  onClick={() => {
+                    setShowRecommendations(false);
+                    setDrawerLeftOpen(true);
+                  }}
                 >
                   <ChartBarIcon className="size-6" aria-hidden="true" />
+                </button>
+
+                {/* Recommendations button */}
+                <button
+                  className="rounded-full p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                  onClick={() => {
+                    setShowRecommendations(true);
+                    setDrawerLeftOpen(true);
+                  }}
+                >
+                  <SparklesIcon className="size-6" aria-hidden="true" />
                 </button>
               </div>
 

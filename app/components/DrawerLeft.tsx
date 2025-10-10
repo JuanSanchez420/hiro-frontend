@@ -17,9 +17,10 @@ import MarketDataSection from './MarketDataSection';
 import LiquidityPositionsSection from './LiquidityPositionSection';
 import AaveLendingSection from './AaveLendingSection';
 import AaveBorrowSection from './AaveBorrowSection';
+import Recommendations from './Recommendations';
 
 export default function Drawer() {
-  const { drawerLeftOpen, setDrawerLeftOpen, styles } = useGlobalContext();
+  const { drawerLeftOpen, setDrawerLeftOpen, showRecommendations, setShowRecommendations, styles } = useGlobalContext();
   const [token, setTokenState] = useState<Token | null>(null);
 
   const { market } = useMarketData();
@@ -46,6 +47,7 @@ export default function Drawer() {
     <Dialog open={drawerLeftOpen} onClose={() => {
       setDrawerLeftOpen(false);
       setToken(null);
+      setShowRecommendations(false);
     }} className="relative z-10">
       <DialogBackdrop
         transition
@@ -57,7 +59,7 @@ export default function Drawer() {
           <div className="pointer-events-none fixed inset-y-0 left-0 flex max-w-full pr-10">
             <DialogPanel
               transition
-              className="pointer-events-auto relative w-screen max-w-2xl transform transition duration-500 ease-in-out data-[closed]:-translate-x-full sm:duration-700"
+              className="pointer-events-auto relative w-screen max-w-4xl transform transition duration-500 ease-in-out data-[closed]:-translate-x-full sm:duration-700"
             >
               <TransitionChild>
                 <div className="absolute right-0 top-0 -mr-8 flex pl-2 pt-4 duration-500 ease-in-out data-[closed]:opacity-0 sm:pl-4">
@@ -66,6 +68,7 @@ export default function Drawer() {
                     onClick={() => {
                       setDrawerLeftOpen(false);
                       setToken(null);
+                      setShowRecommendations(false);
                     }}
                     className="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
                   >
@@ -80,25 +83,30 @@ export default function Drawer() {
                   <DialogTitle className="text-base font-semibold">{/* title area */}</DialogTitle>
                 </div>
                 <div className="relative mt-6 px-4 sm:px-6 flex flex-col h-full">
+                  {/* Recommendations View */}
+                  {!token && showRecommendations && (
+                    <Recommendations />
+                  )}
+
                   {/* Portfolio Sections */}
-                  {!token && <PortfolioSection
+                  {!token && !showRecommendations && <PortfolioSection
                     balancesWithTokens={balancesWithTokens}
                     hiro={hiro}
                     loading={loading}
                     setToken={setToken}
                   />}
-                  {!token && portfolio && portfolio.positions && portfolio.positions.length > 0 && (
+                  {!token && !showRecommendations && portfolio && portfolio.positions && portfolio.positions.length > 0 && (
                     <LiquidityPositionsSection
                       positions={portfolio.positions}
                     />
                   )}
-                  {!token && portfolio && portfolio.aave && portfolio.aave.length > 0 && (
+                  {!token && !showRecommendations && portfolio && portfolio.aave && portfolio.aave.length > 0 && (
                     <AaveLendingSection aave={portfolio.aave} />
                   )}
-                  {!token && portfolio && portfolio.aave && portfolio.aave.some(item => parseFloat(item.variableDebt) > 0) && (
+                  {!token && !showRecommendations && portfolio && portfolio.aave && portfolio.aave.some(item => parseFloat(item.variableDebt) > 0) && (
                     <AaveBorrowSection aave={portfolio.aave} />
                   )}
-                  {!token && !portfolio && <MarketDataSection market={market} setToken={setToken} />}
+                  {!token && !showRecommendations && !portfolio && <MarketDataSection market={market} setToken={setToken} />}
 
                   {/* Token Chart */}
                   {token && <TokenData token={token} hours={200} exit={() => setToken(null)} />}
@@ -107,7 +115,7 @@ export default function Drawer() {
                   <div className="flex-grow"></div>
 
                   {/* Chat History Section - At bottom */}
-                  {!token && (
+                  {!token && !showRecommendations && (
                     <nav className="flex flex-col mb-4">
                       <div className='flex justify-between mb-2'>
                         <div className='bold'>History</div>
@@ -118,7 +126,7 @@ export default function Drawer() {
                   )}
 
                   {/* Theme Toggle - Always at very bottom */}
-                  {!token && <div className='pt-4'><ThemeToggle /></div>}
+                  {!token && !showRecommendations && <div className='pt-4'><ThemeToggle /></div>}
                 </div>
               </div>
             </DialogPanel>
