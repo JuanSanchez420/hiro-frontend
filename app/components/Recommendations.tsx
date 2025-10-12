@@ -234,7 +234,7 @@ const Recommendations: React.FC = React.memo(() => {
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 {position.borrowed ? formatNumber(position.borrowed.balance) : '-'}
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-semibold text-red-600">
                                                 {position.borrowed ? `${formatNumber(position.borrowed.apy)}%` : '-'}
                                             </td>
                                         </tr>
@@ -365,7 +365,7 @@ const Recommendations: React.FC = React.memo(() => {
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-semibold text-green-600">
                                                 {formatNumber(parseNumericValue(opportunity.depositAPY))}%
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-semibold text-red-600">
                                                 {formatNumber(parseNumericValue(opportunity.variableBorrowAPY))}%
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
