@@ -332,6 +332,69 @@ const StreamedContent = ({ streamedContent }: { streamedContent: string }) => {
     return s
 }
 
+type TimelineItem = {
+    message: Message;
+    source: 'function' | 'assistant';
+}
+
+interface MessageTimelineProps {
+    items: TimelineItem[];
+    resultsByTransactionId: Map<string, Message>;
+    sendConfirmation?: (transactionId: string, confirmed: boolean) => void;
+}
+
+const MessageTimeline = React.memo(({ items, resultsByTransactionId, sendConfirmation }: MessageTimelineProps) => {
+    return (
+        <>
+            {items.map((item) => {
+                if (item.source === 'function') {
+                    const call = item.message;
+                    const transactionId = typeof call.transactionId === 'string'
+                        ? call.transactionId
+                        : (typeof call.functionCall?.transactionId === 'string'
+                            ? call.functionCall.transactionId as string
+                            : undefined);
+                    const result = transactionId ? resultsByTransactionId.get(transactionId) : undefined;
+
+                    return (
+                        <FunctionResults
+                            key={`call-${call.id}`}
+                            call={call}
+                            result={result}
+                            sendConfirmation={sendConfirmation}
+                        />
+                    );
+                }
+
+                return (
+                    <AssistantMessage
+                        key={`assistant-${item.message.id}`}
+                        message={item.message}
+                    />
+                );
+            })}
+        </>
+    );
+}, (prev, next) => {
+    if (prev.items.length !== next.items.length) return false;
+
+    for (let i = 0; i < prev.items.length; i += 1) {
+        const prevItem = prev.items[i];
+        const nextItem = next.items[i];
+
+        if (prevItem.source !== nextItem.source) return false;
+        if (prevItem.message.id !== nextItem.message.id) return false;
+        if (prevItem.message !== nextItem.message) return false;
+    }
+
+    if (prev.resultsByTransactionId !== next.resultsByTransactionId) return false;
+    if (prev.sendConfirmation !== next.sendConfirmation) return false;
+
+    return true;
+});
+
+MessageTimeline.displayName = 'MessageTimeline'
+
 export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
     const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -355,34 +418,28 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
         return map
     }, [functionResults])
 
-    // Merge function calls and assistant messages in order of arrival
-    const orderedMessages = useMemo(() => {
-        const messages: Array<{ type: 'function' | 'assistant', index: number }> = []
-        functionCalls.forEach((_, i) => messages.push({ type: 'function', index: i }))
-        assistantMessages.forEach((_, i) => messages.push({ type: 'assistant', index: i }))
-        return messages
+    const timelineItems = useMemo(() => {
+        const combined: TimelineItem[] = []
+
+        functionCalls.forEach((call) => {
+            combined.push({ message: call, source: 'function' })
+        })
+
+        assistantMessages.forEach((assistantMessage) => {
+            combined.push({ message: assistantMessage, source: 'assistant' })
+        })
+
+        return combined.sort((a, b) => a.message.id - b.message.id)
     }, [functionCalls, assistantMessages])
 
     return (
         <div>
             <UserMessage message={message} />
-            {orderedMessages.map((item) => {
-                if (item.type === 'function') {
-                    const call = functionCalls[item.index]
-                    const result = call.transactionId ? resultsByTransactionId.get(call.transactionId) : undefined
-                    return (
-                        <FunctionResults
-                            key={`call-${item.index}`}
-                            call={call}
-                            result={result}
-                            sendConfirmation={sendConfirmation}
-                        />
-                    )
-                } else {
-                    const assistantMessage = assistantMessages[item.index]
-                    return <AssistantMessage key={`assistant-${item.index}`} message={assistantMessage} />
-                }
-            })}
+            <MessageTimeline
+                items={timelineItems}
+                resultsByTransactionId={resultsByTransactionId}
+                sendConfirmation={sendConfirmation}
+            />
             {(isThinking || (streamedContent && streamedContent.length > 0) || confirmationLoading) && <div className="flex w-full py-5 my-2">
                 <Avatar isAnimated={isThinking || confirmationLoading} />
                 <div>
