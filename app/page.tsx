@@ -1,10 +1,13 @@
 'use client'
 
-import { useCallback } from "react";
-import { PromptAndResponse } from "./components/MessageBox";
+import { useCallback, useEffect } from "react";
+import { useAccount } from 'wagmi';
+import { PromptAndResponse, HistoricalConversation } from "./components/MessageBox";
 import Image from 'next/image'
 import { usePromptsContext } from "./context/PromptsContext";
 import React from "react";
+import { useMessagesContext } from "./context/MessagesContext";
+import { useGlobalContext } from "./context/GlobalContext";
 
 interface ContentProps { prompts: string[]; }
 
@@ -15,6 +18,19 @@ const Content = React.memo(function Content({ prompts }: ContentProps) {
 
 export default function Home() {
   const { prompts } = usePromptsContext();
+  const { messages, loadMessages, loading } = useMessagesContext();
+  const { isConnected } = useAccount();
+  const { isSignedIn } = useGlobalContext();
+
+  useEffect(() => {
+    if (!isConnected || !isSignedIn) {
+      return;
+    }
+
+    loadMessages();
+  }, [isConnected, isSignedIn, loadMessages]);
+
+  const hasHistory = !loading && Array.isArray(messages) && messages.length > 0;
 
   const Intro = useCallback(() => {
     return (<div className="flex flex-col">
@@ -32,7 +48,9 @@ export default function Home() {
   }, [])
 
   return (<div className={`flex flex-col h-full`}>
-    {prompts.length === 0 ? <Intro /> : <Content prompts={prompts} />}
+    {prompts.length === 0
+      ? (hasHistory ? <HistoricalConversation messages={messages} /> : <Intro />)
+      : <Content prompts={prompts} />}
   </div>
 
   );
