@@ -134,6 +134,71 @@ const AssistantMessage = ({ message }: { message: Message }) => {
 }
 
 
+const getTransactionId = (message: Message): string | undefined => {
+    if (typeof message.transactionId === 'string' && message.transactionId.length > 0) {
+        return message.transactionId;
+    }
+
+    const fnCall = message.functionCall as { transactionId?: unknown } | undefined;
+    const txId = fnCall?.transactionId;
+    return typeof txId === 'string' && txId.length > 0 ? txId : undefined;
+};
+
+const buildTimelineItems = (
+    functionCalls: Message[],
+    assistantMessages: Message[],
+    functionResults: Message[],
+): TimelineItem[] => {
+    const entries: TimelineItem[] = [];
+
+    const sortedResults = [...functionResults].sort((a, b) => a.id - b.id);
+    const resultsByTransactionId = new Map<string, Message>();
+    sortedResults.forEach((result) => {
+        const txId = getTransactionId(result);
+        if (txId) {
+            resultsByTransactionId.set(txId, result);
+        }
+    });
+
+    const usedResultIds = new Set<number>();
+    const queue = [...sortedResults];
+
+    const takeFromQueue = () => {
+        while (queue.length > 0) {
+            const candidate = queue.shift();
+            if (!candidate) break;
+            if (usedResultIds.has(candidate.id)) continue;
+            usedResultIds.add(candidate.id);
+            return candidate;
+        }
+        return undefined;
+    };
+
+    functionCalls.forEach((call) => {
+        let result: Message | undefined;
+        const txId = getTransactionId(call);
+        if (txId) {
+            const matched = resultsByTransactionId.get(txId);
+            if (matched && !usedResultIds.has(matched.id)) {
+                usedResultIds.add(matched.id);
+                result = matched;
+            }
+        }
+
+        if (!result) {
+            result = takeFromQueue();
+        }
+
+        entries.push({ message: call, source: 'function', result });
+    });
+
+    assistantMessages.forEach((assistantMessage) => {
+        entries.push({ message: assistantMessage, source: 'assistant' });
+    });
+
+    return entries.sort((a, b) => a.message.id - b.message.id);
+};
+
 const FunctionResults = ({ call, result, sendConfirmation }: {
     call: Message,
     result?: Message,
@@ -190,7 +255,7 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
         if (!result?.functionCall) return [];
 
         return Object.entries(result.functionCall)
-            .filter(([key]) => key !== 'transactionId')
+            .filter(([key]) => key !== 'transactionId' && key !== 'name')
             .map(([key, value]) => {
                 const formatted = prettyValue(value)
                 const isMultiLine = formatted.includes('\n')
@@ -335,32 +400,26 @@ const StreamedContent = ({ streamedContent }: { streamedContent: string }) => {
 type TimelineItem = {
     message: Message;
     source: 'function' | 'assistant';
+    result?: Message;
 }
 
 interface MessageTimelineProps {
     items: TimelineItem[];
-    resultsByTransactionId: Map<string, Message>;
     sendConfirmation?: (transactionId: string, confirmed: boolean) => void;
 }
 
-const MessageTimeline = React.memo(({ items, resultsByTransactionId, sendConfirmation }: MessageTimelineProps) => {
+const MessageTimeline = React.memo(({ items, sendConfirmation }: MessageTimelineProps) => {
     return (
         <>
             {items.map((item) => {
                 if (item.source === 'function') {
                     const call = item.message;
-                    const transactionId = typeof call.transactionId === 'string'
-                        ? call.transactionId
-                        : (typeof call.functionCall?.transactionId === 'string'
-                            ? call.functionCall.transactionId as string
-                            : undefined);
-                    const result = transactionId ? resultsByTransactionId.get(transactionId) : undefined;
 
                     return (
                         <FunctionResults
                             key={`call-${call.id}`}
                             call={call}
-                            result={result}
+                            result={item.result}
                             sendConfirmation={sendConfirmation}
                         />
                     );
@@ -385,9 +444,9 @@ const MessageTimeline = React.memo(({ items, resultsByTransactionId, sendConfirm
         if (prevItem.source !== nextItem.source) return false;
         if (prevItem.message.id !== nextItem.message.id) return false;
         if (prevItem.message !== nextItem.message) return false;
+        if (prevItem.result !== nextItem.result) return false;
     }
 
-    if (prev.resultsByTransactionId !== next.resultsByTransactionId) return false;
     if (prev.sendConfirmation !== next.sendConfirmation) return false;
 
     return true;
@@ -406,38 +465,15 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
 
     const message = { id: -1, type: "user", message: prompt, completed: true } as Message
 
-    // Create a map of results by transactionId for quick lookup
-    const resultsByTransactionId = useMemo(() => {
-        const map = new Map<string, Message>()
-        functionResults.forEach(result => {
-            const txId = result.functionCall?.transactionId
-            if (txId && typeof txId === 'string') {
-                map.set(txId, result)
-            }
-        })
-        return map
-    }, [functionResults])
-
-    const timelineItems = useMemo(() => {
-        const combined: TimelineItem[] = []
-
-        functionCalls.forEach((call) => {
-            combined.push({ message: call, source: 'function' })
-        })
-
-        assistantMessages.forEach((assistantMessage) => {
-            combined.push({ message: assistantMessage, source: 'assistant' })
-        })
-
-        return combined.sort((a, b) => a.message.id - b.message.id)
-    }, [functionCalls, assistantMessages])
+    const timelineItems = useMemo(() => (
+        buildTimelineItems(functionCalls, assistantMessages, functionResults)
+    ), [functionCalls, assistantMessages, functionResults])
 
     return (
         <div>
             <UserMessage message={message} />
             <MessageTimeline
                 items={timelineItems}
-                resultsByTransactionId={resultsByTransactionId}
                 sendConfirmation={sendConfirmation}
             />
             {(isThinking || (streamedContent && streamedContent.length > 0) || confirmationLoading) && <div className="flex w-full py-5 my-2">
@@ -452,5 +488,55 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
     )
 }
 
+
+type HistoricalTurn = {
+    user: Message;
+    items: TimelineItem[];
+}
+
+export const HistoricalConversation = ({ messages }: { messages: Message[] }) => {
+    const turns = useMemo(() => {
+        const grouped: { user: Message; responses: Message[] }[] = []
+        let current: { user: Message; responses: Message[] } | null = null
+
+        messages.forEach((msg) => {
+            if (!msg) return
+
+            if (msg.type === 'user') {
+                current = { user: msg, responses: [] }
+                grouped.push(current)
+                return
+            }
+
+            if (current) {
+                current.responses.push(msg)
+            }
+        })
+
+        return grouped.map((turn): HistoricalTurn => {
+            const functionCalls = turn.responses.filter((msg) => msg.type === 'assistant' && msg.functionCall)
+            const assistantMessages = turn.responses.filter((msg) => msg.type === 'assistant' && !msg.functionCall)
+            const functionResults = turn.responses.filter((msg) => msg.type === 'function')
+
+            return {
+                user: turn.user,
+                items: buildTimelineItems(functionCalls, assistantMessages, functionResults),
+            }
+        })
+    }, [messages])
+
+    if (turns.length === 0) return null
+
+    return (
+        <div className="flex flex-col gap-6">
+            {turns.map((turn) => (
+                <div key={`turn-${turn.user.id}`}>
+                    <UserMessage message={turn.user} />
+                    <MessageTimeline items={turn.items} />
+                </div>
+            ))}
+        </div>
+    )
+}
 
 export default PromptAndResponse;

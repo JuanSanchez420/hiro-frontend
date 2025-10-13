@@ -2,15 +2,18 @@
 
 import { PencilSquareIcon } from "@heroicons/react/24/outline"
 import { usePromptsContext } from "../context/PromptsContext";
+import { useMessagesContext } from "../context/MessagesContext";
 import Link from "next/link";
 import Tooltip from "./Tooltip";
 
 const NewChat = () => {
     const { resetPrompts } = usePromptsContext();
+    const { resetMessages } = useMessagesContext();
 
     const handleNewChat = () => {
         fetch("/api/reset")
         resetPrompts()
+        resetMessages()
     }
 
     return (<div className="pr-4">

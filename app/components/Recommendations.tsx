@@ -44,7 +44,12 @@ type LiquidityPosition = {
     index: number;
     token0Symbol: string;
     token1Symbol: string;
-    liquidity: string;
+    apr?: number;
+    feesUSD?: number;
+    positionValueUSD?: number;
+    tokensOwed0?: string;
+    tokensOwed1?: string;
+    daysElapsed?: number;
 };
 
 type AavePosition = {
@@ -106,6 +111,45 @@ const Recommendations: React.FC = React.memo(() => {
         setShowRecommendations(false);
     }, [addPrompt, setDrawerLeftOpen, setShowRecommendations]);
 
+    const formatUsdValue = (value?: number | string) => {
+        if (value === undefined) {
+            return '-';
+        }
+        const numeric = Number(value);
+        if (Number.isNaN(numeric)) {
+            return '-';
+        }
+        return `$${formatNumber(numeric)}`;
+    };
+
+    const formatAprValue = (apr?: number | string) => {
+        if (apr === undefined) {
+            return '-';
+        }
+        const numeric = Number(apr);
+        if (Number.isNaN(numeric)) {
+            return '-';
+        }
+        return `${formatNumber(numeric * 100)}%`;
+    };
+
+    const formatUnclaimedFees = (position: LiquidityPosition) => {
+        const owed0 = position.tokensOwed0 !== undefined ? Number(position.tokensOwed0) : Number.NaN;
+        const owed1 = position.tokensOwed1 !== undefined ? Number(position.tokensOwed1) : Number.NaN;
+
+        const parts: string[] = [];
+
+        if (!Number.isNaN(owed0) && owed0 > 0) {
+            parts.push(`${formatNumber(owed0)} ${position.token0Symbol}`);
+        }
+
+        if (!Number.isNaN(owed1) && owed1 > 0) {
+            parts.push(`${formatNumber(owed1)} ${position.token1Symbol}`);
+        }
+
+        return parts.length > 0 ? parts.join(' · ') : '-';
+    };
+
     if (loading) return <Spinner />;
     if (error) return <div className="text-red-500 p-4">Error: {error}</div>;
     if (!data) return null;
@@ -163,15 +207,13 @@ const Recommendations: React.FC = React.memo(() => {
                             <table className="min-w-full divide-y divide-gray-300">
                                 <thead>
                                     <tr>
-                                        <th scope="col" className="py-3.5 pl-4 text-left text-sm font-semibold">
-                                            Position
-                                        </th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
-                                            Pair
-                                        </th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
-                                            Liquidity
-                                        </th>
+                                        <th scope="col" className="py-3.5 pl-4 text-left text-sm font-semibold">Position</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Pair</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Value (USD)</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">APR</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Fees (USD)</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Unclaimed Fees</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Days</th>
                                     </tr>
                                 </thead>
                                 <tbody className={styles.background}>
@@ -184,7 +226,19 @@ const Recommendations: React.FC = React.memo(() => {
                                                 {position.token0Symbol}/{position.token1Symbol}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                {formatNumber(position.liquidity)}
+                                                {formatUsdValue(position.positionValueUSD)}
+                                            </td>
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                {formatAprValue(position.apr)}
+                                            </td>
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                {formatUsdValue(position.feesUSD)}
+                                            </td>
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                {formatUnclaimedFees(position)}
+                                            </td>
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                {position.daysElapsed !== undefined ? formatNumber(position.daysElapsed) : '-'}
                                             </td>
                                         </tr>
                                     ))}

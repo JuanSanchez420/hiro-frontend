@@ -2,7 +2,6 @@
 import formatNumber from "@/app/utils/formatNumber";
 import React, { useMemo, useState } from "react";
 import SearchableSelect from "../SearchableSelect";
-import { formatEther } from "viem";
 import { SimpleLiquidityPosition } from "@/app/types";
 import TOKENS from "@/app/utils/tokens.json";
 import { useGlobalContext } from "@/app/context/GlobalContext";
@@ -51,6 +50,37 @@ export default function LiquidityWidget() {
     if (!portfolio) return [];
     return portfolio.positions
   }, [portfolio])
+
+  const formatUsdValue = (value?: number) => {
+    if (value === undefined || Number.isNaN(value)) {
+      return '-';
+    }
+    return `$${formatNumber(value)}`;
+  };
+
+  const formatAprValue = (apr?: number) => {
+    if (apr === undefined || Number.isNaN(apr)) {
+      return '-';
+    }
+    return `${formatNumber(apr * 100)}%`;
+  };
+
+  const formatUnclaimedFees = (position: SimpleLiquidityPosition) => {
+    const owed0 = Number(position.tokensOwed0);
+    const owed1 = Number(position.tokensOwed1);
+
+    const parts: string[] = [];
+
+    if (!Number.isNaN(owed0) && owed0 > 0) {
+      parts.push(`${formatNumber(owed0)} ${position.token0}`);
+    }
+
+    if (!Number.isNaN(owed1) && owed1 > 0) {
+      parts.push(`${formatNumber(owed1)} ${position.token1}`);
+    }
+
+    return parts.length > 0 ? parts.join(' · ') : '-';
+  };
 
   const tokenList = useMemo(() => {
     const portfolioTokens = new Set(portfolio?.tokens.map(t => t.symbol) || []);
@@ -221,7 +251,9 @@ export default function LiquidityWidget() {
               <div key={index} className="flex tems-center justify-between">
                 <div className="text-sm">
                   <div>{`${item.token0}/${item.token1}`}</div>
-                  <div className="italic text-xs">{`Balance: ${formatEther(item.liquidity)}`}</div>
+                  <div className="italic text-xs">{`Value: ${formatUsdValue(item.positionValueUSD)}`}</div>
+                  <div className="italic text-xs">{`APR: ${formatAprValue(item.apr)}`}</div>
+                  <div className="italic text-xs">{`Unclaimed: ${formatUnclaimedFees(item)}`}</div>
                 </div>
                 <button
                   type="button"

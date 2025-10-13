@@ -2,6 +2,7 @@
 'use client'
 import { useState } from 'react';
 import { Portfolio } from '../types';
+import formatNumber from '../utils/formatNumber';
 import { formatEther } from 'viem';
 import { ChevronUpIcon } from '@heroicons/react/24/outline';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
@@ -24,6 +25,37 @@ export default function LeaderboardPage() {
 
   const toggleExpand = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
+  };
+
+  const formatUsdValue = (value?: number) => {
+    if (value === undefined || Number.isNaN(value)) {
+      return '-';
+    }
+    return `$${formatNumber(value)}`;
+  };
+
+  const formatAprValue = (apr?: number) => {
+    if (apr === undefined || Number.isNaN(apr)) {
+      return '-';
+    }
+    return `${formatNumber(apr * 100)}%`;
+  };
+
+  const formatUnclaimedFees = (position: Portfolio['positions'][number]) => {
+    const owed0 = Number(position.tokensOwed0);
+    const owed1 = Number(position.tokensOwed1);
+
+    const parts: string[] = [];
+
+    if (!Number.isNaN(owed0) && owed0 > 0) {
+      parts.push(`${formatNumber(owed0)} ${position.token0}`);
+    }
+
+    if (!Number.isNaN(owed1) && owed1 > 0) {
+      parts.push(`${formatNumber(owed1)} ${position.token1}`);
+    }
+
+    return parts.length > 0 ? parts.join(' · ') : '-';
   };
 
   return (
@@ -90,7 +122,11 @@ export default function LeaderboardPage() {
                         <thead>
                           <tr className="text-gray-400">
                             <th className="text-left pb-2">Pair</th>
-                            <th className="text-right pb-2">Liquidity</th>
+                            <th className="text-right pb-2">Value (USD)</th>
+                            <th className="text-right pb-2">APR</th>
+                            <th className="text-right pb-2">Fees (USD)</th>
+                            <th className="text-left pb-2">Unclaimed Fees</th>
+                            <th className="text-right pb-2">Days</th>
                             <th className="text-right pb-2">Range</th>
                           </tr>
                         </thead>
@@ -98,7 +134,11 @@ export default function LeaderboardPage() {
                           {portfolio.positions.map((position) => (
                             <tr key={position.index}>
                               <td className="py-1">{position.token0}/{position.token1}</td>
-                              <td className="text-right">{formatEther(position.liquidity).slice(0, 8)}</td>
+                              <td className="text-right">{formatUsdValue(position.positionValueUSD)}</td>
+                              <td className="text-right">{formatAprValue(position.apr)}</td>
+                              <td className="text-right">{formatUsdValue(position.feesUSD)}</td>
+                              <td className="text-left">{formatUnclaimedFees(position)}</td>
+                              <td className="text-right">{position.daysElapsed !== undefined ? formatNumber(position.daysElapsed) : '-'}</td>
                               <td className="text-right">
                                 <span className="text-xs">
                                   {position.tickLower} → {position.tickUpper}

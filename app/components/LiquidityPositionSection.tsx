@@ -1,18 +1,11 @@
 import React from 'react';
-import { formatEther } from 'viem';
 import formatNumber from '../utils/formatNumber';
 import { useGlobalContext } from '../context/GlobalContext';
 import { usePromptsContext } from '../context/PromptsContext';
-
-interface Position {
-  index: number;
-  token0: string;
-  token1: string;
-  liquidity: bigint;
-}
+import { SimpleLiquidityPosition } from '../types';
 
 interface LiquidityPositionsSectionProps {
-  positions: Position[];
+  positions: SimpleLiquidityPosition[];
 }
 
 const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
@@ -23,7 +16,38 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
 
   if (!positions || positions.length === 0) return null;
 
-  const handleRemove = (position: Position) => {
+  const formatUsdValue = (value?: number) => {
+    if (value === undefined || Number.isNaN(value)) {
+      return '-';
+    }
+    return `$${formatNumber(value)}`;
+  };
+
+  const formatAprValue = (apr?: number) => {
+    if (apr === undefined || Number.isNaN(apr)) {
+      return '-';
+    }
+    return `${formatNumber(apr * 100)}%`;
+  };
+
+  const formatUnclaimedFees = (position: SimpleLiquidityPosition) => {
+    const owed0 = Number(position.tokensOwed0);
+    const owed1 = Number(position.tokensOwed1);
+
+    const parts: string[] = [];
+
+    if (!Number.isNaN(owed0) && owed0 > 0) {
+      parts.push(`${formatNumber(owed0)} ${position.token0}`);
+    }
+
+    if (!Number.isNaN(owed1) && owed1 > 0) {
+      parts.push(`${formatNumber(owed1)} ${position.token1}`);
+    }
+
+    return parts.length > 0 ? parts.join(' · ') : '-';
+  };
+
+  const handleRemove = (position: SimpleLiquidityPosition) => {
     if (confirm(`Are you sure you want to remove liquidity position ${position.token0}/${position.token1}?`)) {
       setDrawerLeftOpen(false)
       addPrompt(`Remove liquidity with position index ${position.index}`)
@@ -51,22 +75,24 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
             <table className="min-w-full divide-y divide-gray-300">
               <thead>
                 <tr>
-                  <th scope="col" className="px-3 py-3.5 pl-4 text-left text-sm font-semibold">
-                    Pair
-                  </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
-                    Liquidity
-                  </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
-                    Action
-                  </th>
+                  <th scope="col" className="px-3 py-3.5 pl-4 text-left text-sm font-semibold">Pair</th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Value (USD)</th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">APR</th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Fees Earned</th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Unclaimed Fees</th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Days Active</th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody className={`${styles.background} ${styles.text}`}>
                 {positions.map((position) => (
                   <tr key={`position-${position.index}`} className={`${styles.highlightRow}`}>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{position.token0}/{position.token1}</td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{`${formatNumber(formatEther(position.liquidity))}`}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatUsdValue(position.positionValueUSD)}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatAprValue(position.apr)}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatUsdValue(position.feesUSD)}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatUnclaimedFees(position)}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{position.daysElapsed !== undefined ? formatNumber(position.daysElapsed) : '-'}</td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate"><button className={styles.buttonSm} onClick={() => handleRemove(position)}>Remove</button></td>
                   </tr>
                 ))}

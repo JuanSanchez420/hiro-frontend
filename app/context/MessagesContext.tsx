@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback } from "react";
 import { Message } from "../types";
+import { normalizeMessages } from "../utils/normalizeMessages";
 
 interface MessagesContextType {
     messages: Message[]
@@ -35,16 +36,9 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
             if (response.ok) {
                 const data = await response.json();
                 if (data && Array.isArray(data.messages)) {
-                    // Transform API format {role, content} to our Message interface {type, message}
-                    const transformedMessages: Message[] = data.messages.map((msg: { role: string; content: string; functionCall?: object }) => ({
-                        message: msg.content,
-                        type: msg.role === 'user' ? 'user' : msg.role === 'assistant' ? 'assistant' : 'function',
-                        completed: true,
-                        functionCall: msg.functionCall
-                    }));
-                    setMessages(transformedMessages);
+                    setMessages(normalizeMessages(data.messages));
                 } else if (Array.isArray(data)) {
-                    setMessages(data);
+                    setMessages(normalizeMessages(data));
                 } else {
                     console.error('API returned unexpected data format:', data);
                     setMessages([]);

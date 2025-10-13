@@ -40,6 +40,13 @@ export interface Message {
     completed: boolean
 }
 
+export interface MessageSession {
+    sessionId: string
+    timestamp: number
+    messageCount: number
+    messages: Message[]
+}
+
 export type MarketData = {
   symbol: string;
   price: string;
@@ -58,16 +65,19 @@ type PoolDetails = {
   token1: Token
 }
 
-type SimpleLiquidityPosition = {
+export type SimpleLiquidityPosition = {
   index: number;
   token0: string;
   token1: string;
   tickSpacing: number;
   tickLower: number;
   tickUpper: number;
-  liquidity: bigint;
   tokensOwed0: string;
   tokensOwed1: string;
+  apr?: number; // Annual percentage rate based on historical fees (e.g., 0.15 = 15% APR)
+  feesUSD?: number; // Total fees earned in USD
+  positionValueUSD?: number; // Current position value in USD
+  daysElapsed?: number; // Days since position was created
 };
 
 type AaveUserPosition = {
