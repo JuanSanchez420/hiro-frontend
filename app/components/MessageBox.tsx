@@ -457,7 +457,7 @@ MessageTimeline.displayName = 'MessageTimeline'
 export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
     const bottomRef = useRef<HTMLDivElement>(null)
 
-    const { streamedContent, functionCalls, functionResults, assistantMessages, isThinking, confirmationLoading, sendConfirmation } = useChatEventStream(prompt)
+    const { streamedContent, streamingMessageId, functionCalls, functionResults, assistantMessages, isThinking, confirmationLoading, sendConfirmation } = useChatEventStream(prompt)
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -465,22 +465,53 @@ export const PromptAndResponse = ({ prompt }: { prompt: string }) => {
 
     const message = { id: -1, type: "user", message: prompt, completed: true } as Message
 
-    const timelineItems = useMemo(() => (
-        buildTimelineItems(functionCalls, assistantMessages, functionResults)
-    ), [functionCalls, assistantMessages, functionResults])
+    const timelineItems = useMemo(() => {
+        // Build timeline without streaming content to avoid re-renders on every chunk
+        return buildTimelineItems(functionCalls, assistantMessages, functionResults);
+    }, [functionCalls, assistantMessages, functionResults])
+
+    // Split timeline items to insert streaming content at correct position
+    const { itemsBefore, itemsAfter } = useMemo(() => {
+        if (streamingMessageId === null) {
+            return { itemsBefore: timelineItems, itemsAfter: [] };
+        }
+
+        const splitIndex = timelineItems.findIndex(item => item.message.id > streamingMessageId);
+
+        if (splitIndex === -1) {
+            // Streaming content goes at the end
+            return { itemsBefore: timelineItems, itemsAfter: [] };
+        }
+
+        return {
+            itemsBefore: timelineItems.slice(0, splitIndex),
+            itemsAfter: timelineItems.slice(splitIndex)
+        };
+    }, [timelineItems, streamingMessageId]);
 
     return (
         <div>
             <UserMessage message={message} />
             <MessageTimeline
-                items={timelineItems}
+                items={itemsBefore}
                 sendConfirmation={sendConfirmation}
             />
-            {(isThinking || (streamedContent && streamedContent.length > 0) || confirmationLoading) && <div className="flex w-full py-5 my-2">
+            {streamedContent && streamingMessageId !== null && (
+                <div className="flex w-full py-5 my-2">
+                    <Avatar />
+                    <div>
+                        <StreamedContent streamedContent={streamedContent} />
+                    </div>
+                </div>
+            )}
+            <MessageTimeline
+                items={itemsAfter}
+                sendConfirmation={sendConfirmation}
+            />
+            {(isThinking || confirmationLoading) && <div className="flex w-full py-5 my-2">
                 <Avatar isAnimated={isThinking || confirmationLoading} />
                 <div>
-                    {streamedContent && streamedContent.length > 0 ? <StreamedContent streamedContent={streamedContent} /> : null}
-                    {confirmationLoading && !streamedContent ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div> : null}
+                    {confirmationLoading && <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>}
                 </div>
             </div>}
             <div ref={bottomRef} />

@@ -9,6 +9,7 @@ const useChatEventStream = (prompt: string) => {
     const isStreaming = useRef(false)
     const messageIdCounter = useRef(0)
     const [streamedContent, setStreamedContent] = useState("");
+    const [streamingMessageId, setStreamingMessageId] = useState<number | null>(null);
     const [isThinking, setIsThinking] = useState(false);
     const { fetchPortfolio } = usePortfolioContext();
     const [functionCalls, setFunctionCalls] = useState<Message[]>([]);
@@ -160,6 +161,7 @@ const useChatEventStream = (prompt: string) => {
         // Clear previous state to prevent stale data from being displayed
         messageIdCounter.current = 0;
         setStreamedContent("");
+        setStreamingMessageId(null);
         setFunctionCalls([]);
         setFunctionResults([]);
         setAssistantMessages([]);
@@ -278,6 +280,10 @@ const useChatEventStream = (prompt: string) => {
 
                 setIsThinking(false);
                 setStreamedContent((prev) => {
+                    // Assign ID on first chunk
+                    if (prev === "") {
+                        setStreamingMessageId(messageIdCounter.current++);
+                    }
                     const newContent = prev + chunk;
                     return newContent;
                 });
@@ -312,7 +318,7 @@ const useChatEventStream = (prompt: string) => {
         doPrompt(prompt, !account?.isConnected)
     }, [doPrompt, prompt, account])
 
-    return { streamedContent, functionCalls, functionResults, assistantMessages, isThinking, confirmationLoading, sendConfirmation };
+    return { streamedContent, streamingMessageId, functionCalls, functionResults, assistantMessages, isThinking, confirmationLoading, sendConfirmation };
 };
 
 export default useChatEventStream;
