@@ -10,6 +10,7 @@ interface MessagesContextType {
     addMessage: (message: Message) => void
     updateMessage: (index: number, updates: Partial<Message>) => void
     loadMessages: () => Promise<void>
+    setMessages: (messages: Message[]) => void
     resetMessages: () => void
 }
 
@@ -55,6 +56,10 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
         }
     }, []);
 
+    const setMessagesDirectly = useCallback((newMessages: Message[]) => {
+        setMessages(newMessages);
+    }, []);
+
     const resetMessages = useCallback(() => {
         setMessages([]);
     }, []);
@@ -66,6 +71,7 @@ export const MessagesProvider = ({ children }: { children: React.ReactNode }) =>
             addMessage,
             updateMessage,
             loadMessages,
+            setMessages: setMessagesDirectly,
             resetMessages,
         }}>
             {children}

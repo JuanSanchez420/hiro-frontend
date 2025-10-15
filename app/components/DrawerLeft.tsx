@@ -18,14 +18,19 @@ import LiquidityPositionsSection from './LiquidityPositionSection';
 import AaveLendingSection from './AaveLendingSection';
 import AaveBorrowSection from './AaveBorrowSection';
 import Recommendations from './Recommendations';
+import { useMessagesContext } from '../context/MessagesContext';
+import { usePromptsContext } from '../context/PromptsContext';
 
 export default function Drawer() {
   const { drawerLeftOpen, setDrawerLeftOpen, showRecommendations, setShowRecommendations, styles } = useGlobalContext();
   const [token, setTokenState] = useState<Token | null>(null);
+  const [historyKey, setHistoryKey] = useState(0);
 
   const { market } = useMarketData();
   const { hiro } = useHiro();
   const { portfolio, loading } = usePortfolioContext();
+  const { resetMessages } = useMessagesContext();
+  const { resetPrompts } = usePromptsContext();
   const tokens: TokensData = tokensData;
 
   const setToken = useCallback((token: Token | null) => {
@@ -42,6 +47,27 @@ export default function Drawer() {
       };
     });
   }, [portfolio, tokens]);
+
+  const handleClearHistory = useCallback(async () => {
+    if (!confirm('Are you sure you want to clear your chat history?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/delete-history', {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        resetMessages();
+        resetPrompts();
+        setHistoryKey(prev => prev + 1); // Force History component to reload
+      } else {
+        console.error('Failed to clear history:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error clearing history:', error);
+    }
+  }, [resetMessages, resetPrompts]);
 
   return (
     <Dialog open={drawerLeftOpen} onClose={() => {
@@ -119,9 +145,9 @@ export default function Drawer() {
                     <nav className="flex flex-col mb-4">
                       <div className='flex justify-between mb-2'>
                         <div className='bold'>History</div>
-                        <div><button className={styles.buttonSm} onClick={() => confirm('Are you sure?')}>Clear</button></div>
+                        <div><button className={styles.buttonSm} onClick={handleClearHistory}>Clear</button></div>
                       </div>
-                      <History />
+                      <History key={historyKey} />
                     </nav>
                   )}
 

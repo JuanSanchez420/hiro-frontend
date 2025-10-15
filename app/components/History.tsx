@@ -2,6 +2,9 @@ import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { MessageSession } from "../types"
 import { normalizeMessages } from "../utils/normalizeMessages"
+import { useMessagesContext } from "../context/MessagesContext"
+import { usePromptsContext } from "../context/PromptsContext"
+import { useGlobalContext } from "../context/GlobalContext"
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
@@ -10,6 +13,9 @@ function classNames(...classes: string[]) {
 const History = () => {
     const [sessions, setSessions] = useState<MessageSession[]>([])
     const [loading, setLoading] = useState(false)
+    const { setMessages } = useMessagesContext()
+    const { resetPrompts } = usePromptsContext()
+    const { setDrawerLeftOpen } = useGlobalContext()
 
     useEffect(() => {
         const loadHistory = async () => {
@@ -62,9 +68,16 @@ const History = () => {
                 key: session.sessionId,
                 title,
                 messageCount: session.messageCount,
+                session,
             }
         })
     }, [sessions])
+
+    const handleSessionClick = (session: MessageSession) => {
+        resetPrompts()
+        setMessages(session.messages)
+        setDrawerLeftOpen(false)
+    }
 
     if (loading) {
         return <div className="flex justify-center p-4">Loading...</div>
@@ -77,6 +90,10 @@ const History = () => {
                     <li key={`history-${item.key}`}>
                         <Link
                             href="#"
+                            onClick={(e) => {
+                                e.preventDefault()
+                                handleSessionClick(item.session)
+                            }}
                             className={classNames(
                                 'text-gray-700 hover:bg-gray-50 hover:text-emerald-600',
                                 'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',

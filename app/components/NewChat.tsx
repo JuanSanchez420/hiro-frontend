@@ -11,7 +11,7 @@ const NewChat = () => {
     const { resetMessages } = useMessagesContext();
 
     const handleNewChat = () => {
-        fetch("/api/reset")
+        fetch("/api/new-session")
         resetPrompts()
         resetMessages()
     }
