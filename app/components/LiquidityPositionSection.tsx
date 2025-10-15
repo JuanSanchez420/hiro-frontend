@@ -80,7 +80,6 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">APR</th>
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Fees Earned</th>
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Unclaimed Fees</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Days Active</th>
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Action</th>
                 </tr>
               </thead>
@@ -92,7 +91,6 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatAprValue(position.apr)}</td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatUsdValue(position.feesUSD)}</td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatUnclaimedFees(position)}</td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{position.daysElapsed !== undefined ? formatNumber(position.daysElapsed) : '-'}</td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate"><button className={styles.buttonSm} onClick={() => handleRemove(position)}>Remove</button></td>
                   </tr>
                 ))}

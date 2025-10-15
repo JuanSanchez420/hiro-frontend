@@ -116,23 +116,75 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
     if (!didFetch.current) fetchOHLCData();
   }, [token, hours, WETH]);
 
-  return (disabled ? <Spinner /> :
-    <div>
-      <CandlestickChart
-        ohlcData={ohlcData}
-        emaData={emaData}
-        dcData={dcData}
-        label={token.symbol}
-      />
-      <MarketStats market={market} />
-      <div className='grid grid-cols-2 gap-1 mt-3'>
-        <button className={`${styles.button} ${account?.isConnected ? '' : 'hidden'}`} onClick={() => {
-          setWidget('Swap')
-        }}>Swap</button>
-        <button className={`${styles.button} ${account?.isConnected ? '' : 'hidden'}`} onClick={() => setWidget('Earn')}>Earn</button>
-        <button className={`${styles.button} ${account?.isConnected ? '' : 'hidden'}`} onClick={() => setWidget('Autonomous')}>Autonomous</button>
-        <button className={styles.button} onClick={handleHirosTake}>Hiro&apos;s Take</button>
-        <button className={styles.button} onClick={() => exit()}>Portfolio</button>
+  return disabled ? <Spinner /> : (
+    <div className="w-full max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold tracking-tight">{token.symbol}</h2>
+        <div className="text-right">
+          <div className="text-3xl font-bold">{market.price}</div>
+          <div className={`text-sm font-medium ${Number(market.change24h) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            {Number(market.change24h) >= 0 ? '+' : ''}{market.change24h}% (24h)
+          </div>
+        </div>
+      </div>
+
+      {/* Chart Section */}
+      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+        <h3 className="text-lg font-semibold mb-4">Price Chart</h3>
+        <CandlestickChart
+          ohlcData={ohlcData}
+          emaData={emaData}
+          dcData={dcData}
+          label={token.symbol}
+        />
+      </div>
+
+      {/* Technical Indicators Section */}
+      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+        <h3 className="text-lg font-semibold mb-4">Technical Indicators</h3>
+        <MarketStats market={market} />
+      </div>
+
+      {/* Actions Section */}
+      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+        <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-2 gap-3">
+          {account?.isConnected && (
+            <>
+              <button
+                className="bg-emerald-500 text-white font-medium py-3 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 transition-colors"
+                onClick={() => setWidget('Swap')}
+              >
+                Swap
+              </button>
+              <button
+                className="bg-emerald-500 text-white font-medium py-3 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 transition-colors"
+                onClick={() => setWidget('Earn')}
+              >
+                Earn
+              </button>
+              <button
+                className="bg-emerald-500 text-white font-medium py-3 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 transition-colors"
+                onClick={() => setWidget('Autonomous')}
+              >
+                Autonomous
+              </button>
+            </>
+          )}
+          <button
+            className="bg-blue-500 text-white font-medium py-3 px-4 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors"
+            onClick={handleHirosTake}
+          >
+            Hiro&apos;s Take
+          </button>
+          <button
+            className={`${styles.button} font-medium py-3 px-4`}
+            onClick={() => exit()}
+          >
+            Portfolio
+          </button>
+        </div>
       </div>
     </div>
   );

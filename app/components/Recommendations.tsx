@@ -233,7 +233,6 @@ const Recommendations: React.FC = React.memo(() => {
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">APR</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Fees (USD)</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Unclaimed Fees</th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Days</th>
                                     </tr>
                                 </thead>
                                 <tbody className={styles.background}>
@@ -280,9 +279,6 @@ const Recommendations: React.FC = React.memo(() => {
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 {formatUnclaimedFees(position)}
                                             </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                    {position.daysElapsed !== undefined ? formatNumber(position.daysElapsed) : '-'}
-                                                </td>
                                             </tr>
                                         );
                                     })}
