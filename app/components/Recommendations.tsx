@@ -6,12 +6,18 @@ import { usePromptsContext } from '../context/PromptsContext';
 import formatNumber from '../utils/formatNumber';
 import { Spinner } from './Spinner';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import tokens from '../utils/tokens.json';
 
 // Helper function to parse numbers that may contain commas or percentage signs
 const parseNumericValue = (value: string | number): number => {
     if (typeof value === 'number') return value;
     // Remove commas and percentage signs, then parse
     return Number(value.replace(/,/g, '').replace(/%/g, ''));
+};
+
+// Helper function to get token info by symbol
+const getTokenBySymbol = (symbol: string) => {
+    return tokens[symbol as keyof typeof tokens];
 };
 
 type PoolOpportunity = {
@@ -180,19 +186,33 @@ const Recommendations: React.FC = React.memo(() => {
                                     </tr>
                                 </thead>
                                 <tbody className={styles.background}>
-                                    {data.portfolio.tokens.map((token) => (
-                                        <tr key={token.symbol} className={styles.highlightRow}>
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
-                                                {token.symbol}
-                                            </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                {formatNumber(token.balance)}
-                                            </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                ${formatNumber(token.usdValue)}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {data.portfolio.tokens.map((token) => {
+                                        const tokenInfo = getTokenBySymbol(token.symbol);
+                                        return (
+                                            <tr key={token.symbol} className={styles.highlightRow}>
+                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
+                                                    <div className='flex items-center'>
+                                                        {tokenInfo?.logoURI && (
+                                                            <img
+                                                                src={tokenInfo.logoURI}
+                                                                height={30}
+                                                                width={30}
+                                                                alt={token.symbol}
+                                                                className="rounded-full mr-1"
+                                                            />
+                                                        )}
+                                                        <span>{token.symbol}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    {formatNumber(token.balance)}
+                                                </td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    ${formatNumber(token.usdValue)}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -217,14 +237,37 @@ const Recommendations: React.FC = React.memo(() => {
                                     </tr>
                                 </thead>
                                 <tbody className={styles.background}>
-                                    {data.portfolio.liquidityPositions.map((position) => (
-                                        <tr key={position.index} className={styles.highlightRow}>
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
-                                                #{position.index}
-                                            </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                {position.token0Symbol}/{position.token1Symbol}
-                                            </td>
+                                    {data.portfolio.liquidityPositions.map((position) => {
+                                        const token0Info = getTokenBySymbol(position.token0Symbol);
+                                        const token1Info = getTokenBySymbol(position.token1Symbol);
+                                        return (
+                                            <tr key={position.index} className={styles.highlightRow}>
+                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
+                                                    #{position.index}
+                                                </td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    <div className='flex items-center'>
+                                                        {token0Info?.logoURI && (
+                                                            <img
+                                                                src={token0Info.logoURI}
+                                                                height={24}
+                                                                width={24}
+                                                                alt={position.token0Symbol}
+                                                                className="rounded-full mr-1"
+                                                            />
+                                                        )}
+                                                        {token1Info?.logoURI && (
+                                                            <img
+                                                                src={token1Info.logoURI}
+                                                                height={24}
+                                                                width={24}
+                                                                alt={position.token1Symbol}
+                                                                className="rounded-full mr-1"
+                                                            />
+                                                        )}
+                                                        <span>{position.token0Symbol}/{position.token1Symbol}</span>
+                                                    </div>
+                                                </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 {formatUsdValue(position.positionValueUSD)}
                                             </td>
@@ -237,11 +280,12 @@ const Recommendations: React.FC = React.memo(() => {
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 {formatUnclaimedFees(position)}
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                {position.daysElapsed !== undefined ? formatNumber(position.daysElapsed) : '-'}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    {position.daysElapsed !== undefined ? formatNumber(position.daysElapsed) : '-'}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -274,11 +318,24 @@ const Recommendations: React.FC = React.memo(() => {
                                     </tr>
                                 </thead>
                                 <tbody className={styles.background}>
-                                    {data.portfolio.aavePositions.map((position) => (
-                                        <tr key={position.token} className={styles.highlightRow}>
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
-                                                {position.token}
-                                            </td>
+                                    {data.portfolio.aavePositions.map((position) => {
+                                        const tokenInfo = getTokenBySymbol(position.token);
+                                        return (
+                                            <tr key={position.token} className={styles.highlightRow}>
+                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
+                                                    <div className='flex items-center'>
+                                                        {tokenInfo?.logoURI && (
+                                                            <img
+                                                                src={tokenInfo.logoURI}
+                                                                height={30}
+                                                                width={30}
+                                                                alt={position.token}
+                                                                className="rounded-full mr-1"
+                                                            />
+                                                        )}
+                                                        <span>{position.token}</span>
+                                                    </div>
+                                                </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 {position.supplied ? formatNumber(position.supplied.balance) : '-'}
                                             </td>
@@ -288,11 +345,12 @@ const Recommendations: React.FC = React.memo(() => {
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 {position.borrowed ? formatNumber(position.borrowed.balance) : '-'}
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-semibold text-red-600">
-                                                {position.borrowed ? `${formatNumber(position.borrowed.apy)}%` : '-'}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-semibold text-red-600">
+                                                    {position.borrowed ? `${formatNumber(position.borrowed.apy)}%` : '-'}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -336,11 +394,34 @@ const Recommendations: React.FC = React.memo(() => {
                                     </tr>
                                 </thead>
                                 <tbody className={styles.background}>
-                                    {data.opportunities.liquidityPools.map((pool) => (
-                                        <tr key={pool.poolAddress} className={styles.highlightRow}>
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
-                                                {pool.token0Symbol}/{pool.token1Symbol}
-                                            </td>
+                                    {data.opportunities.liquidityPools.map((pool) => {
+                                        const token0Info = getTokenBySymbol(pool.token0Symbol);
+                                        const token1Info = getTokenBySymbol(pool.token1Symbol);
+                                        return (
+                                            <tr key={pool.poolAddress} className={styles.highlightRow}>
+                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
+                                                    <div className='flex items-center'>
+                                                        {token0Info?.logoURI && (
+                                                            <img
+                                                                src={token0Info.logoURI}
+                                                                height={24}
+                                                                width={24}
+                                                                alt={pool.token0Symbol}
+                                                                className="rounded-full mr-1"
+                                                            />
+                                                        )}
+                                                        {token1Info?.logoURI && (
+                                                            <img
+                                                                src={token1Info.logoURI}
+                                                                height={24}
+                                                                width={24}
+                                                                alt={pool.token1Symbol}
+                                                                className="rounded-full mr-1"
+                                                            />
+                                                        )}
+                                                        <span>{pool.token0Symbol}/{pool.token1Symbol}</span>
+                                                    </div>
+                                                </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
                                                 <button
                                                     onClick={() => handleAddPrompt(`Deposit into ${pool.token0Symbol}/${pool.token1Symbol} pool with ${(parseNumericValue(pool.feeTier) / 10000)}% fee tier`)}
@@ -362,11 +443,12 @@ const Recommendations: React.FC = React.memo(() => {
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 ${formatNumber(parseNumericValue(pool.feesUSD))}
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                {(parseNumericValue(pool.feeTier) / 10000)}%
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    {(parseNumericValue(pool.feeTier) / 10000)}%
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -402,11 +484,24 @@ const Recommendations: React.FC = React.memo(() => {
                                     </tr>
                                 </thead>
                                 <tbody className={styles.background}>
-                                    {data.opportunities.aaveLending.map((opportunity) => (
-                                        <tr key={opportunity.token} className={styles.highlightRow}>
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
-                                                {opportunity.token}
-                                            </td>
+                                    {data.opportunities.aaveLending.map((opportunity) => {
+                                        const tokenInfo = getTokenBySymbol(opportunity.token);
+                                        return (
+                                            <tr key={opportunity.token} className={styles.highlightRow}>
+                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
+                                                    <div className='flex items-center'>
+                                                        {tokenInfo?.logoURI && (
+                                                            <img
+                                                                src={tokenInfo.logoURI}
+                                                                height={30}
+                                                                width={30}
+                                                                alt={opportunity.token}
+                                                                className="rounded-full mr-1"
+                                                            />
+                                                        )}
+                                                        <span>{opportunity.token}</span>
+                                                    </div>
+                                                </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
                                                 <button
                                                     onClick={() => handleAddPrompt(`Supply ${opportunity.token} to Aave`)}
@@ -425,11 +520,12 @@ const Recommendations: React.FC = React.memo(() => {
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 ${formatNumber(parseNumericValue(opportunity.totalSupplied))}
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                ${formatNumber(parseNumericValue(opportunity.availableLiquidity))}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    ${formatNumber(parseNumericValue(opportunity.availableLiquidity))}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
