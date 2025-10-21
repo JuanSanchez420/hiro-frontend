@@ -23,6 +23,7 @@ const friendlyNames = {
     "getPortfolioTool": "Get Portfolio",
     "borrowAave": "Borrow Aave",
     "repayAave": "Repay Aave",
+    "rebalanceLiquidity": "Rebalance Liquidity",
     "": ""
 }
 

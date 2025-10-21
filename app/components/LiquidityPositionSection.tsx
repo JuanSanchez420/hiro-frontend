@@ -3,6 +3,8 @@ import formatNumber from '../utils/formatNumber';
 import { useGlobalContext } from '../context/GlobalContext';
 import { usePromptsContext } from '../context/PromptsContext';
 import { SimpleLiquidityPosition } from '../types';
+import Tooltip from './Tooltip';
+import { getRangeStyle } from '../utils/rangeHelpers';
 
 interface LiquidityPositionsSectionProps {
   positions: SimpleLiquidityPosition[];
@@ -30,21 +32,14 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
     return `${formatNumber(apr * 100)}%`;
   };
 
-  const formatUnclaimedFees = (position: SimpleLiquidityPosition) => {
-    const owed0 = Number(position.tokensOwed0);
-    const owed1 = Number(position.tokensOwed1);
-
-    const parts: string[] = [];
-
-    if (!Number.isNaN(owed0) && owed0 > 0) {
-      parts.push(`${formatNumber(owed0)} ${position.token0}`);
-    }
-
-    if (!Number.isNaN(owed1) && owed1 > 0) {
-      parts.push(`${formatNumber(owed1)} ${position.token1}`);
-    }
-
-    return parts.length > 0 ? parts.join(' · ') : '-';
+  const getFeeTierFromTickSpacing = (tickSpacing: number): string => {
+    const feeMap: { [key: number]: string } = {
+      1: '0.01%',
+      10: '0.05%',
+      60: '0.30%',
+      200: '1.00%',
+    };
+    return feeMap[tickSpacing] || `${(tickSpacing / 10000)}%`;
   };
 
   const handleRemove = (position: SimpleLiquidityPosition) => {
@@ -76,24 +71,33 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
               <thead>
                 <tr>
                   <th scope="col" className="px-3 py-3.5 pl-4 text-left text-sm font-semibold">Pair</th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Range</th>
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Value (USD)</th>
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">APR</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Fees Earned</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Unclaimed Fees</th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Profit</th>
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody className={`${styles.background} ${styles.text}`}>
-                {positions.map((position) => (
-                  <tr key={`position-${position.index}`} className={`${styles.highlightRow}`}>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{position.token0}/{position.token1}</td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatUsdValue(position.positionValueUSD)}</td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatAprValue(position.apr)}</td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatUsdValue(position.feesUSD)}</td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatUnclaimedFees(position)}</td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate"><button className={styles.buttonSm} onClick={() => handleRemove(position)}>Remove</button></td>
-                  </tr>
-                ))}
+                {positions.map((position) => {
+                  const rangeStyle = getRangeStyle(position.rangeWidthPercent);
+                  return (
+                    <tr key={`position-${position.index}`} className={`${styles.highlightRow}`}>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{position.token0}/{position.token1} - {getFeeTierFromTickSpacing(position.tickSpacing)}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm">
+                        <Tooltip content={rangeStyle.tooltip} position="top">
+                          <span className={`font-semibold ${rangeStyle.color}`}>
+                            {Math.floor(position.rangeWidthPercent)}% - {rangeStyle.label}
+                          </span>
+                        </Tooltip>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatUsdValue(position.positionValueUSD)}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatAprValue(position.apr)}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatUsdValue(position.feesUSD)}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate"><button className={styles.buttonSm} onClick={() => handleRemove(position)}>Remove</button></td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

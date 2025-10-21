@@ -7,6 +7,8 @@ import formatNumber from '../utils/formatNumber';
 import { Spinner } from './Spinner';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import tokens from '../utils/tokens.json';
+import Tooltip from './Tooltip';
+import { getRangeStyle } from '../utils/rangeHelpers';
 
 // Helper function to parse numbers that may contain commas or percentage signs
 const parseNumericValue = (value: string | number): number => {
@@ -47,14 +49,20 @@ type TokenPosition = {
 };
 
 type LiquidityPosition = {
-    index: number;
-    token0Symbol: string;
-    token1Symbol: string;
+    index: string;
+    token0: string;
+    token1: string;
+    tickSpacing: number;
+    tickLower: number;
+    tickUpper: number;
+    rangeWidthTicks: number;
+    rangeWidthPercent: number;
+    liquidity: string;
+    tokensOwed0: string;
+    tokensOwed1: string;
     apr?: number;
     feesUSD?: number;
     positionValueUSD?: number;
-    tokensOwed0?: string;
-    tokensOwed1?: string;
     daysElapsed?: number;
 };
 
@@ -139,21 +147,14 @@ const Recommendations: React.FC = React.memo(() => {
         return `${formatNumber(numeric * 100)}%`;
     };
 
-    const formatUnclaimedFees = (position: LiquidityPosition) => {
-        const owed0 = position.tokensOwed0 !== undefined ? Number(position.tokensOwed0) : Number.NaN;
-        const owed1 = position.tokensOwed1 !== undefined ? Number(position.tokensOwed1) : Number.NaN;
-
-        const parts: string[] = [];
-
-        if (!Number.isNaN(owed0) && owed0 > 0) {
-            parts.push(`${formatNumber(owed0)} ${position.token0Symbol}`);
-        }
-
-        if (!Number.isNaN(owed1) && owed1 > 0) {
-            parts.push(`${formatNumber(owed1)} ${position.token1Symbol}`);
-        }
-
-        return parts.length > 0 ? parts.join(' · ') : '-';
+    const getFeeTierFromTickSpacing = (tickSpacing: number): string => {
+        const feeMap: { [key: number]: string } = {
+            1: '0.01%',
+            10: '0.05%',
+            60: '0.30%',
+            200: '1.00%',
+        };
+        return feeMap[tickSpacing] || `${(tickSpacing / 10000)}%`;
     };
 
     if (loading) return <Spinner />;
@@ -227,31 +228,28 @@ const Recommendations: React.FC = React.memo(() => {
                             <table className="min-w-full divide-y divide-gray-300">
                                 <thead>
                                     <tr>
-                                        <th scope="col" className="py-3.5 pl-4 text-left text-sm font-semibold">Position</th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Pair</th>
+                                        <th scope="col" className="py-3.5 pl-4 text-left text-sm font-semibold">Pair</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Range</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Value (USD)</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">APR</th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Fees (USD)</th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Unclaimed Fees</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">Profit</th>
                                     </tr>
                                 </thead>
                                 <tbody className={styles.background}>
                                     {data.portfolio.liquidityPositions.map((position) => {
-                                        const token0Info = getTokenBySymbol(position.token0Symbol);
-                                        const token1Info = getTokenBySymbol(position.token1Symbol);
+                                        const token0Info = getTokenBySymbol(position.token0);
+                                        const token1Info = getTokenBySymbol(position.token1);
+                                        const rangeStyle = getRangeStyle(position.rangeWidthPercent);
                                         return (
                                             <tr key={position.index} className={styles.highlightRow}>
                                                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
-                                                    #{position.index}
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                     <div className='flex items-center'>
                                                         {token0Info?.logoURI && (
                                                             <img
                                                                 src={token0Info.logoURI}
                                                                 height={24}
                                                                 width={24}
-                                                                alt={position.token0Symbol}
+                                                                alt={position.token0}
                                                                 className="rounded-full mr-1"
                                                             />
                                                         )}
@@ -260,13 +258,20 @@ const Recommendations: React.FC = React.memo(() => {
                                                                 src={token1Info.logoURI}
                                                                 height={24}
                                                                 width={24}
-                                                                alt={position.token1Symbol}
+                                                                alt={position.token1}
                                                                 className="rounded-full mr-1"
                                                             />
                                                         )}
-                                                        <span>{position.token0Symbol}/{position.token1Symbol}</span>
+                                                        <span>{position.token0}/{position.token1} - {getFeeTierFromTickSpacing(position.tickSpacing)}</span>
                                                     </div>
                                                 </td>
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm">
+                                                <Tooltip content={rangeStyle.tooltip} position="top">
+                                                    <span className={`font-semibold ${rangeStyle.color}`}>
+                                                        {Math.floor(position.rangeWidthPercent)}% - {rangeStyle.label}
+                                                    </span>
+                                                </Tooltip>
+                                            </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 {formatUsdValue(position.positionValueUSD)}
                                             </td>
@@ -275,9 +280,6 @@ const Recommendations: React.FC = React.memo(() => {
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 {formatUsdValue(position.feesUSD)}
-                                            </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                {formatUnclaimedFees(position)}
                                             </td>
                                             </tr>
                                         );
@@ -384,9 +386,6 @@ const Recommendations: React.FC = React.memo(() => {
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
                                             24h Fees
                                         </th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
-                                            Fee Tier
-                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className={styles.background}>
@@ -415,7 +414,7 @@ const Recommendations: React.FC = React.memo(() => {
                                                                 className="rounded-full mr-1"
                                                             />
                                                         )}
-                                                        <span>{pool.token0Symbol}/{pool.token1Symbol}</span>
+                                                        <span>{pool.token0Symbol}/{pool.token1Symbol} - {(parseNumericValue(pool.feeTier) / 10000)}%</span>
                                                     </div>
                                                 </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
@@ -439,9 +438,6 @@ const Recommendations: React.FC = React.memo(() => {
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 ${formatNumber(parseNumericValue(pool.feesUSD))}
                                             </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                    {(parseNumericValue(pool.feeTier) / 10000)}%
-                                                </td>
                                             </tr>
                                         );
                                     })}

@@ -66,12 +66,15 @@ type PoolDetails = {
 }
 
 export type SimpleLiquidityPosition = {
-  index: number;
+  index: string;
   token0: string;
   token1: string;
   tickSpacing: number;
   tickLower: number;
   tickUpper: number;
+  rangeWidthTicks: number;
+  rangeWidthPercent: number;
+  liquidity: string;
   tokensOwed0: string;
   tokensOwed1: string;
   apr?: number; // Annual percentage rate based on historical fees (e.g., 0.15 = 15% APR)
