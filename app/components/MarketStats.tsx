@@ -13,15 +13,18 @@ const Item = ({ name, stat, extraCss }: { name: string, stat: string, extraCss?:
 }
 
 export default function MarketStats({ market }: { market: MarketData }) {
-    const color = Number(market.change24h) >= 0 ? 'text-green-500' : 'text-red-500';
+    const color = Number(market.change24h) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+    const trendColor = market.hiro.trend === 'uptrend' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+    const trendEmoji = market.hiro.trend === 'uptrend' ? '📈' : '📉';
+    const marketStateEmoji = market.hiro.marketState === 'trending' ? '🎯' : '↔️';
+
     return (
         <div>
             <dl className="grid grid-cols-2 gap-1">
-                <Item name="EMA (200)" stat={market.trend} />
-                <Item name="RSI (14)" stat={market.rsi.toString()} />
-                <Item name="ATR (14)" stat={market.atr.toString()} />
-                <Item name="Percentage Change" stat={`${market.change24h}%`} extraCss={color} />
-                <Item name="Donchian Channel (30)" stat={market.donchian} />
+                <Item name="24h Change" stat={`${market.change24h}%`} extraCss={color} />
+                <Item name="Trend" stat={`${trendEmoji} ${market.hiro.trend}`} extraCss={trendColor} />
+                <Item name="Market State" stat={`${marketStateEmoji} ${market.hiro.marketState}`} />
+                <Item name="Position" stat={market.hiro.position} extraCss="col-span-2" />
             </dl>
         </div>
     )

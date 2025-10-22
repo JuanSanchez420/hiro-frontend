@@ -12,21 +12,20 @@ import { OHLC } from '../types';
 
 interface CandlestickChartProps {
   ohlcData: OHLC[];
-  emaData: { periodStartUnix: number; value: number }[];
   dcData: { periodStartUnix: number; upper: number; lower: number }[];
+  marketStates: { periodStartUnix: number; trending: boolean; trend: boolean }[];
   label: string;
 }
 
 const CandlestickChart: React.FC<CandlestickChartProps> = ({
   ohlcData,
-  emaData,
   dcData,
+  marketStates,
   label,
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
-  const emaSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const dcUpperSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const dcLowerSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
 
@@ -57,17 +56,12 @@ const CandlestickChart: React.FC<CandlestickChartProps> = ({
         wickUpColor: '#05df72',
         wickDownColor: '#ff6467',
       });
-      
-      emaSeriesRef.current = chartRef.current.addLineSeries({
-        color: '#3B82F6', // Tailwind blue-500
-        lineWidth: 2,
-      });
-      
+
       dcUpperSeriesRef.current = chartRef.current.addLineSeries({
         color: '#6b7280', // Tailwind purple-500
         lineWidth: 2,
       });
-      
+
       dcLowerSeriesRef.current = chartRef.current.addLineSeries({
         color: '#6b7280', // Tailwind purple-500
         lineWidth: 2,
@@ -92,30 +86,45 @@ const CandlestickChart: React.FC<CandlestickChartProps> = ({
 
   useEffect(() => {
     if (candlestickSeriesRef.current && ohlcData.length > 0) {
-      // Transform OHLCData to CandlestickData
-      const transformedData: CandlestickData[] = ohlcData.map((item) => ({
-        time: item.periodStartUnix as Time,
-        open: Number(item.open),
-        high: Number(item.high),
-        low: Number(item.low),
-        close: Number(item.close),
-      }));
+      // Create a map of timestamp to market state
+      const stateMap = new Map(
+        marketStates.map(state => [state.periodStartUnix, state])
+      );
+
+      // Define colors based on market state
+      const getBarColor = (timestamp: number) => {
+        const state = stateMap.get(timestamp);
+        if (!state) return undefined; // Use default colors
+
+        if (state.trending) {
+          // Trending market: green for uptrend, red for downtrend
+          return state.trend ? '#05df72' : '#ff6467';
+        } else {
+          // Ranging market: gray
+          return '#9ca3af';
+        }
+      };
+
+      // Transform OHLCData to CandlestickData with custom colors
+      const transformedData: CandlestickData[] = ohlcData.map((item) => {
+        const color = getBarColor(item.periodStartUnix);
+        return {
+          time: item.periodStartUnix as Time,
+          open: Number(item.open),
+          high: Number(item.high),
+          low: Number(item.low),
+          close: Number(item.close),
+          ...(color && {
+            color,
+            borderColor: color,
+            wickColor: color
+          })
+        };
+      });
 
       candlestickSeriesRef.current.setData(transformedData);
     }
-  }, [ohlcData]);
-
-  useEffect(() => {
-    if (emaSeriesRef.current && emaData.length > 0) {
-
-      const transformedEMA50Data = emaData.map((item) => ({
-        time: item.periodStartUnix as Time,
-        value: item.value,
-      }));
-
-      emaSeriesRef.current.setData(transformedEMA50Data);
-    }
-  }, [emaData]);
+  }, [ohlcData, marketStates]);
 
   useEffect(() => {
     if (dcUpperSeriesRef.current && dcLowerSeriesRef.current && dcData.length > 0) {

@@ -52,10 +52,11 @@ export type MarketData = {
   price: string;
   price24h: string;
   change24h: string;
-  rsi: string;
-  atr: string;
-  trend: string;
-  donchian: string;
+  hiro: {
+    trend: "uptrend" | "downtrend";
+    marketState: "trending" | "ranging";
+    position: "support" | "resistance" | "pullback" | "mid-channel" | "breakout";
+  };
 }
 
 type PoolDetails = {

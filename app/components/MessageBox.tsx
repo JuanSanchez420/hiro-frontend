@@ -24,6 +24,7 @@ const friendlyNames = {
     "borrowAave": "Borrow Aave",
     "repayAave": "Repay Aave",
     "rebalanceLiquidity": "Rebalance Liquidity",
+    "getKnowledgeModule": "Learning",
     "": ""
 }
 

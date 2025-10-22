@@ -198,3 +198,274 @@ export const interpretDonchianChannel = (
     return "price within range";
   }
 };
+
+/**
+ * Hiro Channel State - represents the market state at each bar
+ */
+export interface HiroChannelState {
+  periodStartUnix: number;
+  top: number;
+  bottom: number;
+  basis: number;
+  width: number;
+  extreme: boolean;
+  expansion: boolean;
+  expansionUp: boolean;
+  expansionDown: boolean;
+  cross: boolean;
+  trend: boolean; // true = uptrend, false = downtrend
+  trendStart: boolean;
+  trendEnd: boolean;
+  trending: boolean;
+  trendFlip: boolean;
+  rangeStart: boolean;
+}
+
+/**
+ * Hiro Channel Signals - entry/exit signals for volatility system
+ */
+export interface HiroChannelSignals {
+  periodStartUnix: number;
+  longEntry: boolean;
+  shortEntry: boolean;
+  exit: boolean;
+  volatilityLongEntry: boolean;
+  volatilityShortEntry: boolean;
+  volatilityExit: boolean;
+}
+
+/**
+ * Hiro Channel Interpretation - structured market analysis
+ */
+export interface HiroChannelInterpretation {
+  trend: "uptrend" | "downtrend";
+  marketState: "trending" | "ranging";
+  position: "support" | "resistance" | "pullback" | "mid-channel" | "breakout";
+}
+
+/**
+ * Calculates the Hiro Channel - an advanced Donchian Channel with trend and volatility detection
+ *
+ * @param data Array of OHLC data sorted in ascending order
+ * @param length Number of periods for the channel (default 30)
+ * @param entryType System type: "None", "Trend", "Trend - Long Only", "Volatility", "Volatility - Long Only"
+ * @returns Object containing channel states and trading signals
+ */
+export const calculateHiroChannel = (
+  data: OHLC[],
+  length: number = 30,
+  entryType: "None" | "Trend" | "Trend - Long Only" | "Volatility" | "Volatility - Long Only" = "None"
+): {
+  states: HiroChannelState[];
+  signals: HiroChannelSignals[];
+} => {
+  if (length <= 0) {
+    throw new Error("Length must be a positive integer.");
+  }
+
+  if (data.length < length) {
+    console.warn(`Insufficient data for Hiro Channel. Required: ${length}, Provided: ${data.length}.`);
+    return { states: [], signals: [] };
+  }
+
+  const states: HiroChannelState[] = [];
+  const signals: HiroChannelSignals[] = [];
+
+  // Track bars since last event for state detection
+  let lastExpansionUpBar = -Infinity;
+  let lastExpansionDownBar = -Infinity;
+  let lastTrendStartBar = -Infinity;
+  let lastTrendEndBar = -Infinity;
+
+  // Process each bar
+  for (let i = 0; i < data.length; i++) {
+    const currentLength = Math.min(length, i + 1);
+    const windowStart = i - currentLength + 1;
+    const windowData = data.slice(windowStart, i + 1);
+
+    // Calculate Donchian Channel
+    const top = Math.max(...windowData.map(d => Number(d.high)));
+    const bottom = Math.min(...windowData.map(d => Number(d.low)));
+    const basis = (top + bottom) / 2;
+
+    // Calculate channel width (Hiro Channel Width)
+    const width = (top - bottom) / 2;
+
+    // Calculate hl2 (high-low average for current bar)
+    const hl2 = (Number(data[i].high) + Number(data[i].low)) / 2;
+
+    // Detect extreme (price touches channel boundary)
+    const extreme = Number(data[i].high) === top || Number(data[i].low) === bottom;
+
+    // Find highest width in the window
+    const widthHistory = states.slice(Math.max(0, states.length - currentLength + 1));
+    const highestWidth = widthHistory.length > 0
+      ? Math.max(width, ...widthHistory.map(s => s.width))
+      : width;
+
+    // Detect expansion (width at highest and price at extreme)
+    const expansion = width === highestWidth && extreme;
+    const expansionUp = expansion && Number(data[i].high) === top;
+    const expansionDown = expansion && Number(data[i].low) === bottom;
+
+    // Update expansion tracking
+    if (expansionUp) lastExpansionUpBar = i;
+    if (expansionDown) lastExpansionDownBar = i;
+
+    // Detect cross (hl2 crosses basis)
+    const prevHl2 = i > 0 ? (Number(data[i - 1].high) + Number(data[i - 1].low)) / 2 : hl2;
+    const prevBasis = i > 0 && states.length > 0 ? states[states.length - 1].basis : basis;
+    const cross = (prevHl2 <= prevBasis && hl2 > basis) || (prevHl2 >= prevBasis && hl2 < basis);
+
+    // Determine trend (true = uptrend, false = downtrend)
+    const barsSinceExpansionUp = i - lastExpansionUpBar;
+    const barsSinceExpansionDown = i - lastExpansionDownBar;
+    const trend = barsSinceExpansionUp < barsSinceExpansionDown;
+
+    // Detect trend start/end
+    const trendStart = expansionUp || expansionDown;
+    if (trendStart) lastTrendStartBar = i;
+
+    const barsSinceTrendStart = i - lastTrendStartBar;
+    const barsSinceTrendEnd = i - lastTrendEndBar;
+    const trending = barsSinceTrendStart < barsSinceTrendEnd;
+
+    const prevTrending = i > 0 && states.length > 0 ? states[states.length - 1].trending : false;
+    const trendEnd = !trendStart && cross;
+    if (trendEnd && prevTrending) lastTrendEndBar = i;
+
+    // Detect trend flip
+    const prevTrend = i > 0 && states.length > 0 ? states[states.length - 1].trend : trend;
+    const trendFlip = trend !== prevTrend;
+
+    // Detect range start
+    const rangeStart = (trendEnd && prevTrending) || (trendFlip && prevTrending);
+
+    // Store state
+    const state: HiroChannelState = {
+      periodStartUnix: data[i].periodStartUnix,
+      top: parseFloat(top.toFixed(2)),
+      bottom: parseFloat(bottom.toFixed(2)),
+      basis: parseFloat(basis.toFixed(2)),
+      width: parseFloat(width.toFixed(2)),
+      extreme,
+      expansion,
+      expansionUp,
+      expansionDown,
+      cross,
+      trend,
+      trendStart,
+      trendEnd,
+      trending,
+      trendFlip,
+      rangeStart
+    };
+    states.push(state);
+
+    // Calculate signals for volatility system
+    const volatilityExit =
+      (entryType === "Volatility" && rangeStart) ||
+      (entryType === "Volatility - Long Only" && ((trend && rangeStart) || (prevTrending && trendFlip && expansionDown)));
+
+    const volatilityLongEntry =
+      (entryType === "Volatility" || entryType === "Volatility - Long Only") &&
+      expansionUp && (!prevTrending || trendFlip);
+
+    const volatilityShortEntry =
+      entryType === "Volatility" && expansionDown && (!prevTrending || trendFlip);
+
+    const signal: HiroChannelSignals = {
+      periodStartUnix: data[i].periodStartUnix,
+      longEntry: volatilityLongEntry,
+      shortEntry: volatilityShortEntry,
+      exit: volatilityExit,
+      volatilityLongEntry,
+      volatilityShortEntry,
+      volatilityExit
+    };
+    signals.push(signal);
+  }
+
+  return { states, signals };
+};
+
+/**
+ * Interprets the current Hiro Channel state with detailed market analysis
+ *
+ * @param states Array of Hiro Channel states
+ * @param currentBar Current OHLC bar
+ * @returns Structured interpretation of market state
+ */
+export const interpretHiroChannel = (
+  states: HiroChannelState[],
+  currentBar: OHLC
+): HiroChannelInterpretation => {
+  // Default fallback for insufficient data
+  if (states.length === 0) {
+    return {
+      trend: "downtrend",
+      marketState: "ranging",
+      position: "mid-channel"
+    };
+  }
+
+  const current = states[states.length - 1];
+  const hl2 = (Number(currentBar.high) + Number(currentBar.low)) / 2;
+
+  // Step 1: Determine trend direction
+  const trend: "uptrend" | "downtrend" = current.trend ? "uptrend" : "downtrend";
+
+  // Step 2: Determine market state
+  const marketState: "trending" | "ranging" = current.trending ? "trending" : "ranging";
+
+  // Step 3: Calculate price position metrics
+  const distanceFromTop = current.top - hl2;
+  const distanceFromBottom = hl2 - current.bottom;
+  const percentFromTop = (distanceFromTop / current.width) * 100;
+  const percentFromBottom = (distanceFromBottom / current.width) * 100;
+
+  // Step 4: Determine position based on market state and trend
+  let position: "support" | "resistance" | "pullback" | "mid-channel" | "breakout";
+
+  // Check for breakout first (highest priority)
+  const isBreakout = (trend === "uptrend" && current.expansionUp) ||
+                     (trend === "downtrend" && current.expansionDown);
+
+  if (isBreakout) {
+    position = "breakout";
+  } else if (marketState === "trending") {
+    // In trending markets, determine position based on trend direction
+    const isNearChannelEdge = (trend === "uptrend" && percentFromTop <= 25) ||
+                               (trend === "downtrend" && percentFromBottom <= 25);
+    const isPullback = (trend === "uptrend" && percentFromTop > 25) ||
+                       (trend === "downtrend" && percentFromBottom > 25);
+
+    if (isPullback) {
+      position = "pullback";
+    } else if (trend === "uptrend" && isNearChannelEdge) {
+      position = "resistance";
+    } else if (trend === "downtrend" && isNearChannelEdge) {
+      position = "support";
+    } else {
+      position = "mid-channel";
+    }
+  } else {
+    // In ranging markets, use support/resistance based on proximity to boundaries
+    const isNearTop = percentFromTop < 10;
+    const isNearBottom = percentFromBottom < 10;
+
+    if (isNearTop) {
+      position = "resistance";
+    } else if (isNearBottom) {
+      position = "support";
+    } else {
+      position = "mid-channel";
+    }
+  }
+
+  return {
+    trend,
+    marketState,
+    position
+  };
+};

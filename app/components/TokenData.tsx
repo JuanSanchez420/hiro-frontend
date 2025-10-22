@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import CandlestickChart from './CandlestickChart';
 import { OHLC, PricesResponse, Token } from '../types';
-import { calculateATR, calculateDonchianChannel, calculateEMA, calculateRSI, interpretATR, interpretDonchianChannel, interpretEMA } from '../utils/indicators';
+import { calculateHiroChannel, interpretHiroChannel } from '../utils/indicators';
 import formatNumber from '../utils/formatNumber';
 import tokens from "../utils/tokens.json";
 import MarketStats from './MarketStats';
@@ -22,55 +22,52 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
   const { addPrompt, } = usePromptsContext();
   const { setWidget, setDrawerLeftOpen, styles } = useGlobalContext();
   const [ohlcData, setOhlcData] = useState<OHLC[]>([]);
-  const [emaData, setEmaData] = useState<{ periodStartUnix: number; value: number }[]>([]);
-  const [rsiData, setRsiData] = useState<{ periodStartUnix: number, value: number }[]>([]);
-  const [atrData, setAtrData] = useState<{ periodStartUnix: number, value: number }[]>([]);
-  const [dcData, setDcData] = useState<{ periodStartUnix: number, upper: number, lower: number }[]>([]);
+  const [hcData, setHcData] = useState<{ periodStartUnix: number, upper: number, lower: number }[]>([]);
+  const [hcStates, setHcStates] = useState<{ periodStartUnix: number, trending: boolean, trend: boolean }[]>([]);
   const WETH = tokens['WETH'];
 
-  const disabled = ohlcData.length === 0 || rsiData.length === 0 || atrData.length === 0 || emaData.length === 0;
+  const disabled = ohlcData.length === 0;
 
   const market = useMemo(() => {
-    if (ohlcData.length === 0 || rsiData.length === 0 || atrData.length === 0 || emaData.length === 0) {
+    if (ohlcData.length === 0) {
       return {
         symbol: token.symbol,
         price: 'N/A',
         price24h: 'N/A',
         change24h: 'N/A',
-        rsi: "0",
-        atr: "0",
-        trend: 'N/A',
-        donchian: 'N/A'
+        hiro: {
+          trend: 'downtrend' as const,
+          marketState: 'ranging' as const,
+          position: 'mid-channel' as const
+        }
       };
     }
     const price = Number(ohlcData[ohlcData.length - 1].close);
     const price24h = Number(ohlcData[ohlcData.length - 24].close);
-    const rsi = rsiData[rsiData.length - 1].value.toString();
-    const atr = interpretATR(atrData);
-    const trend = interpretEMA(emaData[emaData.length - 1], price);
     const change24h = ((price - price24h) * 100 / price24h).toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+    // Calculate Hiro Channel states for interpretation
+    const { states } = calculateHiroChannel(ohlcData, 30);
+    const hiro = interpretHiroChannel(states, ohlcData[ohlcData.length - 1]);
+
     return {
       symbol: token.symbol,
       price: formatNumber(price),
       price24h: formatNumber(price24h),
       change24h,
-      rsi,
-      atr,
-      trend,
-      donchian: interpretDonchianChannel(dcData, ohlcData[ohlcData.length - 1])
+      hiro
     };
-  }, [ohlcData, rsiData, atrData, emaData, dcData, token]);
+  }, [ohlcData, token]);
 
   const handleHirosTake = () => {
     setWidget(null);
     setDrawerLeftOpen(false);
+    const hiroSummary = `Trend: ${market.hiro.trend}, State: ${market.hiro.marketState}, Position: ${market.hiro.position}`;
     addPrompt(`I'm looking for advice on: ${token.symbol}
 
-      EMA (200): ${market.trend}
-      RSI (14): ${market.rsi}
-      ATR (14): ${market.atr}
-      Donchian Channel (30): ${market.donchian}
-      24 hour change: ${market.change24h}%, from a price of ${market.price24h} to its current price ${market.price}
+      Current Price: ${market.price}
+      24h Change: ${market.change24h}% (from ${market.price24h} to ${market.price})
+      Hiro Channel (30): ${hiroSummary}
 
       What should I do here?`);
   }
@@ -97,17 +94,24 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
           throw new Error('No data found for the specified token.');
         }
 
-        // Calculate indicators
-        const ema = calculateEMA(fetchedOhlcData, 200);
-        const rsi = calculateRSI(fetchedOhlcData, 14);
-        const atr = calculateATR(fetchedOhlcData, 14);
-        const dc = calculateDonchianChannel(fetchedOhlcData, 30);
+        // Calculate Hiro Channel and map to chart format
+        const { states } = calculateHiroChannel(fetchedOhlcData, 30);
+        const hc = states.map(state => ({
+          periodStartUnix: state.periodStartUnix,
+          upper: state.top,
+          lower: state.bottom
+        }));
+
+        // Extract market states for coloring
+        const statesForChart = states.map(state => ({
+          periodStartUnix: state.periodStartUnix,
+          trending: state.trending,
+          trend: state.trend
+        }));
 
         setOhlcData(fetchedOhlcData);
-        setEmaData(ema);
-        setRsiData(rsi);
-        setAtrData(atr);
-        setDcData(dc);
+        setHcData(hc);
+        setHcStates(statesForChart);
       } catch (error) {
         console.error('Error fetching or processing OHLC data:', error);
       }
@@ -116,56 +120,86 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
     if (!didFetch.current) fetchOHLCData();
   }, [token, hours, WETH]);
 
-  return disabled ? <Spinner /> : (
-    <div className="w-full max-w-4xl mx-auto space-y-6">
+  if (disabled) return <Spinner />;
+
+  const cardClass = `rounded-lg border border-gray-200 dark:border-gray-700 p-4 ${styles.background}`;
+  const primaryActionClass = 'bg-emerald-500 text-white font-medium py-3 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 dark:focus:ring-offset-gray-900 transition-colors dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-600';
+  const secondaryActionClass = 'bg-blue-500 text-white font-medium py-3 px-4 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 dark:focus:ring-offset-gray-900 transition-colors';
+  const backButtonClass = `${styles.button} inline-flex items-center gap-2 text-sm font-medium px-3 py-2`;
+
+  return (
+    <div className={`w-full max-w-4xl mx-auto space-y-6 ${styles.text}`}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">{token.symbol}</h2>
-        <div className="text-right">
-          <div className="text-3xl font-bold">{market.price}</div>
-          <div className={`text-sm font-medium ${Number(market.change24h) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-baseline gap-3">
+            <h2 className="text-2xl font-bold tracking-tight">{token.symbol}</h2>
+            <span className="text-2xl font-semibold">{market.price}</span>
+          </div>
+          <div className={`text-sm font-medium ${Number(market.change24h) >= 0 ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
             {Number(market.change24h) >= 0 ? '+' : ''}{market.change24h}% (24h)
           </div>
         </div>
+        <button
+          className={backButtonClass}
+          onClick={() => exit()}
+        >
+          <svg
+            className="h-4 w-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M15 18L9 12L15 6"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span>Back to Portfolio</span>
+        </button>
       </div>
 
       {/* Chart Section */}
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+      <div className={cardClass}>
         <h3 className="text-lg font-semibold mb-4">Price Chart</h3>
         <CandlestickChart
           ohlcData={ohlcData}
-          emaData={emaData}
-          dcData={dcData}
+          dcData={hcData}
+          marketStates={hcStates}
           label={token.symbol}
         />
       </div>
 
       {/* Technical Indicators Section */}
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+      <div className={cardClass}>
         <h3 className="text-lg font-semibold mb-4">Technical Indicators</h3>
         <MarketStats market={market} />
       </div>
 
       {/* Actions Section */}
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+      <div className={cardClass}>
         <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 gap-3">
           {account?.isConnected && (
             <>
               <button
-                className="bg-emerald-500 text-white font-medium py-3 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 transition-colors"
+                className={primaryActionClass}
                 onClick={() => setWidget('Swap')}
               >
                 Swap
               </button>
               <button
-                className="bg-emerald-500 text-white font-medium py-3 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 transition-colors"
+                className={primaryActionClass}
                 onClick={() => setWidget('Earn')}
               >
                 Earn
               </button>
               <button
-                className="bg-emerald-500 text-white font-medium py-3 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 transition-colors"
+                className={primaryActionClass}
                 onClick={() => setWidget('Autonomous')}
               >
                 Autonomous
@@ -173,16 +207,10 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
             </>
           )}
           <button
-            className="bg-blue-500 text-white font-medium py-3 px-4 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors"
+            className={secondaryActionClass}
             onClick={handleHirosTake}
           >
             Hiro&apos;s Take
-          </button>
-          <button
-            className={`${styles.button} font-medium py-3 px-4`}
-            onClick={() => exit()}
-          >
-            Portfolio
           </button>
         </div>
       </div>
