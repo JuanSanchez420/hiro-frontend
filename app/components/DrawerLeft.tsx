@@ -4,7 +4,6 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, TransitionChild } fro
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useGlobalContext } from '../context/GlobalContext';
 import History from "./History"
-import ThemeToggle from './ThemeToggle';
 import tokensData from "../utils/tokens.json";
 import { Token, TokensData } from "../types";
 import { useCallback, useMemo, useState } from 'react';
@@ -104,11 +103,11 @@ export default function Drawer() {
                   </button>
                 </div>
               </TransitionChild>
-              <div className={`flex h-full flex-col overflow-y-scroll py-6 shadow-xl ${styles.background} ${styles.text}`}>
+              <div className={`flex h-full flex-col overflow-y-scroll py-4 shadow-xl ${styles.background} ${styles.text}`}>
                 <div className="px-4 sm:px-6">
                   <DialogTitle className="text-base font-semibold">{/* title area */}</DialogTitle>
                 </div>
-                <div className="relative mt-6 px-4 sm:px-6 flex flex-col h-full">
+                <div className="relative mt-4 px-4 sm:px-6 flex flex-col h-full">
                   {/* Recommendations View */}
                   {!token && showRecommendations && (
                     <Recommendations />
@@ -150,9 +149,6 @@ export default function Drawer() {
                       <History key={historyKey} />
                     </nav>
                   )}
-
-                  {/* Theme Toggle - Always at very bottom */}
-                  {!token && !showRecommendations && <div className='pt-4'><ThemeToggle /></div>}
                 </div>
               </div>
             </DialogPanel>

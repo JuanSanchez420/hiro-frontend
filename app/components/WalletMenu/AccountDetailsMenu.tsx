@@ -5,6 +5,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import useHiro from '@/app/hooks/useHiro'
 import { NULL_ADDRESS } from '@/app/utils/constants'
 import { useGlobalContext } from '@/app/context/GlobalContext'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 const AccountDetails = () => {
   const { hiro } = useHiro()
@@ -42,6 +43,14 @@ const AccountDetails = () => {
           Basescan for Hiro
         </a>
       </MenuItem>}
+      <MenuItem
+        as="div"
+        disabled
+        className={`flex items-center justify-between gap-3 px-4 py-2 text-sm focus:outline-none ${theme === 'light' ? 'text-gray-700 bg-white' : 'text-gray-300 bg-gray-800'}`}
+      >
+        <span>Theme</span>
+        <ThemeToggle />
+      </MenuItem>
       <MenuItem>
         <a
           href="#"
