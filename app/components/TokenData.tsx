@@ -1,20 +1,22 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import CandlestickChart from './CandlestickChart';
 import { OHLC, PricesResponse, Token } from '../types';
-import { calculateHiroChannel, interpretHiroChannel } from '../utils/indicators';
-import formatNumber from '../utils/formatNumber';
+import { calculateHiroChannel } from '../utils/indicators';
 import tokens from "../utils/tokens.json";
 import MarketStats from './MarketStats';
 import { Spinner } from './Spinner';
 import { useAccount } from 'wagmi';
 import { useGlobalContext } from '../context/GlobalContext';
 import { usePromptsContext } from '../context/PromptsContext';
+import { buildHiroTakePrompt, computeHiroMarketSnapshot, HIRO_DEFAULT_LOOKBACK } from '../utils/hiroTake';
 
 interface TokenDataProps {
   token: Token;
   hours: number;
   exit: () => void;
 }
+
+const HIRO_LOOKBACK = HIRO_DEFAULT_LOOKBACK;
 
 const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
   const account = useAccount();
@@ -28,48 +30,21 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
 
   const disabled = ohlcData.length === 0;
 
-  const market = useMemo(() => {
-    if (ohlcData.length === 0) {
-      return {
-        symbol: token.symbol,
-        price: 'N/A',
-        price24h: 'N/A',
-        change24h: 'N/A',
-        hiro: {
-          trend: 'downtrend' as const,
-          marketState: 'ranging' as const,
-          position: 'mid-channel' as const
-        }
-      };
-    }
-    const price = Number(ohlcData[ohlcData.length - 1].close);
-    const price24h = Number(ohlcData[ohlcData.length - 24].close);
-    const change24h = ((price - price24h) * 100 / price24h).toLocaleString(undefined, { maximumFractionDigits: 2 });
-
-    // Calculate Hiro Channel states for interpretation
-    const { states } = calculateHiroChannel(ohlcData, 30);
-    const hiro = interpretHiroChannel(states, ohlcData[ohlcData.length - 1]);
-
-    return {
-      symbol: token.symbol,
-      price: formatNumber(price),
-      price24h: formatNumber(price24h),
-      change24h,
-      hiro
-    };
-  }, [ohlcData, token]);
+  const market = useMemo(() => computeHiroMarketSnapshot({
+    token,
+    ohlcData,
+    lookback: HIRO_LOOKBACK,
+  }), [token, ohlcData]);
 
   const handleHirosTake = () => {
     setWidget(null);
     setDrawerLeftOpen(false);
-    const hiroSummary = `Trend: ${market.hiro.trend}, State: ${market.hiro.marketState}, Position: ${market.hiro.position}`;
-    addPrompt(`I'm looking for advice on: ${token.symbol}
-
-      Current Price: ${market.price}
-      24h Change: ${market.change24h}% (from ${market.price24h} to ${market.price})
-      Hiro Channel (30): ${hiroSummary}
-
-      What should I do here?`);
+    const prompt = buildHiroTakePrompt({
+      token,
+      market,
+      lookback: HIRO_LOOKBACK,
+    });
+    addPrompt(prompt);
   }
 
   // Effect to fetch OHLC data and calculate indicators
@@ -95,7 +70,7 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
         }
 
         // Calculate Hiro Channel and map to chart format
-        const { states } = calculateHiroChannel(fetchedOhlcData, 30);
+        const { states } = calculateHiroChannel(fetchedOhlcData, HIRO_LOOKBACK);
         const hc = states.map(state => ({
           periodStartUnix: state.periodStartUnix,
           upper: state.top,

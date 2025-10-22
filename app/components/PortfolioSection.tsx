@@ -1,9 +1,15 @@
-import React from 'react';
-import { Token } from '../types';
+import React, { useCallback, useState } from 'react';
+import { OHLC, PricesResponse, Token } from '../types';
 import formatNumber from '../utils/formatNumber';
 import { Spinner } from './Spinner';
 import { NULL_ADDRESS } from '../utils/constants';
 import { useGlobalContext } from '../context/GlobalContext';
+import { usePromptsContext } from '../context/PromptsContext';
+import tokens from '../utils/tokens.json';
+import { buildHiroTakePrompt, computeHiroMarketSnapshot, HIRO_DEFAULT_HOURS, HIRO_DEFAULT_LOOKBACK } from '../utils/hiroTake';
+
+const HOURS_FOR_HIRO_TAKE = HIRO_DEFAULT_HOURS;
+const getTokenKey = (token: Token) => token.address.toLowerCase();
 
 interface PortfolioSectionProps {
   balancesWithTokens: {
@@ -22,7 +28,54 @@ const PortfolioSection: React.FC<PortfolioSectionProps> = React.memo(({
   loading,
   setToken,
 }) => {
-  const { styles } = useGlobalContext()
+  const { styles, setWidget, setDrawerLeftOpen } = useGlobalContext()
+  const { addPrompt } = usePromptsContext();
+  const [loadingToken, setLoadingToken] = useState<string | null>(null);
+  const WETH = tokens['WETH'];
+
+  const handleHiroTake = useCallback(async (token: Token) => {
+    const tokenKey = getTokenKey(token);
+    setLoadingToken(tokenKey);
+
+    try {
+      const tokenAddress = token.isNative ? WETH.address : token.address;
+      const response = await fetch(
+        `/api/prices?tokens=${encodeURIComponent(tokenAddress)}&hours=${HOURS_FOR_HIRO_TAKE}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const responseData: PricesResponse = await response.json();
+      const fetchedOhlcData: OHLC[] = responseData[tokenAddress.toLowerCase()];
+
+      if (!fetchedOhlcData || fetchedOhlcData.length === 0) {
+        throw new Error('No OHLC data returned for token.');
+      }
+
+      const market = computeHiroMarketSnapshot({
+        token,
+        ohlcData: fetchedOhlcData,
+        lookback: HIRO_DEFAULT_LOOKBACK,
+      });
+
+      const prompt = buildHiroTakePrompt({
+        token,
+        market,
+        lookback: HIRO_DEFAULT_LOOKBACK,
+      });
+
+      setWidget(null);
+      setDrawerLeftOpen(false);
+      addPrompt(prompt);
+    } catch (error) {
+      console.error("Error preparing Hiro's Take:", error);
+    } finally {
+      setLoadingToken(null);
+    }
+  }, [WETH.address, addPrompt, setDrawerLeftOpen, setWidget]);
+
   if (loading) return <Spinner />;
   if (!hiro || hiro === NULL_ADDRESS) return null;
 
@@ -56,11 +109,18 @@ const PortfolioSection: React.FC<PortfolioSectionProps> = React.memo(({
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
                     USD
                   </th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
+                    Hiro&apos;s Take
+                  </th>
                 </tr>
               </thead>
               <tbody className={styles.background}>
                 {balancesWithTokens.map((item) => (
-                  <tr key={item.token.symbol} className={`${styles.highlightRow} hover:cursor-pointer`} onClick={() => setToken(item.token)}>
+                  <tr
+                    key={item.token.symbol}
+                    className={`${styles.highlightRow} hover:cursor-pointer`}
+                    onClick={() => setToken(item.token)}
+                  >
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
                       <div className='flex items-center'>
                         <img
@@ -75,6 +135,18 @@ const PortfolioSection: React.FC<PortfolioSectionProps> = React.memo(({
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{formatNumber(item.balance)}</td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">${formatNumber(Number(item.balance) * Number(item.usdPrice))}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <button
+                        className="rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-blue-300"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleHiroTake(item.token);
+                        }}
+                        disabled={loadingToken === getTokenKey(item.token)}
+                      >
+                        {loadingToken === getTokenKey(item.token) ? 'Loading...' : "Hiro's Take"}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

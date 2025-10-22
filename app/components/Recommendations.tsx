@@ -9,6 +9,11 @@ import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import tokens from '../utils/tokens.json';
 import Tooltip from './Tooltip';
 import { getRangeStyle } from '../utils/rangeHelpers';
+import { buildHiroTakePrompt, computeHiroMarketSnapshot, HIRO_DEFAULT_HOURS, HIRO_DEFAULT_LOOKBACK } from '../utils/hiroTake';
+import { OHLC, PricesResponse } from '../types';
+
+const HIRO_LOOKBACK = HIRO_DEFAULT_LOOKBACK;
+const HOURS_FOR_HIRO_TAKE = HIRO_DEFAULT_HOURS;
 
 // Helper function to parse numbers that may contain commas or percentage signs
 const parseNumericValue = (value: string | number): number => {
@@ -92,11 +97,12 @@ type RecommendationsResult = {
 };
 
 const Recommendations: React.FC = React.memo(() => {
-    const { styles, setDrawerLeftOpen, setShowRecommendations } = useGlobalContext();
+    const { styles, setDrawerLeftOpen, setShowRecommendations, setWidget } = useGlobalContext();
     const { addPrompt } = usePromptsContext();
     const [data, setData] = useState<RecommendationsResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [loadingSymbol, setLoadingSymbol] = useState<string | null>(null);
 
     const fetchRecommendations = useCallback(async () => {
         setLoading(true);
@@ -119,11 +125,62 @@ const Recommendations: React.FC = React.memo(() => {
         fetchRecommendations();
     }, [fetchRecommendations]);
 
-    const handleAddPrompt = useCallback((prompt: string) => {
-        addPrompt(prompt);
+    const closeRecommendations = useCallback(() => {
         setDrawerLeftOpen(false);
         setShowRecommendations(false);
-    }, [addPrompt, setDrawerLeftOpen, setShowRecommendations]);
+    }, [setDrawerLeftOpen, setShowRecommendations]);
+
+    const handleAddPrompt = useCallback((prompt: string) => {
+        addPrompt(prompt);
+        closeRecommendations();
+    }, [addPrompt, closeRecommendations]);
+
+    const fetchTokenOhlc = useCallback(async (symbol: string): Promise<OHLC[]> => {
+        const tokenInfo = getTokenBySymbol(symbol);
+        if (!tokenInfo) {
+            throw new Error(`Token metadata not found for ${symbol}`);
+        }
+        const address = tokenInfo.isNative ? tokens['WETH'].address : tokenInfo.address;
+        const response = await fetch(`/api/prices?tokens=${encodeURIComponent(address)}&hours=${HOURS_FOR_HIRO_TAKE}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch OHLC data for ${symbol}`);
+        }
+        const responseData: PricesResponse = await response.json();
+        const key = address.toLowerCase();
+        const ohlcData = responseData[key];
+        if (!ohlcData || ohlcData.length === 0) {
+            throw new Error(`No OHLC data returned for ${symbol}`);
+        }
+        return ohlcData;
+    }, []);
+
+    const handleHiroTake = useCallback(async (symbol: string) => {
+        try {
+            setLoadingSymbol(symbol);
+            const tokenInfo = getTokenBySymbol(symbol);
+            if (!tokenInfo) {
+                throw new Error(`Token metadata not found for ${symbol}`);
+            }
+            const ohlcData = await fetchTokenOhlc(symbol);
+            const market = computeHiroMarketSnapshot({
+                token: tokenInfo,
+                ohlcData,
+                lookback: HIRO_LOOKBACK,
+            });
+            const prompt = buildHiroTakePrompt({
+                token: tokenInfo,
+                market,
+                lookback: HIRO_LOOKBACK,
+            });
+            setWidget(null);
+            addPrompt(prompt);
+            closeRecommendations();
+        } catch (err) {
+            console.error("Error fetching Hiro's Take:", err);
+        } finally {
+            setLoadingSymbol(null);
+        }
+    }, [addPrompt, closeRecommendations, fetchTokenOhlc, setWidget]);
 
     const formatUsdValue = (value?: number | string) => {
         if (value === undefined) {
@@ -184,6 +241,9 @@ const Recommendations: React.FC = React.memo(() => {
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
                                             USD Value
                                         </th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
+                                            Hiro&apos;s Take
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className={styles.background}>
@@ -210,6 +270,15 @@ const Recommendations: React.FC = React.memo(() => {
                                                 </td>
                                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                     ${formatNumber(token.usdValue)}
+                                                </td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    <button
+                                                        className="rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-blue-300"
+                                                        onClick={() => handleHiroTake(token.symbol)}
+                                                        disabled={loadingSymbol === token.symbol}
+                                                    >
+                                                        {loadingSymbol === token.symbol ? 'Loading...' : "Hiro's Take"}
+                                                    </button>
                                                 </td>
                                             </tr>
                                         );
