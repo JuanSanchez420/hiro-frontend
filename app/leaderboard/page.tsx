@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Portfolio } from '../types';
 import formatNumber from '../utils/formatNumber';
-import { formatEther } from 'viem';
 import { ChevronUpIcon } from '@heroicons/react/24/outline';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
@@ -25,6 +24,24 @@ export default function LeaderboardPage() {
 
   const toggleExpand = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
+  };
+
+  const getHiroBalance = (portfolio: Portfolio) => {
+    const hiroToken = portfolio.tokens.find(
+      (token) => token.symbol.toUpperCase() === 'HIRO'
+    );
+
+    if (!hiroToken) {
+      return '0.00';
+    }
+
+    const numericBalance = Number(hiroToken.balance);
+
+    if (Number.isNaN(numericBalance)) {
+      return '0.00';
+    }
+
+    return numericBalance.toFixed(2);
   };
 
   const formatUsdValue = (value?: number) => {
@@ -85,7 +102,7 @@ export default function LeaderboardPage() {
                 ${parseFloat(portfolio.totalUSDValue).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
               </div>
               <div className="flex justify-end items-center">
-                <span className="text-right mr-4">{parseFloat(formatEther(BigInt(portfolio.hiroBalance))).toFixed(2)}</span>
+                <span className="text-right mr-4">{getHiroBalance(portfolio)}</span>
                 {expandedIndex === index ? 
                   <ChevronUpIcon className="w-5 h-5" /> : 
                   <ChevronDownIcon className="w-5 h-5" />

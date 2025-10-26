@@ -42,7 +42,7 @@ const DepositWidget = () => {
 
   const balance0 = useMemo(() => {
     if (!portfolio) return "0"
-    if (depositToken === "ETH") return portfolio.balance
+    if (depositToken === "ETH") return portfolio.userWalletEthBalance
     return portfolio.tokens.find(b => b.symbol === depositToken)?.balance || "0"
   }, [depositToken, portfolio])
 

@@ -98,8 +98,7 @@ type AaveUserPosition = {
 export interface Portfolio {
   address: `0x${string}`;
   hiro: `0x${string}`;
-  balance: string;
-  hiroBalance: string;
+  userWalletEthBalance: string;
   tokens: {
     symbol: string;
     balance: string;

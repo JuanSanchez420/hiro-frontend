@@ -25,7 +25,7 @@ const SignupWidget = () => {
 
   const balance0 = useMemo(() => {
     if (!portfolio) return "0"
-    return portfolio.balance || "0"
+    return portfolio.userWalletEthBalance || "0"
   }, [portfolio])
 
   const tokenList = useMemo(() => {

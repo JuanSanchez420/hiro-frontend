@@ -6,6 +6,8 @@ import { waitForTransactionReceipt } from 'viem/actions';
 import doConfettiBurst from '../utils/doConfettiBurst';
 import { usePortfolioContext } from '../context/PortfolioContext';
 import { NULL_ADDRESS } from '../utils/constants';
+import { useMessagesContext } from '../context/MessagesContext';
+import { usePromptsContext } from '../context/PromptsContext';
 
 enum HiroWalletStatus {
     NOT_CREATED = 'NOT_CREATED',
@@ -16,6 +18,8 @@ enum HiroWalletStatus {
 const useHiroFactory = () => {
     const { data: client } = useWalletClient();
     const { fetchPortfolio, portfolio } = usePortfolioContext();
+    const { addMessage } = useMessagesContext();
+    const { addPrompt } = usePromptsContext();
     const [status, setStatus] = useState<HiroWalletStatus>(HiroWalletStatus.NOT_CREATED);
     const depositAmount = 10000000000000000n; // 0.01 ETH
 
@@ -51,13 +55,21 @@ const useHiroFactory = () => {
             await fetchPortfolio();
             doConfettiBurst()
             setStatus(HiroWalletStatus.CREATED);
+            const prompt = 'I created a Hiro. What can you do?';
+            addMessage({
+                id: Date.now(),
+                message: prompt,
+                type: 'user',
+                completed: true,
+            });
+            addPrompt(prompt);
 
             return data.wallet;
         } catch (error) {
             setStatus(HiroWalletStatus.NOT_CREATED);
             console.error("Error creating HiroWallet:", error);
         }
-    }, [factory, client, depositAmount, fetchPortfolio])
+    }, [factory, client, depositAmount, fetchPortfolio, addMessage, addPrompt])
 
     // Keep local status in sync with portfolio.hiro if it already exists (e.g., page refresh after creation)
     useEffect(() => {

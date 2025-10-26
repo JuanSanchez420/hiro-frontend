@@ -4,12 +4,11 @@ import { Portfolio } from "../types";
 import { NULL_ADDRESS } from "../utils/constants";
 import { useAccount } from "wagmi";
 
-const emptyPortfolio = { 
-    address: NULL_ADDRESS as `0x${string}`, 
-    hiro: NULL_ADDRESS as `0x${string}`, 
-    balance: "0", 
-    hiroBalance: "0", 
-    tokens: [], 
+const emptyPortfolio: Portfolio = {
+    address: NULL_ADDRESS as `0x${string}`,
+    hiro: NULL_ADDRESS as `0x${string}`,
+    userWalletEthBalance: "0",
+    tokens: [],
     positions: [],
     aave: [],
     timestamp: Date.now()
