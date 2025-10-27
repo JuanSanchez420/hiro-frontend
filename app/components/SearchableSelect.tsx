@@ -48,7 +48,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, value, onC
                 <div className='text-sm'>{value ? value.label : 'Select...'}</div>
                 <ChevronDownIcon
                     aria-hidden="true"
-                    className="pointer-events-none col-start-1 row-start-1 ml-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
+                    className="pointer-events-none col-start-1 row-start-1 ml-2 pr-1 size-5 self-center justify-self-end text-gray-500 sm:size-4"
                 />
             </div>
             {isOpen && (

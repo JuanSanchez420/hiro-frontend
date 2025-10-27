@@ -11,6 +11,8 @@ interface GlobalContextType {
     setShowRecommendations: React.Dispatch<React.SetStateAction<boolean>>
     widget: WidgetOption
     setWidget: React.Dispatch<React.SetStateAction<WidgetOption>>
+    widgetData: Record<string, unknown> | null
+    setWidgetData: React.Dispatch<React.SetStateAction<Record<string, unknown> | null>>
     isSignedIn: boolean
     setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>
     theme: "light" | "dark"
@@ -24,6 +26,7 @@ export const GlobalContextProvider = ({ children }: { children: React.ReactNode 
     const [drawerLeftOpen, setDrawerLeftOpen] = useState(false);
     const [showRecommendations, setShowRecommendations] = useState(false);
     const [widget, setWidget] = useState<WidgetOption>(null);
+    const [widgetData, setWidgetData] = useState<Record<string, unknown> | null>(null);
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [theme, setTheme] = useState<"light" | "dark">("light");
 
@@ -34,8 +37,9 @@ export const GlobalContextProvider = ({ children }: { children: React.ReactNode 
         drawerLeftOpen, setDrawerLeftOpen,
         showRecommendations, setShowRecommendations,
         widget, setWidget,
+        widgetData, setWidgetData,
         isSignedIn, setIsSignedIn,
-    }), [theme, styles, drawerLeftOpen, showRecommendations, widget, isSignedIn]);
+    }), [theme, styles, drawerLeftOpen, showRecommendations, widget, widgetData, isSignedIn]);
 
     return (
         <GlobalContext.Provider value={value}>

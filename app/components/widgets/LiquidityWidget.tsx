@@ -1,6 +1,6 @@
 
 import formatNumber from "@/app/utils/formatNumber";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import SearchableSelect from "../SearchableSelect";
 import { SimpleLiquidityPosition } from "@/app/types";
 import TOKENS from "@/app/utils/tokens.json";
@@ -9,28 +9,65 @@ import { usePromptsContext } from "@/app/context/PromptsContext";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
 import Tooltip from "../Tooltip";
 
+const getFeeTier = (fee?: number) => {
+  if (fee === undefined || fee === null || Number.isNaN(fee)) return "unknown";
+
+  const feeMap: Record<number, string> = {
+    100: "0.01%",
+    500: "0.05%",
+    3000: "0.30%",
+    10000: "1.00%",
+  };
+
+  return feeMap[fee] || `${(fee / 10000)}%`;
+};
+
+const FEE_TIER_OPTIONS = ["0.01%", "0.05%", "0.30%", "1.00%"] as const;
+
 export default function LiquidityWidget() {
   const [amount0, setAmount0] = useState("");
   const [amount1, setAmount1] = useState("");
   const [token0, setToken0] = useState("WETH");
   const [token1, setToken1] = useState("USDC");
   const [width, setWidth] = useState<"5%" | "10%" | "15%">("15%");
+  const [feeTier, setFeeTier] = useState<typeof FEE_TIER_OPTIONS[number]>("0.05%");
   const [action, setAction] = useState<"add" | "remove">("add");
 
   const { addPrompt } = usePromptsContext();
-  const { setWidget, styles } = useGlobalContext();
+  const { setWidget, styles, widgetData, setWidgetData } = useGlobalContext();
   const { portfolio } = usePortfolioContext();
 
+  // Prepopulate widget with data from recommendations
+  useEffect(() => {
+    if (widgetData) {
+      if (widgetData.token0 && typeof widgetData.token0 === 'string') {
+        setToken0(widgetData.token0);
+      }
+      if (widgetData.token1 && typeof widgetData.token1 === 'string') {
+        setToken1(widgetData.token1);
+      }
+      if (widgetData.feeTier && typeof widgetData.feeTier === 'string') {
+        const tier = widgetData.feeTier as typeof FEE_TIER_OPTIONS[number];
+        if (FEE_TIER_OPTIONS.includes(tier)) {
+          setFeeTier(tier);
+        }
+      }
+      // Clear widget data after using it
+      setWidgetData(null);
+    }
+  }, [widgetData, setWidgetData]);
+
   const handleAddLiquidity = () => {
-    if (confirm(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} with a ${width} range?`)) {
-      addPrompt(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} ${width} range`);
+    if (confirm(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} with a ${width} range at the ${feeTier} fee tier?`)) {
+      addPrompt(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} ${width} range at ${feeTier}`);
       setWidget(null);
     }
   };
 
   const handleRemoveLiquidity = (position: SimpleLiquidityPosition) => {
-    if (confirm(`Remove liquidity for ${position.token0}/${position.token1}?`)) {
-      addPrompt(`Remove liquidity for ${position.token0}/${position.token1}, index ${position.index}`);
+    const feeTier = getFeeTier(position.fee);
+    if (confirm(`Remove liquidity for ${position.token0}/${position.token1} (${feeTier})?`)) {
+      addPrompt(`Remove liquidity for ${position.token0}/${position.token1} at ${feeTier}`);
       setWidget(null);
     }
   }
@@ -232,6 +269,28 @@ export default function LiquidityWidget() {
             </button></Tooltip>
           </div>
 
+          <div className="mb-6">
+            <div className="flex justify-between mb-1">
+              <label htmlFor="fee-tier" className="text-sm font-medium">Fee tier</label>
+              <span className="text-xs text-gray-500">Affects swap fees + APR</span>
+            </div>
+            <div className="rounded-md outline outline-1 -outline-offset-1 outline-gray-300 focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-emerald-600 pr-2">
+              <select
+                id="fee-tier"
+                name="fee-tier"
+                value={feeTier}
+                onChange={(e) => setFeeTier(e.target.value as typeof FEE_TIER_OPTIONS[number])}
+                className={`w-full bg-transparent pr-2 py-2 px-3 text-sm focus:outline-0 ${styles.background} ${styles.text}`}
+              >
+                {FEE_TIER_OPTIONS.map((tier) => (
+                  <option key={tier} value={tier} className="text-gray-900">
+                    {tier}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           {/* Add Liquidity Button */}
           <button
             type="button"
@@ -250,7 +309,7 @@ export default function LiquidityWidget() {
             {liquidityPositions.map((item, index) => (
               <div key={index} className="flex tems-center justify-between">
                 <div className="text-sm">
-                  <div>{`${item.token0}/${item.token1}`}</div>
+                  <div>{`${item.token0}/${item.token1} - ${getFeeTier(item.fee)}`}</div>
                   <div className="italic text-xs">{`Value: ${formatUsdValue(item.positionValueUSD)}`}</div>
                   <div className="italic text-xs">{`APR: ${formatAprValue(item.apr)}`}</div>
                   <div className="italic text-xs">{`Unclaimed: ${formatUnclaimedFees(item)}`}</div>

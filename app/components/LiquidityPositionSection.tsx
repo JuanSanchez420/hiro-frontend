@@ -32,20 +32,24 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
     return `${formatNumber(apr * 100)}%`;
   };
 
-  const getFeeTierFromTickSpacing = (tickSpacing: number): string => {
+  const getFeeTier = (fee: number): string => {
+    if (fee === undefined || fee === null || Number.isNaN(fee)) {
+      return 'unknown';
+    }
     const feeMap: { [key: number]: string } = {
-      1: '0.01%',
-      10: '0.05%',
-      60: '0.30%',
-      200: '1.00%',
+      100: '0.01%',
+      500: '0.05%',
+      3000: '0.30%',
+      10000: '1.00%',
     };
-    return feeMap[tickSpacing] || `${(tickSpacing / 10000)}%`;
+    return feeMap[fee] || `${(fee / 10000)}%`;
   };
 
   const handleRemove = (position: SimpleLiquidityPosition) => {
-    if (confirm(`Are you sure you want to remove liquidity position ${position.token0}/${position.token1}?`)) {
+    const feeTier = getFeeTier(position.fee)
+    if (confirm(`Are you sure you want to remove liquidity position ${position.token0}/${position.token1} (${feeTier})?`)) {
       setDrawerLeftOpen(false)
-      addPrompt(`Remove liquidity with position index ${position.index}`)
+      addPrompt(`Remove liquidity for ${position.token0}/${position.token1} at ${feeTier}`)
     }
   }
 
@@ -83,7 +87,7 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
                   const rangeStyle = getRangeStyle(position.rangeWidthPercent);
                   return (
                     <tr key={`position-${position.index}`} className={`${styles.highlightRow}`}>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{position.token0}/{position.token1} - {getFeeTierFromTickSpacing(position.tickSpacing)}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 truncate">{position.token0}/{position.token1} - {getFeeTier(position.fee)}</td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm">
                         <Tooltip content={rangeStyle.tooltip} position="top">
                           <span className={`font-semibold ${rangeStyle.color}`}>

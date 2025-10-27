@@ -410,7 +410,10 @@ export const interpretHiroChannel = (
   }
 
   const current = states[states.length - 1];
-  const hl2 = (Number(currentBar.high) + Number(currentBar.low)) / 2;
+  const close = Number(currentBar.close);
+  const channelRange = current.top - current.bottom;
+  const safeRange = channelRange === 0 ? 1 : channelRange;
+  const boundedClose = Math.min(Math.max(close, current.bottom), current.top);
 
   // Step 1: Determine trend direction
   const trend: "uptrend" | "downtrend" = current.trend ? "uptrend" : "downtrend";
@@ -419,10 +422,8 @@ export const interpretHiroChannel = (
   const marketState: "trending" | "ranging" = current.trending ? "trending" : "ranging";
 
   // Step 3: Calculate price position metrics
-  const distanceFromTop = current.top - hl2;
-  const distanceFromBottom = hl2 - current.bottom;
-  const percentFromTop = (distanceFromTop / current.width) * 100;
-  const percentFromBottom = (distanceFromBottom / current.width) * 100;
+  const percentFromBottom = ((boundedClose - current.bottom) / safeRange) * 100;
+  const percentFromTop = 100 - percentFromBottom;
 
   // Step 4: Determine position based on market state and trend
   let position: "support" | "resistance" | "pullback" | "mid-channel" | "breakout";

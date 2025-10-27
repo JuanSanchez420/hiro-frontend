@@ -57,7 +57,7 @@ type LiquidityPosition = {
     index: string;
     token0: string;
     token1: string;
-    tickSpacing: number;
+    fee: number;
     tickLower: number;
     tickUpper: number;
     rangeWidthTicks: number;
@@ -97,7 +97,7 @@ type RecommendationsResult = {
 };
 
 const Recommendations: React.FC = React.memo(() => {
-    const { styles, setDrawerLeftOpen, setShowRecommendations, setWidget } = useGlobalContext();
+    const { styles, setDrawerLeftOpen, setShowRecommendations, setWidget, setWidgetData } = useGlobalContext();
     const { addPrompt } = usePromptsContext();
     const [data, setData] = useState<RecommendationsResult | null>(null);
     const [loading, setLoading] = useState(false);
@@ -182,6 +182,16 @@ const Recommendations: React.FC = React.memo(() => {
         }
     }, [addPrompt, closeRecommendations, fetchTokenOhlc, setWidget]);
 
+    const handleOpenLiquidityWidget = useCallback((pool: PoolOpportunity) => {
+        setWidgetData({
+            token0: pool.token0Symbol,
+            token1: pool.token1Symbol,
+            feeTier: `${(parseNumericValue(pool.feeTier) / 10000)}%`,
+        });
+        setWidget("Earn");
+        closeRecommendations();
+    }, [setWidgetData, setWidget, closeRecommendations]);
+
     const formatUsdValue = (value?: number | string) => {
         if (value === undefined) {
             return '-';
@@ -204,14 +214,17 @@ const Recommendations: React.FC = React.memo(() => {
         return `${formatNumber(numeric * 100)}%`;
     };
 
-    const getFeeTierFromTickSpacing = (tickSpacing: number): string => {
+    const getFeeTier = (fee: number): string => {
+        if (fee === undefined || fee === null || Number.isNaN(fee)) {
+            return 'unknown';
+        }
         const feeMap: { [key: number]: string } = {
-            1: '0.01%',
-            10: '0.05%',
-            60: '0.30%',
-            200: '1.00%',
+            100: '0.01%',
+            500: '0.05%',
+            3000: '0.30%',
+            10000: '1.00%',
         };
-        return feeMap[tickSpacing] || `${(tickSpacing / 10000)}%`;
+        return feeMap[fee] || `${(fee / 10000)}%`;
     };
 
     if (loading) return <Spinner />;
@@ -331,7 +344,7 @@ const Recommendations: React.FC = React.memo(() => {
                                                                 className="rounded-full mr-1"
                                                             />
                                                         )}
-                                                        <span>{position.token0}/{position.token1} - {getFeeTierFromTickSpacing(position.tickSpacing)}</span>
+                                                        <span>{position.token0}/{position.token1} - {getFeeTier(position.fee)}</span>
                                                     </div>
                                                 </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm">
@@ -488,9 +501,9 @@ const Recommendations: React.FC = React.memo(() => {
                                                 </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
                                                 <button
-                                                    onClick={() => handleAddPrompt(`Deposit into ${pool.token0Symbol}/${pool.token1Symbol} pool with ${(parseNumericValue(pool.feeTier) / 10000)}% fee tier`)}
+                                                    onClick={() => handleOpenLiquidityWidget(pool)}
                                                     className="inline-flex items-center text-emerald-600 hover:text-emerald-700"
-                                                    title="Add deposit prompt"
+                                                    title="Add liquidity"
                                                 >
                                                     <PlusCircleIcon className="size-5" />
                                                 </button>

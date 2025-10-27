@@ -70,7 +70,7 @@ export type SimpleLiquidityPosition = {
   index: string;
   token0: string;
   token1: string;
-  tickSpacing: number;
+  fee: number; // Fee in basis points (100 = 0.01%, 500 = 0.05%, 3000 = 0.30%, 10000 = 1.00%)
   tickLower: number;
   tickUpper: number;
   rangeWidthTicks: number;
