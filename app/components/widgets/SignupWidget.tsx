@@ -15,18 +15,50 @@ const SignupWidget = () => {
   const { portfolio } = usePortfolioContext();
 
   const handleSignup = async () => {
-    if (!amount) {
-      alert("Please fill in all fields")
-      return
+    if (amount === undefined || amount === null || amount === "") {
+      alert("Please enter an amount (0 is valid)");
+      return;
     }
-    await signUp(amount)
-    setWidget(null)
+
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount < 0) {
+      alert("Please enter a valid amount (must be 0 or greater)");
+      return;
+    }
+
+    // Only check balance if depositing more than 0
+    if (numAmount > 0) {
+      const balance = Number(balance0);
+      if (numAmount > balance) {
+        alert("Insufficient balance");
+        return;
+      }
+    }
+
+    await signUp(amount);
+    setWidget(null);
   };
 
   const balance0 = useMemo(() => {
     if (!portfolio) return "0"
     return portfolio.userWalletEthBalance || "0"
   }, [portfolio])
+
+  const isValidAmount = useMemo(() => {
+    if (amount === undefined || amount === null || amount === "") return false;
+
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount < 0) return false;
+
+    // If depositing more than 0, check balance
+    if (numAmount > 0) {
+      const balance = Number(balance0);
+      return numAmount <= balance;
+    }
+
+    // 0 is valid
+    return true;
+  }, [amount, balance0])
 
   const tokenList = useMemo(() => {
     return [{ label: "ETH", value: "ETH" }]
@@ -37,7 +69,7 @@ const SignupWidget = () => {
     <div className="w-full max-w-md mx-auto">
       <h2 className="text-lg font-semibold mb-4">Create your Hiro!</h2>
       <div className="text-sm">
-        Creating a Hiro costs 0.01 ETH. You can send additional ETH now for Hiro to trade with, or you can send it later.
+        You can send ETH now for Hiro to trade with, or you can send it later.
       </div>
       {/* From Token */}
       <div className="mb-6">
@@ -68,7 +100,13 @@ const SignupWidget = () => {
                   <button
                     key={index}
                     type="button"
-                    onClick={() => setAmount((Number(balance0) * percent / 100).toString())}
+                    onClick={() => {
+                      if (percent === 100) {
+                        setAmount(balance0);
+                      } else {
+                        setAmount((Number(balance0) * percent / 100).toString());
+                      }
+                    }}
                     className={styles.button}
                   >
                     {percent}%
@@ -84,8 +122,8 @@ const SignupWidget = () => {
       <button
         type="button"
         onClick={handleSignup}
-        disabled={status === "CREATING"}
-        className={`flex justify-center w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1`}
+        disabled={!isValidAmount || status === "CREATING"}
+        className={`flex justify-center w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:bg-gray-400 disabled:cursor-not-allowed`}
       >
         {status === "NOT_CREATED" && <span>CREATE YOUR HIRO</span>}
         {status === "CREATING" && <div className="flex"><Spinner /><span>TRAINING YOUR HIRO</span></div>}

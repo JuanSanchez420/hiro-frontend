@@ -58,6 +58,47 @@ export default function LiquidityWidget() {
   }, [widgetData, setWidgetData]);
 
   const handleAddLiquidity = () => {
+    if (!amount0 || !amount1 || !token0 || !token1) {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    const numAmount0 = Number(amount0);
+    const numAmount1 = Number(amount1);
+
+    if (isNaN(numAmount0) || numAmount0 <= 0) {
+      alert("Please enter a valid amount for token 0 greater than 0");
+      return;
+    }
+
+    if (isNaN(numAmount1) || numAmount1 <= 0) {
+      alert("Please enter a valid amount for token 1 greater than 0");
+      return;
+    }
+
+    const bal0 = Number(balance0);
+    const bal1 = Number(balance1);
+
+    if (bal0 <= 0) {
+      alert(`You have no balance for ${token0}`);
+      return;
+    }
+
+    if (bal1 <= 0) {
+      alert(`You have no balance for ${token1}`);
+      return;
+    }
+
+    if (numAmount0 > bal0) {
+      alert(`Insufficient balance for ${token0}`);
+      return;
+    }
+
+    if (numAmount1 > bal1) {
+      alert(`Insufficient balance for ${token1}`);
+      return;
+    }
+
     if (confirm(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} with a ${width} range at the ${feeTier} fee tier?`)) {
       addPrompt(`Add liquidity with ${amount0} ${token0} and ${amount1} ${token1} ${width} range at ${feeTier}`);
       setWidget(null);
@@ -81,6 +122,21 @@ export default function LiquidityWidget() {
     if (!portfolio || !portfolio.tokens) return "0";
     return portfolio.tokens.find((b) => b.symbol === token1)?.balance || "0";
   }, [token1, portfolio]);
+
+  const isValidAmount = useMemo(() => {
+    if (!amount0 || !amount1) return false;
+
+    const numAmount0 = Number(amount0);
+    const numAmount1 = Number(amount1);
+
+    if (isNaN(numAmount0) || numAmount0 <= 0) return false;
+    if (isNaN(numAmount1) || numAmount1 <= 0) return false;
+
+    const bal0 = Number(balance0);
+    const bal1 = Number(balance1);
+
+    return bal0 > 0 && bal1 > 0 && numAmount0 <= bal0 && numAmount1 <= bal1;
+  }, [amount0, amount1, balance0, balance1]);
 
 
   const liquidityPositions = useMemo(() => {
@@ -199,7 +255,13 @@ export default function LiquidityWidget() {
                       <button
                         key={index}
                         type="button"
-                        onClick={() => setAmount0((Number(balance0) * percent / 100).toString())}
+                        onClick={() => {
+                          if (percent === 100) {
+                            setAmount0(balance0);
+                          } else {
+                            setAmount0((Number(balance0) * percent / 100).toString());
+                          }
+                        }}
                         className={styles.button}
                       >
                         {percent}%
@@ -246,7 +308,13 @@ export default function LiquidityWidget() {
                     <button
                       key={index}
                       type="button"
-                      onClick={() => setAmount1((Number(balance1) * percent / 100).toString())}
+                      onClick={() => {
+                        if (percent === 100) {
+                          setAmount1(balance1);
+                        } else {
+                          setAmount1((Number(balance1) * percent / 100).toString());
+                        }
+                      }}
                       className={styles.button}
                     >
                       {percent}%
@@ -295,7 +363,8 @@ export default function LiquidityWidget() {
           <button
             type="button"
             onClick={handleAddLiquidity}
-            className="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+            disabled={!isValidAmount}
+            className="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Add
           </button>

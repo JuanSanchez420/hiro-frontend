@@ -14,7 +14,7 @@ export default function FAQ() {
         answer: "Base has many advantages over other chains. It's an L2, so it's cheap. It's EVM compatible, so it's easy to deploy on. It's also fast, with 2 second block times. And perhaps most importantly, it has excellent integration with Coinbase. Users can buy crypto on Coinbase and transfer on-chain to use dapps in a few minutes. The Coinbase team is supportive of base chain and the total transactions and volume is skyrocketing! Base chain has a bright future."
     }, {
         question: "Why launch a token?",
-        answer: "Part bootstrapping costs, part advertising, part community growth. Creation of an agent and autonomous action will require the token. The token will be used to pay for AI inference costs."
+        answer: "Part advertising, part community growth. Autonomous action will require the token. The token will be used to pay for AI inference costs."
     }, {
         question: "What are the tokenomics?",
         answer: "A fixed supply of 1 billion tokens. No inflation or staking, just a simple token. The token will be used to pay for creating agents and autonomous actions. Running autonomously once a day = $, once every few minutes = $$$$."

@@ -31,12 +31,19 @@ const BorrowWidget = () => {
 
   const handleBorrow = () => {
     if (!fromAmount || !fromToken) {
-      alert("Please fill in all fields")
-      return
+      alert("Please fill in all fields");
+      return;
     }
+
+    const numAmount = Number(fromAmount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      alert("Please enter a valid amount greater than 0");
+      return;
+    }
+
     if (confirm(`Borrow ${fromAmount} of ${fromToken} in Aave?`)) {
-      addPrompt(`Borrow ${fromAmount} of ${fromToken} in Aave`)
-      setWidget(null)
+      addPrompt(`Borrow ${fromAmount} of ${fromToken} in Aave`);
+      setWidget(null);
     }
   };
 
@@ -59,6 +66,12 @@ const BorrowWidget = () => {
     if (!portfolio) return 0
     return portfolio.tokens.find(b => b.symbol === fromToken)?.balance || 0
   }, [fromToken, portfolio])
+
+  const isValidAmount = useMemo(() => {
+    if (!fromAmount) return false;
+    const numAmount = Number(fromAmount);
+    return !isNaN(numAmount) && numAmount > 0;
+  }, [fromAmount])
 
 
   useEffect(() => {
@@ -193,7 +206,13 @@ const BorrowWidget = () => {
                     <button
                       key={index}
                       type="button"
-                      onClick={() => setFromAmount((Number(balance0) * percent / 100).toString())}
+                      onClick={() => {
+                        if (percent === 100) {
+                          setFromAmount(balance0.toString());
+                        } else {
+                          setFromAmount((Number(balance0) * percent / 100).toString());
+                        }
+                      }}
                       className={styles.button}
                     >
                       {percent}%
@@ -209,7 +228,8 @@ const BorrowWidget = () => {
         <button
           type="button"
           onClick={handleBorrow}
-          className="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+          disabled={!isValidAmount}
+          className="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           Borrow
         </button>

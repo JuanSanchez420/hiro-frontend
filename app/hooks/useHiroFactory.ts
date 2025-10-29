@@ -21,7 +21,6 @@ const useHiroFactory = () => {
     const { addMessage } = useMessagesContext();
     const { addPrompt } = usePromptsContext();
     const [status, setStatus] = useState<HiroWalletStatus>(HiroWalletStatus.NOT_CREATED);
-    const depositAmount = 10000000000000000n; // 0.01 ETH
 
     const factory = useMemo(() => {
         if (!client) return null;
@@ -37,7 +36,7 @@ const useHiroFactory = () => {
         setStatus(HiroWalletStatus.CREATING);
 
         try {
-            const value = depositAmount + parseEther(extraEth).valueOf()
+            const value = parseEther(extraEth).valueOf()
 
             const hash = await factory.write.createHiroWallet([], { value });
 
@@ -69,7 +68,7 @@ const useHiroFactory = () => {
             setStatus(HiroWalletStatus.NOT_CREATED);
             console.error("Error creating HiroWallet:", error);
         }
-    }, [factory, client, depositAmount, fetchPortfolio, addMessage, addPrompt])
+    }, [factory, client, fetchPortfolio, addMessage, addPrompt])
 
     // Keep local status in sync with portfolio.hiro if it already exists (e.g., page refresh after creation)
     useEffect(() => {

@@ -17,13 +17,31 @@ const SwapWidget = () => {
 
   const handleSwap = () => {
     if (!fromAmount || !fromToken || !toToken) {
-      alert("Please fill in all fields")
-      return
+      alert("Please fill in all fields");
+      return;
     }
+
+    const numAmount = Number(fromAmount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      alert("Please enter a valid amount greater than 0");
+      return;
+    }
+
+    const balance = Number(balance0);
+    if (balance <= 0) {
+      alert("You have no balance for this token");
+      return;
+    }
+
+    if (numAmount > balance) {
+      alert("Insufficient balance");
+      return;
+    }
+
     if (confirm(`Swap ${fromAmount} of ${fromToken} to ${toToken}?`)) {
-      addPrompt(`Swap ${fromAmount} of ${fromToken} to ${toToken}`)
-      setWidget(null)
-      setDrawerLeftOpen(false)
+      addPrompt(`Swap ${fromAmount} of ${fromToken} to ${toToken}`);
+      setWidget(null);
+      setDrawerLeftOpen(false);
     }
   };
 
@@ -36,6 +54,16 @@ const SwapWidget = () => {
     if (!portfolio) return 0
     return portfolio.tokens.find(b => b.symbol === toToken)?.balance || 0
   }, [toToken, portfolio])
+
+  const isValidAmount = useMemo(() => {
+    if (!fromAmount) return false;
+    const numAmount = Number(fromAmount);
+    if (isNaN(numAmount) || numAmount <= 0) return false;
+
+    // Check if user has sufficient balance
+    const balance = Number(balance0);
+    return balance > 0 && numAmount <= balance;
+  }, [fromAmount, balance0])
 
   useEffect(() => {
     setFromToken(portfolio?.tokens[0]?.symbol || "WETH")
@@ -95,7 +123,13 @@ const SwapWidget = () => {
                   <button
                     key={index}
                     type="button"
-                    onClick={() => setFromAmount((Number(balance0) * percent / 100).toString())}
+                    onClick={() => {
+                      if (percent === 100) {
+                        setFromAmount(balance0.toString());
+                      } else {
+                        setFromAmount((Number(balance0) * percent / 100).toString());
+                      }
+                    }}
                     className={styles.button}
                   >
                     {percent}%
@@ -136,7 +170,8 @@ const SwapWidget = () => {
       <button
         type="button"
         onClick={handleSwap}
-        className="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+        disabled={!isValidAmount}
+        className="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
         Swap
       </button>

@@ -18,33 +18,64 @@ const WithdrawWidget = () => {
   const { portfolio, fetchPortfolio } = usePortfolioContext()
 
   const handleWithdraw = async () => {
-    try {
-      setIsWithdrawing(true)
-      if (!amount || !withdrawToken) {
-        alert("Please fill in all fields")
-        return
-      }
-      if (withdrawToken === "ETH") {
-        await withdrawETH(parseEther(amount))
-
-      } else {
-        const t = TOKENS[withdrawToken as keyof typeof TOKENS]
-        await withdraw(t, parseUnits(amount, t.decimals))
-      }
-      fetchPortfolio()
-      setWidget(null)
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setIsWithdrawing(false)
+    if (!amount || !withdrawToken) {
+      alert("Please fill in all fields");
+      return;
     }
 
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      alert("Please enter a valid amount greater than 0");
+      return;
+    }
+
+    const balance = Number(balance0);
+    if (balance <= 0) {
+      alert("You have no balance for this token");
+      return;
+    }
+
+    if (numAmount > balance) {
+      alert("Insufficient balance");
+      return;
+    }
+
+    try {
+      setIsWithdrawing(true);
+
+      if (withdrawToken === "ETH") {
+        const amountInWei = parseEther(amount);
+        await withdrawETH(amountInWei);
+      } else {
+        const t = TOKENS[withdrawToken as keyof typeof TOKENS];
+        const amountInUnits = parseUnits(amount, t.decimals);
+        await withdraw(t, amountInUnits);
+      }
+
+      await fetchPortfolio();
+      setWidget(null);
+    } catch (error) {
+      console.error('[Withdraw Widget] Transaction failed:', error);
+      alert("Transaction failed. Please try again.");
+    } finally {
+      setIsWithdrawing(false);
+    }
   };
 
   const balance0 = useMemo(() => {
     if (!portfolio) return 0
     return portfolio.tokens.find(b => b.symbol === withdrawToken)?.balance || 0
   }, [withdrawToken, portfolio])
+
+  const isValidAmount = useMemo(() => {
+    if (!amount) return false;
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) return false;
+
+    // Check if user has sufficient balance
+    const balance = Number(balance0);
+    return balance > 0 && numAmount <= balance;
+  }, [amount, balance0])
 
   const tokenList = useMemo(() => {
     const portfolioTokens = new Set(portfolio?.tokens.map(t => t.symbol) || []);
@@ -72,7 +103,13 @@ const WithdrawWidget = () => {
           <button
             key={index}
             type="button"
-            onClick={() => handler((Number(balance0) * percent / 100).toString())}
+            onClick={() => {
+              if (percent === 100) {
+                handler(balance0.toString());
+              } else {
+                handler((Number(balance0) * percent / 100).toString());
+              }
+            }}
             className={styles.button}
           >
             {percent}%
@@ -122,9 +159,11 @@ const WithdrawWidget = () => {
       <button
         type="button"
         onClick={handleWithdraw}
-        className="flex justify-center w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+        disabled={!isValidAmount || isWithdrawing}
+        className="flex justify-center w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
-        {isWithdrawing && <Spinner />}<span>Withdraw</span>
+        {isWithdrawing && <Spinner />}
+        <span>{isWithdrawing ? "Withdrawing..." : "Withdraw"}</span>
       </button>
     </div>
   );

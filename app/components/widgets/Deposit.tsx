@@ -3,39 +3,102 @@ import formatNumber from "@/app/utils/formatNumber";
 import SearchableSelect from "../SearchableSelect";
 import TOKENS from "@/app/utils/tokens.json";
 import useHiro from "@/app/hooks/useHiro";
-import { parseEther } from "viem";
+import { parseEther, parseUnits, erc20Abi, getContract, maxUint256 } from "viem";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
 import { Spinner } from "../Spinner";
+import { useWalletClient } from "wagmi";
+import { waitForTransactionReceipt } from "viem/actions";
 
 const DepositWidget = () => {
   const { setWidget, styles } = useGlobalContext()
   const [amount, setAmount] = useState("");
   const [depositToken, setDepositToken] = useState("ETH");
-  const { depositETH } = useHiro()
-  const [isDepositing, setIsDepositing] = useState(false)
+  const { depositETH, hiro } = useHiro()
+  const { data: client } = useWalletClient();
+  const [isCheckingAllowance, setIsCheckingAllowance] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
+  const [isDepositing, setIsDepositing] = useState(false);
 
   const { portfolio, fetchPortfolio } = usePortfolioContext()
 
   const handleDeposit = async () => {
-    setIsDepositing(true);
-    if (!amount || !depositToken) {
+    if (!amount || !depositToken || !client || !hiro) {
       alert("Please fill in all fields");
-      setIsDepositing(false);
+      return;
+    }
+
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      alert("Please enter a valid amount greater than 0");
+      return;
+    }
+
+    const balance = Number(balance0);
+    if (balance <= 0) {
+      alert("You have no balance for this token");
+      return;
+    }
+
+    if (numAmount > balance) {
+      alert("Insufficient balance");
       return;
     }
 
     try {
       if (depositToken === "ETH") {
+        setIsDepositing(true);
         await depositETH(parseEther(amount));
+        await fetchPortfolio();
+        setWidget(null);
       } else {
-        // TODO: handle other tokens
+        // Handle ERC20 tokens
+        const token = TOKENS[depositToken as keyof typeof TOKENS];
+        if (!token) {
+          alert("Invalid token selected");
+          return;
+        }
+
+        const tokenAmount = parseUnits(amount, token.decimals);
+        const tokenContract = getContract({
+          abi: erc20Abi,
+          address: token.address as `0x${string}`,
+          client
+        });
+
+        // Check current allowance
+        setIsCheckingAllowance(true);
+        const currentAllowance = await tokenContract.read.allowance([
+          client.account.address,
+          hiro
+        ]) as bigint;
+        setIsCheckingAllowance(false);
+
+        // If allowance is insufficient, request approval
+        if (currentAllowance < tokenAmount) {
+          setIsApproving(true);
+          const approvalHash = await tokenContract.write.approve([
+            hiro,
+            maxUint256 // Approve unlimited to avoid future approvals
+          ]);
+          await waitForTransactionReceipt(client, { hash: approvalHash });
+          setIsApproving(false);
+        }
+
+        // Execute the transfer
+        setIsDepositing(true);
+        const transferHash = await tokenContract.write.transfer([hiro, tokenAmount]);
+        await waitForTransactionReceipt(client, { hash: transferHash });
+
+        await fetchPortfolio();
+        setWidget(null);
       }
-      await fetchPortfolio();
-      setWidget(null);
     } catch (error: unknown) {
       console.error(error);
+      alert("Transaction failed. Please try again.");
     } finally {
+      setIsCheckingAllowance(false);
+      setIsApproving(false);
       setIsDepositing(false);
     }
   }
@@ -45,6 +108,16 @@ const DepositWidget = () => {
     if (depositToken === "ETH") return portfolio.userWalletEthBalance
     return portfolio.tokens.find(b => b.symbol === depositToken)?.balance || "0"
   }, [depositToken, portfolio])
+
+  const isValidAmount = useMemo(() => {
+    if (!amount) return false;
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) return false;
+
+    // Check if user has sufficient balance
+    const balance = Number(balance0);
+    return balance > 0 && numAmount <= balance;
+  }, [amount, balance0])
 
   const tokenList = useMemo(() => {
     const portfolioTokens = new Set(portfolio?.tokens.map(t => t.symbol) || []);
@@ -72,7 +145,13 @@ const DepositWidget = () => {
           <button
             key={index}
             type="button"
-            onClick={() => handler((Number(balance0) * percent / 100).toString())}
+            onClick={() => {
+              if (percent === 100) {
+                handler(balance0);
+              } else {
+                handler((Number(balance0) * percent / 100).toString());
+              }
+            }}
             className={styles.button}
           >
             {percent}%
@@ -122,10 +201,19 @@ const DepositWidget = () => {
       <button
         type="button"
         onClick={handleDeposit}
-        disabled={isDepositing}
-        className="flex justify-center w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+        disabled={!isValidAmount || isCheckingAllowance || isApproving || isDepositing}
+        className="flex justify-center w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
-        {isDepositing && <Spinner />}<span>Deposit</span>
+        {(isCheckingAllowance || isApproving || isDepositing) && <Spinner />}
+        <span>
+          {isCheckingAllowance
+            ? "Checking Allowance..."
+            : isApproving
+            ? "Approving..."
+            : isDepositing
+            ? "Depositing..."
+            : "Deposit"}
+        </span>
       </button>
     </div>
   );
