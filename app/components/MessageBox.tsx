@@ -8,6 +8,7 @@ import { prettyValue } from "../utils/prettyValue";
 import useChatEventStream from "../hooks/useChatEventStream";
 import { Message } from "../types";
 import Confirm from "./Confirm";
+import { useGlobalContext } from "../context/GlobalContext";
 
 const friendlyNames = {
     "getETHBalance": "Get ETH Balance",
@@ -206,7 +207,7 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
     result?: Message,
     sendConfirmation?: (transactionId: string, confirmed: boolean) => void
 }) => {
-
+    const { theme } = useGlobalContext()
     const [gradient, setGradient] = useState(true)
 
     useEffect(() => {
@@ -246,12 +247,12 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
 
             return (
                 <div key={`call-${key}`} className="flex items-center justify-between py-1.5 text-sm">
-                    <span className="text-gray-500 font-medium">{key}</span>
-                    <span className="text-gray-900 ml-4">{displayValue}</span>
+                    <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>{key}</span>
+                    <span className={`${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'} ml-4`}>{displayValue}</span>
                 </div>
             )
         })
-    }, [call])
+    }, [call, theme])
 
     const outputs = useMemo(() => {
         if (!result?.functionCall) return [];
@@ -268,17 +269,17 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
 
                 return (
                     <div key={`result-${key}`} className="flex items-center justify-between py-1.5 text-sm">
-                        <span className="text-gray-500 font-medium">{key}</span>
+                        <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>{key}</span>
                         <div className="flex items-center ml-4">
                             {isMultiLine ? (
-                                <pre className="text-gray-900 text-xs whitespace-pre-wrap">{formatted}</pre>
+                                <pre className={`${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'} text-xs whitespace-pre-wrap`}>{formatted}</pre>
                             ) : (
-                                <span className="text-gray-900">{displayValue}</span>
+                                <span className={theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}>{displayValue}</span>
                             )}
                             {isTxHash && (
                                 <button
                                     onClick={() => navigator.clipboard.writeText(value || "")}
-                                    className="ml-2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                                    className={`ml-2 text-xs ${theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'} transition-colors`}
                                 >
                                     Copy
                                 </button>
@@ -287,7 +288,7 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
                     </div>
                 )
             })
-    }, [result])
+    }, [result, theme])
 
     const txHash = useMemo(() => {
         return result?.functionCall?.transactionHash || ""
