@@ -5,17 +5,18 @@ import AccountDetails from "./AccountDetailsMenu"
 import { useCallback, useEffect, useState } from "react"
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react"
 import useSIWE from "../../hooks/useSIWE"
-import { useGlobalContext } from "../../context/GlobalContext"
+import { useAuthContext, useThemeContext } from "../../context/GlobalContext"
 import { NULL_ADDRESS } from "@/app/utils/constants"
-import useHiro from "@/app/hooks/useHiro"
+import { usePortfolioContext } from "@/app/context/PortfolioContext"
 import CreateAHiro from "./CreateAHiro"
 import { Spinner } from "../Spinner"
 
 const ConnectWallet = () => {
-    const { isSignedIn, styles, theme } = useGlobalContext()
+    const { isSignedIn } = useAuthContext()
+    const { styles, theme } = useThemeContext()
     const { connectors, connect } = useConnect()
     const { isConnected } = useAccount()
-    const { hiro } = useHiro()
+    const { portfolio } = usePortfolioContext()
     const { doSIWE } = useSIWE()
     const { disconnect } = useDisconnect()
     const [isLoaded, setIsLoaded] = useState(false)
@@ -98,9 +99,9 @@ const ConnectWallet = () => {
         )
     }
 
-    if (isConnected && isSignedIn && hiro !== NULL_ADDRESS) return <AccountDetails />
+    if (isConnected && isSignedIn && portfolio?.hiro && portfolio.hiro !== NULL_ADDRESS) return <AccountDetails />
 
-    if (isConnected && isSignedIn && hiro === NULL_ADDRESS) return <CreateAHiro />
+    if (isConnected && isSignedIn && (!portfolio?.hiro || portfolio.hiro === NULL_ADDRESS)) return <CreateAHiro />
 
     if (isConnected) return <SignIn />
 

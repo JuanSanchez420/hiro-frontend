@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import formatNumber from "@/app/utils/formatNumber";
 import SearchableSelect from "../SearchableSelect";
 import TOKENS from "@/app/utils/tokens.json";
-import { useGlobalContext } from "@/app/context/GlobalContext";
+import { useThemeContext, useWidgetContext } from "@/app/context/GlobalContext";
 import { usePromptsContext } from "@/app/context/PromptsContext";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
 import { pools as AAVE_POOLS } from "@/app/utils/aavePools";
@@ -26,7 +26,8 @@ const LendWidget = () => {
   const [loadingAprs, setLoadingAprs] = useState(false);
 
   const { addPrompt, } = usePromptsContext()
-  const { setWidget, styles } = useGlobalContext();
+  const { setWidget } = useWidgetContext();
+  const { styles } = useThemeContext();
   const { portfolio } = usePortfolioContext();
 
   const handleLend = () => {

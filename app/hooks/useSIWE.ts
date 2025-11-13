@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
-import { useGlobalContext } from '../context/GlobalContext';
+import { useAuthContext } from '../context/GlobalContext';
 import { usePortfolioContext } from '../context/PortfolioContext';
 
 const useSIWE = () => {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { signMessageAsync } = useSignMessage();
-  const { isSignedIn, setIsSignedIn } = useGlobalContext();
+  const { isSignedIn, setIsSignedIn } = useAuthContext();
   const { fetchPortfolio } = usePortfolioContext();
   const [status, setStatus] = useState<string>('');
 

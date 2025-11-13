@@ -1,6 +1,6 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import React, { useState, useRef, useEffect } from 'react';
-import { useGlobalContext } from '../context/GlobalContext';
+import { useThemeContext } from '../context/GlobalContext';
 
 interface Option {
     label: string;
@@ -17,7 +17,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, value, onC
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
-    const { styles } = useGlobalContext()
+    const { styles } = useThemeContext()
 
     const filteredOptions = options.filter(option =>
         option.label.toLowerCase().includes(searchTerm.toLowerCase())

@@ -2,13 +2,14 @@ import React, { useMemo, useState } from "react";
 import formatNumber from "@/app/utils/formatNumber";
 import SearchableSelect from "../SearchableSelect";
 import useHiroFactory from "@/app/hooks/useHiroFactory";
-import { useGlobalContext } from "@/app/context/GlobalContext";
+import { useThemeContext, useWidgetContext } from "@/app/context/GlobalContext";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
 import { Spinner } from "../Spinner";
 
 const SignupWidget = () => {
   const { signUp, status } = useHiroFactory()
-  const { setWidget, styles } = useGlobalContext()
+  const { setWidget } = useWidgetContext()
+  const { styles } = useThemeContext()
   const [amount, setAmount] = useState("0");
   const signupToken = "ETH"
 

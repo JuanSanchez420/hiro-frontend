@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { AaveUserPosition } from '../types';
 import formatNumber from '../utils/formatNumber';
-import { useGlobalContext } from '../context/GlobalContext';
+import { useDrawerContext, useThemeContext, useWidgetContext } from '../context/GlobalContext';
 import tokens from '../utils/tokens.json'
 
 interface AaveLendingSectionProps {
@@ -11,12 +11,14 @@ interface AaveLendingSectionProps {
 const AaveLendingSection: React.FC<AaveLendingSectionProps> = ({
   aave,
 }) => {
-  const { styles, setWidget, setDrawerLeftOpen } = useGlobalContext()
+  const { styles } = useThemeContext()
+  const { setWidget } = useWidgetContext()
+  const { setDrawerState } = useDrawerContext()
   // const token = tokens[rain?.toUpperCase() as keyof typeof tokens];
 
   const handleRowClick = () => {
     setWidget('Lend')
-    setDrawerLeftOpen(false)
+    setDrawerState({ isOpen: false, showRecommendations: false })
   }
 
   const aavePositionsWithTokens = useMemo(() => {

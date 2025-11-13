@@ -1,10 +1,18 @@
 import { Menu, MenuButton} from "@headlessui/react"
-import { useGlobalContext } from "../../context/GlobalContext"
+import { useThemeContext, useWidgetContext } from "../../context/GlobalContext"
 import useHiroFactory from "../../hooks/useHiroFactory"
 
 const CreateAHiro = () => {
     const { status } = useHiroFactory()
-    const { setWidget, styles } = useGlobalContext()
+    const { setWidget } = useWidgetContext()
+    const { styles } = useThemeContext()
+
+    console.log('[CreateAHiro] Rendering with status:', status);
+
+    // Don't render anything if Hiro is already created - let the normal user menu show
+    if (status === 'CREATED') {
+        return null;
+    }
 
     return (
         <Menu as="div" className="relative ml-3">
@@ -16,11 +24,6 @@ const CreateAHiro = () => {
             {status === 'CREATING' && (
                 <MenuButton className={`${styles.button} max-w-40 animate-pulse`} disabled>
                     Training your Hiro
-                </MenuButton>
-            )}
-            {status === 'CREATED' && (
-                <MenuButton className={`${styles.button} max-w-40`} disabled>
-                    Hiro Ready ✓
                 </MenuButton>
             )}
         </Menu>

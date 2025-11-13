@@ -1,7 +1,7 @@
 
 import { WidgetOption } from '../types';
 import { useEffect, useState } from 'react';
-import { useGlobalContext } from '../context/GlobalContext';
+import { useThemeContext, useWidgetContext } from '../context/GlobalContext';
 import { ArrowDownTrayIcon, ArrowsRightLeftIcon, ArrowUpTrayIcon, CpuChipIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 
 const tabs = [
@@ -14,7 +14,8 @@ const tabs = [
 
 export default function Tabs() {
     const [loaded, setLoaded] = useState(false)
-    const { setWidget, styles } = useGlobalContext();
+    const { setWidget } = useWidgetContext();
+    const { styles } = useThemeContext();
 
     useEffect(() => {
         setLoaded(true)
@@ -34,4 +35,3 @@ export default function Tabs() {
         </div>
     )
 }
-

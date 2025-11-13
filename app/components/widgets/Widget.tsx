@@ -2,7 +2,7 @@ import TokenSwap from "./SwapWidget";
 import AddLiquidityWidget from "./LiquidityWidget";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import AutonomousInstructions from "./AutonomousInstructions";
-import { useGlobalContext } from "@/app/context/GlobalContext";
+import { useThemeContext, useWidgetContext } from "@/app/context/GlobalContext";
 import Deposit from "./Deposit";
 import Withdraw from "./Withdraw";
 import SignupWidget from "./SignupWidget";
@@ -10,7 +10,8 @@ import LendWidget from "./LendWidget";
 import BorrowWidget from "./BorrowWidget";
 
 const Widget = () => {
-    const { widget, setWidget, styles } = useGlobalContext();
+    const { widget, setWidget } = useWidgetContext();
+    const { styles } = useThemeContext();
 
     const widgetComponents = {
         Swap: TokenSwap,

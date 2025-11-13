@@ -6,7 +6,7 @@ import tokens from "../utils/tokens.json";
 import MarketStats from './MarketStats';
 import { Spinner } from './Spinner';
 import { useAccount } from 'wagmi';
-import { useGlobalContext } from '../context/GlobalContext';
+import { useDrawerContext, useThemeContext, useWidgetContext } from '../context/GlobalContext';
 import { usePromptsContext } from '../context/PromptsContext';
 import { buildHiroTakePrompt, computeHiroMarketSnapshot, HIRO_DEFAULT_LOOKBACK } from '../utils/hiroTake';
 
@@ -22,7 +22,9 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
   const account = useAccount();
   const didFetch = useRef(false);
   const { addPrompt, } = usePromptsContext();
-  const { setWidget, setDrawerLeftOpen, styles } = useGlobalContext();
+  const { setWidget } = useWidgetContext();
+  const { setDrawerState } = useDrawerContext();
+  const { styles } = useThemeContext();
   const [ohlcData, setOhlcData] = useState<OHLC[]>([]);
   const [hcData, setHcData] = useState<{ periodStartUnix: number, upper: number, lower: number }[]>([]);
   const [hcStates, setHcStates] = useState<{ periodStartUnix: number, trending: boolean, trend: boolean }[]>([]);
@@ -38,7 +40,7 @@ const TokenData: React.FC<TokenDataProps> = ({ token, hours, exit }) => {
 
   const handleHirosTake = () => {
     setWidget(null);
-    setDrawerLeftOpen(false);
+    setDrawerState({ isOpen: false, showRecommendations: false });
     const prompt = buildHiroTakePrompt({
       token,
       market,

@@ -8,6 +8,7 @@ import DrawerButton from "./components/DrawerButton";
 import DrawerLeft from "./components/DrawerLeft";
 import Link from "next/link";
 import NewChat from "./components/NewChat";
+import PagesMenu from "./components/PagesMenu";
 import { GlobalContextProvider } from "./context/GlobalContext";
 import { PromptsProvider } from "./context/PromptsContext";
 import { MessagesProvider } from "./context/MessagesContext";
@@ -43,6 +44,7 @@ export default function RootLayout({
                       </div>
                       <div className="ml-6 flex items-center">
                         <NewChat />
+                        <PagesMenu />
                         <ConnectWallet />
                       </div>
                     </div>
@@ -50,7 +52,7 @@ export default function RootLayout({
                 </Disclosure>
 
                 <div className="flex flex-col flex-1 h-full min-h-0 relative">
-                  <main className="flex flex-col flex-1 overflow-y-auto">
+                  <main className="flex flex-col flex-1 overflow-y-auto scrollbar-gutter-stable">
                     <div className="flex flex-col mx-auto w-full h-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
                       {children}
                       <DrawerLeft />

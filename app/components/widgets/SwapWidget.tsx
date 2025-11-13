@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import formatNumber from "@/app/utils/formatNumber";
 import SearchableSelect from "../SearchableSelect";
 import TOKENS from "@/app/utils/tokens.json";
-import { useGlobalContext } from "@/app/context/GlobalContext";
+import { useDrawerContext, useThemeContext, useWidgetContext } from "@/app/context/GlobalContext";
 import { usePromptsContext } from "@/app/context/PromptsContext";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
 
@@ -12,7 +12,9 @@ const SwapWidget = () => {
   const [toToken, setToToken] = useState("USDC");
 
   const { addPrompt, } = usePromptsContext()
-  const { setWidget, setDrawerLeftOpen, styles } = useGlobalContext();
+  const { setWidget } = useWidgetContext();
+  const { setDrawerState } = useDrawerContext();
+  const { styles } = useThemeContext();
   const { portfolio } = usePortfolioContext();
 
   const handleSwap = () => {
@@ -41,7 +43,7 @@ const SwapWidget = () => {
     if (confirm(`Swap ${fromAmount} of ${fromToken} to ${toToken}?`)) {
       addPrompt(`Swap ${fromAmount} of ${fromToken} to ${toToken}`);
       setWidget(null);
-      setDrawerLeftOpen(false);
+      setDrawerState({ isOpen: false, showRecommendations: false });
     }
   };
 

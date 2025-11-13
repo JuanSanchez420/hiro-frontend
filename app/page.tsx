@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { usePromptsContext } from "./context/PromptsContext";
 import React from "react";
 import { useMessagesContext } from "./context/MessagesContext";
-import { useGlobalContext } from "./context/GlobalContext";
+import { useAuthContext } from "./context/GlobalContext";
 
 interface ContentProps { prompts: string[]; }
 
@@ -20,7 +20,7 @@ export default function Home() {
   const { prompts } = usePromptsContext();
   const { messages, loadMessages, loading } = useMessagesContext();
   const { isConnected } = useAccount();
-  const { isSignedIn } = useGlobalContext();
+  const { isSignedIn } = useAuthContext();
 
   useEffect(() => {
     if (!isConnected || !isSignedIn) {

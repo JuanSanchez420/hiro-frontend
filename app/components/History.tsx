@@ -4,7 +4,7 @@ import { MessageSession } from "../types"
 import { normalizeMessages } from "../utils/normalizeMessages"
 import { useMessagesContext } from "../context/MessagesContext"
 import { usePromptsContext } from "../context/PromptsContext"
-import { useGlobalContext } from "../context/GlobalContext"
+import { useDrawerContext } from "../context/GlobalContext"
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
@@ -15,7 +15,7 @@ const History = () => {
     const [loading, setLoading] = useState(false)
     const { setMessages } = useMessagesContext()
     const { resetPrompts } = usePromptsContext()
-    const { setDrawerLeftOpen } = useGlobalContext()
+    const { setDrawerState } = useDrawerContext()
 
     useEffect(() => {
         const loadHistory = async () => {
@@ -76,7 +76,7 @@ const History = () => {
     const handleSessionClick = (session: MessageSession) => {
         resetPrompts()
         setMessages(session.messages)
-        setDrawerLeftOpen(false)
+        setDrawerState({ isOpen: false, showRecommendations: false })
     }
 
     if (loading) {

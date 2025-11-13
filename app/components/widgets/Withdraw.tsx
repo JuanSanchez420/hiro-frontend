@@ -5,14 +5,15 @@ import TOKENS from "@/app/utils/tokens.json";
 import useHiro from "@/app/hooks/useHiro";
 import { parseEther, parseUnits } from "viem";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
-import { useGlobalContext } from "@/app/context/GlobalContext";
+import { useThemeContext, useWidgetContext } from "@/app/context/GlobalContext";
 import { Spinner } from "../Spinner";
 
 const WithdrawWidget = () => {
   const [amount, setAmount] = useState("");
   const [withdrawToken, setWithdrawToken] = useState("ETH");
   const { withdraw, withdrawETH } = useHiro();
-  const { setWidget, styles } = useGlobalContext()
+  const { setWidget } = useWidgetContext()
+  const { styles } = useThemeContext()
   const [isWithdrawing, setIsWithdrawing] = useState(false)
 
   const { portfolio, fetchPortfolio } = usePortfolioContext()

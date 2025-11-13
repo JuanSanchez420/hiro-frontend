@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useGlobalContext } from '../context/GlobalContext';
+import { useDrawerContext, useThemeContext, useWidgetContext } from '../context/GlobalContext';
 import { usePromptsContext } from '../context/PromptsContext';
 import formatNumber from '../utils/formatNumber';
 import { Spinner } from './Spinner';
@@ -97,7 +97,9 @@ type RecommendationsResult = {
 };
 
 const Recommendations: React.FC = React.memo(() => {
-    const { styles, setDrawerLeftOpen, setShowRecommendations, setWidget, setWidgetData } = useGlobalContext();
+    const { styles } = useThemeContext();
+    const { setDrawerState } = useDrawerContext();
+    const { setWidget, setWidgetData } = useWidgetContext();
     const { addPrompt } = usePromptsContext();
     const [data, setData] = useState<RecommendationsResult | null>(null);
     const [loading, setLoading] = useState(false);
@@ -126,9 +128,8 @@ const Recommendations: React.FC = React.memo(() => {
     }, [fetchRecommendations]);
 
     const closeRecommendations = useCallback(() => {
-        setDrawerLeftOpen(false);
-        setShowRecommendations(false);
-    }, [setDrawerLeftOpen, setShowRecommendations]);
+        setDrawerState({ isOpen: false, showRecommendations: false });
+    }, [setDrawerState]);
 
     const handleAddPrompt = useCallback((prompt: string) => {
         addPrompt(prompt);

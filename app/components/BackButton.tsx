@@ -1,8 +1,8 @@
 import Link from "next/link"
-import { useGlobalContext } from "../context/GlobalContext"
+import { useThemeContext } from "../context/GlobalContext"
 
 const BackButton = () => {
-    const { styles } = useGlobalContext()
+    const { styles } = useThemeContext()
 
     return (
         <Link href="/"><button

@@ -4,14 +4,15 @@ import { useAccount, useDisconnect } from 'wagmi'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import useHiro from '@/app/hooks/useHiro'
 import { NULL_ADDRESS } from '@/app/utils/constants'
-import { useGlobalContext } from '@/app/context/GlobalContext'
+import { useThemeContext, useWidgetContext } from '@/app/context/GlobalContext'
 import { usePromptsContext } from '@/app/context/PromptsContext'
 import ThemeToggle from '@/app/components/ThemeToggle'
 
 const AccountDetails = () => {
   const { hiro } = useHiro()
   const account = useAccount()
-  const { setWidget, styles, theme } = useGlobalContext();
+  const { setWidget } = useWidgetContext();
+  const { styles, theme } = useThemeContext();
   const { addPrompt } = usePromptsContext();
   const { disconnect } = useDisconnect()
   const itemClass = theme === 'light' ? "block px-4 py-2 text-sm text-gray-700 bg-white data-[focus]:bg-gray-100 data-[focus]:outline-none" :

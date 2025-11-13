@@ -3,13 +3,15 @@
 import { ChartBarIcon } from "@heroicons/react/24/outline"
 import Link from "next/link";
 import Tooltip from "./Tooltip";
-import { useGlobalContext } from "../context/GlobalContext";
+import { useDrawerContext } from "../context/GlobalContext";
 
 const NewChat = () => {
-    const { setDrawerLeftOpen } = useGlobalContext()
+    const { setDrawerState } = useDrawerContext()
 
-    const handleNewChat = () => {
-        setDrawerLeftOpen(true)
+    const handleNewChat = (e: React.MouseEvent) => {
+        e.preventDefault(); // Prevent Link navigation
+        e.stopPropagation();
+        setDrawerState({ isOpen: true, showRecommendations: false });
     }
 
     return (<div className="pr-6">

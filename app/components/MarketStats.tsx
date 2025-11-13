@@ -1,8 +1,8 @@
-import { useGlobalContext } from "../context/GlobalContext"
+import { useThemeContext } from "../context/GlobalContext"
 import { MarketData } from "../types"
 
 const Item = ({ name, stat, extraCss }: { name: string, stat: string, extraCss?: string }) => {
-    const { styles } = useGlobalContext()
+    const { styles } = useThemeContext()
     const base = `font-semibold tracking-tight ${styles.text}`
     const css = extraCss ? `${base} ${extraCss}` : base;
 

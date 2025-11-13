@@ -1,11 +1,11 @@
 'use client'
 
 import { Switch } from '@headlessui/react'
-import { useGlobalContext } from '../context/GlobalContext'
+import { useThemeContext } from '../context/GlobalContext'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/outline'
 
 export default function ThemeToggle() {
-    const { theme, setTheme } = useGlobalContext()
+    const { theme, setTheme } = useThemeContext()
 
     return (
         <Switch

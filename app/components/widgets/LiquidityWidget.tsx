@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import SearchableSelect from "../SearchableSelect";
 import { SimpleLiquidityPosition } from "@/app/types";
 import TOKENS from "@/app/utils/tokens.json";
-import { useGlobalContext } from "@/app/context/GlobalContext";
+import { useThemeContext, useWidgetContext } from "@/app/context/GlobalContext";
 import { usePromptsContext } from "@/app/context/PromptsContext";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
 import Tooltip from "../Tooltip";
@@ -31,10 +31,14 @@ export default function LiquidityWidget() {
   const [token1, setToken1] = useState("USDC");
   const [width, setWidth] = useState<"5%" | "10%" | "15%">("15%");
   const [feeTier, setFeeTier] = useState<typeof FEE_TIER_OPTIONS[number]>("0.05%");
-  const [action, setAction] = useState<"add" | "remove">("add");
+  const [action, setAction] = useState<"add" | "remove" | "rebalance">("add");
+  const [selectedPositionIndex, setSelectedPositionIndex] = useState<string | null>(null);
+  const [rebalanceRange, setRebalanceRange] = useState<string>("10%");
+  const [rebalancePreset, setRebalancePreset] = useState<"5%" | "10%" | "15%" | null>("10%");
 
   const { addPrompt } = usePromptsContext();
-  const { setWidget, styles, widgetData, setWidgetData } = useGlobalContext();
+  const { setWidget, widgetData, setWidgetData } = useWidgetContext();
+  const { styles } = useThemeContext();
   const { portfolio } = usePortfolioContext();
 
   // Prepopulate widget with data from recommendations
@@ -113,6 +117,26 @@ export default function LiquidityWidget() {
     }
   }
 
+  const handleRebalanceLiquidity = (position: SimpleLiquidityPosition | null, range: string) => {
+    const trimmedRange = range.trim();
+
+    if (!position) {
+      alert('Select a liquidity position to rebalance');
+      return;
+    }
+
+    if (!trimmedRange) {
+      alert('Enter a new range for the position');
+      return;
+    }
+
+    const feeTierLabel = getFeeTier(position.fee);
+    if (confirm(`Rebalance ${position.token0}/${position.token1} (${feeTierLabel}) to a ${trimmedRange} range?`)) {
+      addPrompt(`Rebalance ${position.token0}/${position.token1} at ${feeTierLabel} to a ${trimmedRange} range`);
+      setWidget(null);
+    }
+  };
+
   const balance0 = useMemo(() => {
     if (!portfolio || !portfolio.tokens) return "0";
     return portfolio.tokens.find((b) => b.symbol === token0)?.balance || "0";
@@ -143,6 +167,11 @@ export default function LiquidityWidget() {
     if (!portfolio) return [];
     return portfolio.positions
   }, [portfolio])
+
+  const selectedPosition = useMemo(() => {
+    if (!selectedPositionIndex) return null;
+    return liquidityPositions.find((position) => position.index === selectedPositionIndex) || null;
+  }, [liquidityPositions, selectedPositionIndex]);
 
   const formatUsdValue = (value?: number) => {
     if (value === undefined || Number.isNaN(value)) {
@@ -195,7 +224,7 @@ export default function LiquidityWidget() {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="flex justify-between items-center space-x-4 mb-4">
+      <div className="flex items-center space-x-3 mb-4">
         <button
           onClick={() => setAction("add")}
           className={`px-4 py-2 rounded-md font-medium ${action === "add"
@@ -203,7 +232,16 @@ export default function LiquidityWidget() {
             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
         >
-          Add Liquidity
+          Add
+        </button>
+        <button
+          onClick={() => setAction("rebalance")}
+          className={`px-4 py-2 rounded-md font-medium ${action === "rebalance"
+            ? "bg-emerald-400 text-white"
+            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+        >
+          Rebalance
         </button>
         <button
           onClick={() => setAction("remove")}
@@ -212,7 +250,7 @@ export default function LiquidityWidget() {
             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
         >
-          Remove Liquidity
+          Remove
         </button>
       </div>
 
@@ -371,9 +409,114 @@ export default function LiquidityWidget() {
         </div>
       )}
 
+      {action === "rebalance" && (
+        <div id="rebalance-liquidity">
+          <h3 className="text-lg font-semibold mb-4">Rebalance</h3>
+          <div className="space-y-3">
+            {liquidityPositions.length === 0 && (
+              <div className="text-sm italic text-gray-500">
+                No active liquidity positions available.
+              </div>
+            )}
+            {liquidityPositions.map((item) => {
+              const isSelected = selectedPositionIndex === item.index;
+              return (
+                <button
+                  key={item.index}
+                  type="button"
+                  onClick={() => setSelectedPositionIndex(item.index)}
+                  className={`w-full text-left rounded-md border px-4 py-3 transition ${isSelected
+                    ? "border-emerald-400 bg-emerald-50 text-emerald-900"
+                    : "border-gray-200 hover:border-emerald-300"
+                    }`}
+                >
+                  <div className="text-sm font-medium">{`${item.token0}/${item.token1} - ${getFeeTier(item.fee)}`}</div>
+                  <div className="text-xs italic text-gray-600">{`Value: ${formatUsdValue(item.positionValueUSD)}`}</div>
+                  <div className="text-xs italic text-gray-600">{`APR: ${formatAprValue(item.apr)}`}</div>
+                  <div className="text-xs italic text-gray-600">{`Current range: ${formatNumber(item.rangeWidthPercent)}%`}</div>
+                  <div className="text-xs italic text-gray-600">{`Unclaimed: ${formatUnclaimedFees(item)}`}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium">Select a preset range</span>
+              <span className="text-xs text-gray-500">Match risk profile to volatility</span>
+            </div>
+            <div className="flex justify-between my-5">
+              <Tooltip content="Higher APR, higher divergence loss." position="right">
+                <button
+                  className={`${rebalancePreset === "5%" ? styles.buttonSelectedSm : styles.buttonSm}`}
+                  onClick={() => {
+                    setRebalancePreset("5%");
+                    setRebalanceRange("5%");
+                  }}
+                >
+                  Aggressive
+                </button>
+              </Tooltip>
+              <Tooltip content="Medium APR, medium divergence loss." position="top">
+                <button
+                  className={`${rebalancePreset === "10%" ? styles.buttonSelectedSm : styles.buttonSm}`}
+                  onClick={() => {
+                    setRebalancePreset("10%");
+                    setRebalanceRange("10%");
+                  }}
+                >
+                  Standard
+                </button>
+              </Tooltip>
+              <Tooltip content="Lower APR, lower divergence loss." position="left">
+                <button
+                  className={`${rebalancePreset === "15%" ? styles.buttonSelectedSm : styles.buttonSm}`}
+                  onClick={() => {
+                    setRebalancePreset("15%");
+                    setRebalanceRange("15%");
+                  }}
+                >
+                  Defensive
+                </button>
+              </Tooltip>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label htmlFor="rebalance-range" className="block text-sm font-medium mb-1">
+              Custom range (%)
+            </label>
+            <input
+              id="rebalance-range"
+              name="rebalance-range"
+              type="text"
+              value={rebalanceRange}
+              onChange={(e) => {
+                setRebalanceRange(e.target.value);
+                setRebalancePreset(null);
+              }}
+              placeholder="e.g. 8%"
+              className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 ${styles.background} ${styles.text}`}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Presets update this field; enter a custom percentage to override them.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleRebalanceLiquidity(selectedPosition, rebalanceRange)}
+            disabled={!selectedPosition || !rebalanceRange.trim()}
+            className="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            Rebalance
+          </button>
+        </div>
+      )}
+
       {action === "remove" && (
         <div id="remove-liquidity">
-          <h3 className="text-lg font-semibold mb-4">Remove Liquidity</h3>
+          <h3 className="text-lg font-semibold mb-4">Remove</h3>
           <div className="space-y-4">
             {liquidityPositions.map((item, index) => (
               <div key={index} className="flex tems-center justify-between">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Token } from '../types';
 import formatNumber from '../utils/formatNumber';
-import { useGlobalContext } from '../context/GlobalContext';
+import { useThemeContext } from '../context/GlobalContext';
 
 interface MarketDataSectionProps {
     market: {
@@ -15,7 +15,7 @@ const MarketDataSection: React.FC<MarketDataSectionProps> = ({
     market,
     setToken,
 }) => {
-    const { styles } = useGlobalContext()
+    const { styles } = useThemeContext()
     if (market.length === 0) return null;
 
     return (

@@ -4,14 +4,15 @@ import SearchableSelect from "../SearchableSelect";
 import TOKENS from "@/app/utils/tokens.json";
 import useHiro from "@/app/hooks/useHiro";
 import { parseEther, parseUnits, erc20Abi, getContract, maxUint256 } from "viem";
-import { useGlobalContext } from "@/app/context/GlobalContext";
+import { useThemeContext, useWidgetContext } from "@/app/context/GlobalContext";
 import { usePortfolioContext } from "@/app/context/PortfolioContext";
 import { Spinner } from "../Spinner";
 import { useWalletClient } from "wagmi";
 import { waitForTransactionReceipt } from "viem/actions";
 
 const DepositWidget = () => {
-  const { setWidget, styles } = useGlobalContext()
+  const { setWidget } = useWidgetContext()
+  const { styles } = useThemeContext()
   const [amount, setAmount] = useState("");
   const [depositToken, setDepositToken] = useState("ETH");
   const { depositETH, hiro } = useHiro()

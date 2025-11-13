@@ -8,24 +8,25 @@ import { prettyValue } from "../utils/prettyValue";
 import useChatEventStream from "../hooks/useChatEventStream";
 import { Message } from "../types";
 import Confirm from "./Confirm";
-import { useGlobalContext } from "../context/GlobalContext";
+import { useThemeContext } from "../context/GlobalContext";
 
 const friendlyNames = {
-    "getETHBalance": "Get ETH Balance",
-    "getPrices": "Get Prices",
-    "swap": "Swap",
-    "wrapETH": "Wrap ETH",
-    "unwrapWETH": "Unwrap WETH",
-    "addLiquidity": "Add Liquidity",
-    "removeLiquidityByIndex": "Remove Liquidity",
-    "setAutonomousInstructions": "Set Autonomous Instructions",
-    "depositAave": "Deposit Aave",
-    "withdrawAave": "Withdraw Aave",
-    "getPortfolioTool": "Get Portfolio",
-    "borrowAave": "Borrow Aave",
-    "repayAave": "Repay Aave",
-    "rebalanceLiquidity": "Rebalance Liquidity",
+    "getETHBalance": "Checking ETH Balance",
+    "getPrices": "Getting Prices",
+    "swap": "Swapping",
+    "wrapETH": "Wrapping ETH",
+    "unwrapWETH": "Unwraping WETH",
+    "addLiquidity": "Addding Liquidity",
+    "removeLiquidityByIndex": "Removing Liquidity",
+    "setAutonomousInstructions": "Setting Autonomous Instructions",
+    "depositAave": "Depositing to Aave",
+    "withdrawAave": "Withdrawing from Aave",
+    "getPortfolioTool": "Getting Portfolio",
+    "borrowAave": "Borrowing from Aave",
+    "repayAave": "Repaying Aave",
+    "rebalanceLiquidity": "Rebalancing Liquidity",
     "getKnowledgeModule": "Learning",
+    "getRecommendations": "Getting Recommendations",
     "": ""
 }
 
@@ -207,7 +208,7 @@ const FunctionResults = ({ call, result, sendConfirmation }: {
     result?: Message,
     sendConfirmation?: (transactionId: string, confirmed: boolean) => void
 }) => {
-    const { theme } = useGlobalContext()
+    const { theme } = useThemeContext()
     const [gradient, setGradient] = useState(true)
 
     useEffect(() => {

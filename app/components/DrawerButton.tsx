@@ -1,13 +1,16 @@
 'use client'
 
 import { Bars3Icon } from "@heroicons/react/24/outline"
-import { useGlobalContext } from "../context/GlobalContext";
+import { useDrawerContext } from "../context/GlobalContext";
 
 const DrawerButton = () => {
-    const { setDrawerLeftOpen } = useGlobalContext();
+    const { drawerState, setDrawerState } = useDrawerContext();
+
     return (
         <div className="ml-1 flex items-center">
-            <Bars3Icon className="size-6 text-gray-400 hover:cursor-pointer" onClick={() => setDrawerLeftOpen(true)} />
+            <Bars3Icon className="size-6 text-gray-400 hover:cursor-pointer" onClick={() => {
+                setDrawerState({ ...drawerState, isOpen: true });
+            }} />
         </div>
     )
 }

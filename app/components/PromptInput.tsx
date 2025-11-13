@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import Widget from "./widgets/Widget";
 import ArrowUpCircleIcon from "@heroicons/react/24/outline/ArrowUpCircleIcon";
 import { ArrowDownTrayIcon, ArrowsRightLeftIcon, ArrowUpTrayIcon, CpuChipIcon, CurrencyDollarIcon, PlusIcon, ChartBarIcon, SparklesIcon } from '@heroicons/react/24/outline';
-import { useGlobalContext } from "../context/GlobalContext";
+import { useDrawerContext, useThemeContext, useWidgetContext } from "../context/GlobalContext";
 import { WidgetOption } from '../types';
 
 const tabs = [
@@ -20,7 +20,9 @@ const PromptInput = (
 
 ) => {
   const { addPrompt } = usePromptsContext();
-  const { styles, setWidget, setDrawerLeftOpen, setShowRecommendations } = useGlobalContext()
+  const { styles } = useThemeContext()
+  const { setWidget } = useWidgetContext()
+  const { setDrawerState } = useDrawerContext()
   const [value, setValue] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -86,6 +88,7 @@ const PromptInput = (
                 {/* Widget selector */}
                 <div className="relative" ref={menuRef}>
                   <button
+                    type="button"
                     className="rounded-full p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   >
@@ -97,6 +100,7 @@ const PromptInput = (
                       <div className="py-1">
                         {tabs.map((tab) => (
                           <button
+                            type="button"
                             key={tab.name}
                             onClick={() => handleWidgetSelect(tab.name as WidgetOption)}
                             className={`group flex items-center px-4 py-2 text-sm w-full text-left hover:bg-gray-100 hover:text-gray-900 ${styles.text}`}
@@ -112,22 +116,18 @@ const PromptInput = (
 
                 {/* Portfolio button */}
                 <button
+                  type="button"
                   className="rounded-full p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                  onClick={() => {
-                    setShowRecommendations(false);
-                    setDrawerLeftOpen(true);
-                  }}
+                  onClick={() => setDrawerState({ isOpen: true, showRecommendations: false })}
                 >
                   <ChartBarIcon className="size-6" aria-hidden="true" />
                 </button>
 
                 {/* Recommendations button */}
                 <button
+                  type="button"
                   className="rounded-full p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                  onClick={() => {
-                    setShowRecommendations(true);
-                    setDrawerLeftOpen(true);
-                  }}
+                  onClick={() => setDrawerState({ isOpen: true, showRecommendations: true })}
                 >
                   <SparklesIcon className="size-6" aria-hidden="true" />
                 </button>

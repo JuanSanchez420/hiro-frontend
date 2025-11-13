@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useGlobalContext } from "../context/GlobalContext"
+import { useThemeContext } from "../context/GlobalContext"
 
 interface ConfirmProps {
     show?: boolean;
@@ -9,7 +9,7 @@ interface ConfirmProps {
 }
 
 const Confirm = ({ show = true, transactionId, message, onConfirm }: ConfirmProps) => {
-    const { styles } = useGlobalContext()
+    const { styles } = useThemeContext()
     const [localShow, setLocalShow] = useState(true)
 
     const handleClick = (confirm: boolean) => {

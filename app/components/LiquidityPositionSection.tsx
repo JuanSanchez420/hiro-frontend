@@ -1,6 +1,6 @@
 import React from 'react';
 import formatNumber from '../utils/formatNumber';
-import { useGlobalContext } from '../context/GlobalContext';
+import { useDrawerContext, useThemeContext } from '../context/GlobalContext';
 import { usePromptsContext } from '../context/PromptsContext';
 import { SimpleLiquidityPosition } from '../types';
 import Tooltip from './Tooltip';
@@ -13,7 +13,8 @@ interface LiquidityPositionsSectionProps {
 const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
   positions,
 }) => {
-  const { styles, setDrawerLeftOpen } = useGlobalContext()
+  const { styles } = useThemeContext()
+  const { setDrawerState } = useDrawerContext()
   const { addPrompt } = usePromptsContext()
 
   if (!positions || positions.length === 0) return null;
@@ -48,7 +49,7 @@ const LiquidityPositionsSection: React.FC<LiquidityPositionsSectionProps> = ({
   const handleRemove = (position: SimpleLiquidityPosition) => {
     const feeTier = getFeeTier(position.fee)
     if (confirm(`Are you sure you want to remove liquidity position ${position.token0}/${position.token1} (${feeTier})?`)) {
-      setDrawerLeftOpen(false)
+      setDrawerState({ isOpen: false, showRecommendations: false })
       addPrompt(`Remove liquidity for ${position.token0}/${position.token1} at ${feeTier}`)
     }
   }

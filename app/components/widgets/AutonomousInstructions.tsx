@@ -1,11 +1,12 @@
-import { useGlobalContext } from "@/app/context/GlobalContext";
+import { useThemeContext, useWidgetContext } from "@/app/context/GlobalContext";
 import { usePromptsContext } from "@/app/context/PromptsContext";
 import { useEffect, useState } from "react";
 
 
 const AutonomousInstructions = () => {
   const { addPrompt } = usePromptsContext();
-  const { setWidget, styles } = useGlobalContext();
+  const { setWidget } = useWidgetContext();
+  const { styles } = useThemeContext();
   const [value, setValue] = useState("");
   const [interval, setInterval] = useState('daily')
 

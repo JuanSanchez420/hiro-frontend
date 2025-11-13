@@ -18,6 +18,11 @@ scrollbar-hidden::-webkit-scrollbar {
   scrollbar-width: none; /* Firefox */
 }
 
+/* Prevent layout shift when scrollbar appears/disappears */
+.scrollbar-gutter-stable {
+  scrollbar-gutter: stable;
+}
+
 /* Magic wand start */
 .wand-spinner {
   position: relative;

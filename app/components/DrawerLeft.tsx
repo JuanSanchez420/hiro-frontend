@@ -2,7 +2,7 @@
 
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { useGlobalContext } from '../context/GlobalContext';
+import { useDrawerContext, useThemeContext } from '../context/GlobalContext';
 import History from "./History"
 import tokensData from "../utils/tokens.json";
 import { Token, TokensData } from "../types";
@@ -13,15 +13,13 @@ import useHiro from '../hooks/useHiro';
 import { usePortfolioContext } from '../context/PortfolioContext';
 import PortfolioSection from './PortfolioSection';
 import MarketDataSection from './MarketDataSection';
-import LiquidityPositionsSection from './LiquidityPositionSection';
-import AaveLendingSection from './AaveLendingSection';
-import AaveBorrowSection from './AaveBorrowSection';
 import Recommendations from './Recommendations';
 import { useMessagesContext } from '../context/MessagesContext';
 import { usePromptsContext } from '../context/PromptsContext';
 
 export default function Drawer() {
-  const { drawerLeftOpen, setDrawerLeftOpen, showRecommendations, setShowRecommendations, styles } = useGlobalContext();
+  const { drawerState, setDrawerState } = useDrawerContext();
+  const { styles } = useThemeContext();
   const [token, setTokenState] = useState<Token | null>(null);
   const [historyKey, setHistoryKey] = useState(0);
 
@@ -68,11 +66,17 @@ export default function Drawer() {
     }
   }, [resetMessages, resetPrompts]);
 
+  // TEMPORARILY DISABLED FOR TESTING
+  // useEffect(() => {
+  //   if (drawerState.isOpen && !drawerState.showRecommendations) {
+  //     fetchPortfolio();
+  //   }
+  // }, [drawerState.isOpen, drawerState.showRecommendations, fetchPortfolio]);
+
   return (
-    <Dialog open={drawerLeftOpen} onClose={() => {
-      setDrawerLeftOpen(false);
+    <Dialog open={drawerState.isOpen} onClose={() => {
+      setDrawerState({ isOpen: false, showRecommendations: false });
       setToken(null);
-      setShowRecommendations(false);
     }} className="relative z-10">
       <DialogBackdrop
         transition
@@ -91,9 +95,8 @@ export default function Drawer() {
                   <button
                     type="button"
                     onClick={() => {
-                      setDrawerLeftOpen(false);
+                      setDrawerState({ isOpen: false, showRecommendations: false });
                       setToken(null);
-                      setShowRecommendations(false);
                     }}
                     className="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
                   >
@@ -109,29 +112,20 @@ export default function Drawer() {
                 </div>
                 <div className="relative mt-4 px-4 sm:px-6 flex flex-col h-full">
                   {/* Recommendations View */}
-                  {!token && showRecommendations && (
+                  {!token && drawerState.showRecommendations && (
                     <Recommendations />
                   )}
 
                   {/* Portfolio Sections */}
-                  {!token && !showRecommendations && <PortfolioSection
+                  {!token && !drawerState.showRecommendations && <PortfolioSection
                     balancesWithTokens={balancesWithTokens}
+                    liquidityPositions={portfolio?.positions ?? []}
+                    aavePositions={portfolio?.aave ?? []}
                     hiro={hiro}
                     loading={loading}
                     setToken={setToken}
                   />}
-                  {!token && !showRecommendations && portfolio && portfolio.positions && portfolio.positions.length > 0 && (
-                    <LiquidityPositionsSection
-                      positions={portfolio.positions}
-                    />
-                  )}
-                  {!token && !showRecommendations && portfolio && portfolio.aave && portfolio.aave.length > 0 && (
-                    <AaveLendingSection aave={portfolio.aave} />
-                  )}
-                  {!token && !showRecommendations && portfolio && portfolio.aave && portfolio.aave.some(item => parseFloat(item.variableDebt) > 0) && (
-                    <AaveBorrowSection aave={portfolio.aave} />
-                  )}
-                  {!token && !showRecommendations && !portfolio && <MarketDataSection market={market} setToken={setToken} />}
+                  {!token && !drawerState.showRecommendations && !portfolio && <MarketDataSection market={market} setToken={setToken} />}
 
                   {/* Token Chart */}
                   {token && <TokenData token={token} hours={200} exit={() => setToken(null)} />}
@@ -140,7 +134,7 @@ export default function Drawer() {
                   <div className="flex-grow"></div>
 
                   {/* Chat History Section - At bottom */}
-                  {!token && !showRecommendations && (
+                  {!token && !drawerState.showRecommendations && (
                     <nav className="flex flex-col mb-4">
                       <div className='flex justify-between mb-2'>
                         <div className='bold'>History</div>
