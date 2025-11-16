@@ -11,6 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Environment Setup
 
+### Development (NODE_ENV=development)
 **Required Dependencies:**
 1. **Local Blockchain**: Ethereum node running on chain ID 31338 at `http://localhost:8545`
 2. **Backend Server**: Express server running on `http://localhost:4000`
@@ -18,13 +19,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - `NEXT_PUBLIC_EXPRESS_URL=http://localhost`
    - `NEXT_PUBLIC_EXPRESS_PORT=4000`
    - `NEXT_PUBLIC_RPC_URL=http://localhost:8545`
+   - `NEXT_PUBLIC_BASE_RPC_URL=https://rpc.ankr.com/base/...`
    - `NEXT_PUBLIC_HIRO_FACTORY=<deployed_contract_address>`
+   - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>`
 
-**Startup Sequence:**
+**Startup Sequence (Development):**
 1. Start local blockchain (e.g., Foundry Anvil on chain 31338)
 2. Deploy contracts and update `NEXT_PUBLIC_HIRO_FACTORY` in `.env`
 3. Start backend Express server on port 4000
 4. Run `npm run dev` to start frontend
+
+### Production (NODE_ENV=production)
+**Required Configuration:**
+1. **Base Chain**: Automatically uses Base mainnet (chain ID 8453)
+2. **Backend Server**: Production backend URL
+3. **Environment Variables**: Update `.env.production`:
+   - `NEXT_PUBLIC_EXPRESS_URL=https://your-backend-domain.com`
+   - `NEXT_PUBLIC_EXPRESS_PORT=443`
+   - `NEXT_PUBLIC_BASE_RPC_URL=https://rpc.ankr.com/base/...`
+   - `NEXT_PUBLIC_HIRO_FACTORY=<deployed_contract_on_base>`
+   - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>`
+
+**Chain Selection Logic:**
+- `NODE_ENV=production` → Base mainnet (chain ID 8453)
+- `NODE_ENV=development` → Local chain (chain ID 31338)
+- Configuration in `app/config.ts` automatically selects the appropriate chain
 
 ## Architecture Overview
 
@@ -58,9 +77,12 @@ The application uses a widget-based architecture for DeFi interactions:
 - Widget state managed through `GlobalContext.widget`
 
 **Web3 Configuration:**
-- `app/config.ts` - Wagmi configuration for local blockchain (chain ID 31338)
+- `app/config.ts` - Wagmi configuration with dual-chain support:
+  - **Development**: Local blockchain (chain ID 31338)
+  - **Production**: Base mainnet (chain ID 8453)
 - Uses MetaMask and WalletConnect connectors
-- Configured for localhost development environment
+- Chain selection is automatic based on `NODE_ENV`
+- Exports: `localChain`, `baseChain`, `config` (active configuration)
 
 **DeFi Integrations:**
 - Aave lending/borrowing functionality
@@ -138,13 +160,20 @@ Located in `app/api/` with various endpoints for:
 - Wallet updates (`/api/update-wallet`)
 - Transaction confirmations (`/api/confirm`) - Handles user confirmations for transactions
 
-### Testing Environment
+### Development & Production Environments
 
-The application is configured for local blockchain development with:
-- Local chain ID: 31338
+**Development (NODE_ENV=development):**
+- Uses local blockchain (chain ID 31338)
 - RPC URL: `http://localhost:8545` (configurable via `NEXT_PUBLIC_RPC_URL`)
 - Test mode with demo functionality enabled
 - Demo transactions show `transactionHash: '0xdummytxhash'`
+- Backend on `http://localhost:4000`
+
+**Production (NODE_ENV=production):**
+- Uses Base mainnet (chain ID 8453)
+- RPC URL: Ankr Base RPC (configurable via `NEXT_PUBLIC_BASE_RPC_URL`)
+- Production backend (configurable via `NEXT_PUBLIC_EXPRESS_URL`)
+- Real on-chain transactions only
 
 ### Important Implementation Details
 

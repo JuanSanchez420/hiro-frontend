@@ -54,7 +54,6 @@ const useChatEventStream = (prompt: string) => {
                 );
                 return;
             }
-            console.log('Confirmation response:', responseData);
 
             // Add the response message as an assistant message if it exists
             if (responseData.message) {
@@ -121,17 +120,21 @@ const useChatEventStream = (prompt: string) => {
                     }
 
                     setFunctionResults((prev) => [...prev, functionResult]);
-                    
+
                     // Fetch updated portfolio if we have a transaction hash
                     if (parsedResult.transactionHash) {
-                        fetchPortfolio();
+                        fetchPortfolio().catch((error) => {
+                            console.error('[useChatEventStream] Error fetching portfolio after confirmation:', error);
+                        });
                     }
                 } catch (parseError) {
                     console.error('Failed to parse confirmation result:', parseError, responseData.result);
                 }
             } else if (confirmed) {
                 // Fallback: fetch portfolio even without parsed result
-                fetchPortfolio();
+                fetchPortfolio().catch((error) => {
+                    console.error('[useChatEventStream] Error fetching portfolio after confirmation fallback:', error);
+                });
             } else if (responseData.cancelled) {
                 // User cancelled the transaction - add cancellation result
                 const id = messageIdCounter.current++;
@@ -177,7 +180,6 @@ const useChatEventStream = (prompt: string) => {
 
                 // Validate that this is actually a function call
                 if (!obj || typeof obj !== 'object' || !obj.name) {
-                    console.warn("Invalid functionCall event data:", obj);
                     return;
                 }
 
@@ -189,7 +191,6 @@ const useChatEventStream = (prompt: string) => {
                     obj.arguments = {};
                 }
 
-                console.log("functionCall:", obj);
                 if (obj.name === "confettiBurst") {
                     doConfettiBurst();
                     return;
@@ -204,13 +205,14 @@ const useChatEventStream = (prompt: string) => {
         eventSource.addEventListener("functionCallResult", (event: MessageEvent) => {
             try {
                 const obj = JSON.parse(event.data);
-                console.log("functionCallResult:", obj);
 
                 // Skip certain result types
                 if (obj.section || obj.confettiBurst) return;
 
                 if (obj.transactionHash) {
-                    fetchPortfolio()
+                    fetchPortfolio().catch((error) => {
+                        console.error('[useChatEventStream] Error fetching portfolio after transaction:', error);
+                    });
                 }
 
                 // Create the function result with proper structure
@@ -236,8 +238,7 @@ const useChatEventStream = (prompt: string) => {
         eventSource.addEventListener("confirmation", (event: MessageEvent) => {
             try {
                 const obj = JSON.parse(event.data);
-                console.log("confirmation:", obj);
-                
+
                 // Parse function call arguments if they're still a string
                 const functionCall = { ...obj.functionCall };
                 if (functionCall && typeof functionCall.arguments === 'string') {
@@ -274,7 +275,6 @@ const useChatEventStream = (prompt: string) => {
 
                 // Validate that this is actually a string chunk for streaming content
                 if (typeof chunk !== 'string') {
-                    console.warn("Invalid streaming content chunk (not a string):", chunk);
                     return;
                 }
 

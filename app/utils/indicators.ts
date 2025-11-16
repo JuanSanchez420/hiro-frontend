@@ -18,9 +18,6 @@ export const calculateEMA = (
   }
 
   if (data.length < period) {
-    console.warn(
-      `Insufficient data to calculate EMA for period ${period}. Required: ${period}, Provided: ${data.length}.`
-    );
     return [];
   }
 
@@ -150,7 +147,6 @@ export const calculateDonchianChannel = (
   }
 
   if (data.length < period) {
-    console.warn(`Insufficient data to calculate Donchian channel. Required: ${period}, Provided: ${data.length}.`);
     return [];
   }
 
@@ -264,7 +260,6 @@ export const calculateHiroChannel = (
   }
 
   if (data.length < length) {
-    console.warn(`Insufficient data for Hiro Channel. Required: ${length}, Provided: ${data.length}.`);
     return { states: [], signals: [] };
   }
 

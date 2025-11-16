@@ -16,7 +16,7 @@ const friendlyNames = {
     "swap": "Swapping",
     "wrapETH": "Wrapping ETH",
     "unwrapWETH": "Unwraping WETH",
-    "addLiquidity": "Addding Liquidity",
+    "addLiquidity": "Adding Liquidity",
     "removeLiquidityByIndex": "Removing Liquidity",
     "setAutonomousInstructions": "Setting Autonomous Instructions",
     "depositAave": "Depositing to Aave",

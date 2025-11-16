@@ -27,11 +27,6 @@ const useHiroFactory = () => {
 
     // Derive status from portfolio data
     const status = useMemo(() => {
-        console.log('[useHiroFactory] Computing status', {
-            hiroAddress: portfolio?.hiro,
-            isCreating: creatingState || isCreating
-        });
-
         if (creatingState || isCreating) {
             return HiroWalletStatus.CREATING;
         }
@@ -53,8 +48,6 @@ const useHiroFactory = () => {
     }, [client])
 
     const signUp = useCallback(async (extraEth: string) => {
-        console.log('[useHiroFactory] signUp called with extraEth:', extraEth);
-
         if (!factory || !client) {
             console.error('[useHiroFactory] Missing dependencies:', {
                 hasFactory: !!factory,
@@ -63,32 +56,21 @@ const useHiroFactory = () => {
             return null;
         }
 
-        console.log('[useHiroFactory] Setting creating state to true');
         setCreatingState(true);
         isCreating = true;
 
         try {
-            console.log('[useHiroFactory] Parsing ETH value:', extraEth);
             const value = parseEther(extraEth).valueOf()
-            console.log('[useHiroFactory] Parsed value:', value.toString());
-
-            console.log('[useHiroFactory] Calling factory.write.createHiroWallet with value:', value.toString());
             const hash = await factory.write.createHiroWallet([], { value });
-            console.log('[useHiroFactory] Transaction hash received:', hash);
+            await waitForTransactionReceipt(client, { hash });
 
-            console.log('[useHiroFactory] Waiting for transaction receipt...');
-            const receipt = await waitForTransactionReceipt(client, { hash });
-            console.log('[useHiroFactory] Transaction receipt:', receipt);
-
-            console.log('[useHiroFactory] Fetching /api/update-wallet...');
             const response = await fetch('/api/update-wallet', {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
-                    credentials: 'include',
+                    'Content-Type': 'application/json'
                 },
+                credentials: 'include',
             })
-            console.log('[useHiroFactory] API response status:', response.status);
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -97,23 +79,18 @@ const useHiroFactory = () => {
             }
 
             const data: { success: boolean; wallet: string } = await response.json();
-            console.log('[useHiroFactory] API response data:', data);
 
-            console.log('[useHiroFactory] Fetching portfolio...');
             try {
                 await fetchPortfolio();
-                console.log('[useHiroFactory] Portfolio fetched successfully');
             } catch (portfolioError) {
                 console.error('[useHiroFactory] Portfolio fetch failed:', portfolioError);
                 // Continue anyway - portfolio will be fetched on next render
             }
 
-            console.log('[useHiroFactory] Triggering confetti burst');
             doConfettiBurst()
 
             setCreatingState(false);
             isCreating = false;
-            console.log('[useHiroFactory] Creation complete, status now derived from portfolio');
 
             const prompt = 'I created a Hiro. What can you do?';
             addMessage({
@@ -123,7 +100,6 @@ const useHiroFactory = () => {
                 completed: true,
             });
             addPrompt(prompt);
-            console.log('[useHiroFactory] Success! Wallet created:', data.wallet);
 
             return data.wallet;
         } catch (error) {

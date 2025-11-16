@@ -24,7 +24,9 @@ const useSIWE = () => {
         const session = await res.json();
         setIsSignedIn(session.verified);
         if (session.verified) {
-          fetchPortfolio();
+          fetchPortfolio().catch((error) => {
+            console.error('[useSIWE] Error fetching portfolio after session check:', error);
+          });
         }
       } catch (error) {
         console.error("Error checking session", error);
@@ -62,7 +64,9 @@ const useSIWE = () => {
       const verifyData = await verifyRes.json();
       setIsSignedIn(verifyData.success);
       if (verifyData.success) {
-        fetchPortfolio();
+        fetchPortfolio().catch((error) => {
+          console.error('[useSIWE] Error fetching portfolio after SIWE:', error);
+        });
         setStatus('Signed in');
       } else {
         setStatus('Error signing in');

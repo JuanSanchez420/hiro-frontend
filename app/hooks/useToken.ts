@@ -24,8 +24,7 @@ const useToken = (address: `0x${string}`) => {
         async (spender: string, amount: bigint) => {
             if (!account?.address) throw new Error("No connected account");
             if (!walletClient) throw new Error("Wallet client not available");
-            
-            console.log("Approving", account.address, spender, amount);
+
             return await walletClient.writeContract({
                 address,
                 abi: ERC20,

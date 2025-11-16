@@ -7,8 +7,6 @@ const CreateAHiro = () => {
     const { setWidget } = useWidgetContext()
     const { styles } = useThemeContext()
 
-    console.log('[CreateAHiro] Rendering with status:', status);
-
     // Don't render anything if Hiro is already created - let the normal user menu show
     if (status === 'CREATED') {
         return null;

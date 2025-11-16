@@ -34,14 +34,20 @@ export const PortfolioProvider = ({
 
     const fetchPortfolio = useCallback(async () => {
         setLoading(true);
-        const response = await fetch(`/api/portfolio`, { credentials: "include" });
-        if(!response.ok) {
+        try {
+            const response = await fetch(`/api/portfolio`, { credentials: "include" });
+            if(!response.ok) {
+                console.error('[PortfolioContext] Failed to fetch portfolio:', response.status, response.statusText);
+                setLoading(false);
+                return;
+            }
+            const data = await response.json();
+            setPortfolio({ ...data });
+        } catch (error) {
+            console.error('[PortfolioContext] Error fetching portfolio:', error);
+        } finally {
             setLoading(false);
-            return;
         }
-        const data = await response.json();
-        setPortfolio({ ...data });
-        setLoading(false);
     },[])
 
     useEffect(() => {

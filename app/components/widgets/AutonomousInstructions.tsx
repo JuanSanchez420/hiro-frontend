@@ -18,9 +18,13 @@ const AutonomousInstructions = () => {
 
   useEffect(() => {
     const f = async () => {
-      const i = await fetch(`/api/instructions`, { credentials: 'include', });
-      const j = await i.json();
-      setValue(j.instructions)
+      try {
+        const i = await fetch(`/api/instructions`, { credentials: 'include', });
+        const j = await i.json();
+        setValue(j.instructions)
+      } catch (error) {
+        console.error('[AutonomousInstructions] Error fetching instructions:', error);
+      }
     }
     f()
   }, [])
